@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Menu, X, Download, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, X, Download, Search, CornerDownLeft, ArrowUp, ArrowDown } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
+import { TOOLS } from "@/lib/tools-data";
 
 const NAV = [
   { href: "/tools", label: "Tools" },
@@ -15,54 +16,171 @@ const NAV = [
   { href: "/about", label: "About" },
 ];
 
+const MAX_RESULTS = 8;
+
+function matchTool(t: (typeof TOOLS)[number], q: string) {
+  const hay = [t.name, t.h1, t.slug, t.sourceFormat, t.targetFormat, t.sourceExt, t.targetExt, t.categoryLabel]
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(q);
+}
+
 function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // 同步 URL 中的 q（从 /tools 页返回时保持一致）
+  const q = value.trim().toLowerCase();
+
+  const results = useMemo(() => {
+    if (!q) return TOOLS.slice(0, MAX_RESULTS);
+    return TOOLS.filter((t) => matchTool(t, q)).slice(0, MAX_RESULTS);
+  }, [q]);
+
+  // 点击外部关闭
   useEffect(() => {
-    if (pathname === "/tools") {
-      setValue(searchParams.get("q") ?? "");
+    function onClick(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     }
-  }, [pathname, searchParams]);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const q = value.trim();
+  // 结果变化时重置高亮
+  useEffect(() => {
+    setActive(0);
+  }, [value]);
+
+  function go(slug: string) {
     onNavigate?.();
-    if (q) {
-      router.push(`/tools?q=${encodeURIComponent(q)}`);
+    setOpen(false);
+    inputRef.current?.blur();
+    router.push(`/tools/${slug}`);
+  }
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setOpen(true);
+      setActive((i) => Math.min(i + 1, results.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (results[active]) go(results[active].slug);
+      else if (q) router.push(`/tools?q=${encodeURIComponent(value.trim())}`);
+    } else if (e.key === "Escape") {
+      setOpen(false);
       inputRef.current?.blur();
-    } else {
-      router.push("/tools");
     }
   }
 
   return (
-    <form onSubmit={submit} role="search" className="relative flex-1 max-w-xs">
+    <div ref={wrapRef} className="relative w-full max-w-xs">
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <input
         ref={inputRef}
         type="search"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={onKeyDown}
         placeholder="Search tools…"
         aria-label="Search tools"
+        aria-expanded={open}
+        aria-controls="search-results"
         className="h-9 w-full rounded-lg border border-border/60 bg-background/40 pl-9 pr-12 text-sm shadow-none backdrop-blur transition-colors focus-visible:border-primary/50 focus-visible:ring-0"
       />
       <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground sm:inline-flex">
         <span className="text-[11px]">⌘</span>K
       </kbd>
-    </form>
+
+      {/* 下拉结果 */}
+      {open && (
+        <div
+          id="search-results"
+          role="listbox"
+          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-border/60 bg-background/95 shadow-xl backdrop-blur-xl"
+        >
+          {results.length === 0 ? (
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+              No tools match “{value}”.
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate?.();
+                  setOpen(false);
+                  router.push(`/tools?q=${encodeURIComponent(value.trim())}`);
+                }}
+                className="mono-label mt-2 block !text-primary"
+              >
+                Browse all tools →
+              </button>
+            </div>
+          ) : (
+            <>
+              <ul className="max-h-80 overflow-y-auto py-1">
+                {results.map((t, i) => (
+                  <li key={t.slug} role="option" aria-selected={i === active}>
+                    <button
+                      type="button"
+                      onMouseEnter={() => setActive(i)}
+                      onClick={() => go(t.slug)}
+                      className={cn(
+                        "flex w-full items-center gap-3 px-3 py-2 text-left transition-colors",
+                        i === active ? "bg-primary/10" : "hover:bg-muted/60",
+                      )}
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-border/50 bg-muted/40 font-mono text-[10px] font-bold uppercase text-primary">
+                        {t.className}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-foreground">{t.h1}</span>
+                        <span className="mono-label mt-0.5 block">
+                          {t.categoryLabel} · {t.sourceExt} → {t.targetExt}
+                        </span>
+                      </span>
+                      {i === active && (
+                        <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex items-center justify-between border-t border-border/50 px-3 py-2 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-0.5">
+                    <ArrowUp className="h-3 w-3" />
+                    <ArrowDown className="h-3 w-3" />
+                  </span>
+                  navigate
+                </span>
+                <span className="flex items-center gap-1">
+                  <CornerDownLeft className="h-3 w-3" /> open
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="rounded border border-border/60 px-1 font-mono">esc</span> close
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // ⌘K / Ctrl+K 聚焦导航栏搜索框
   useEffect(() => {
@@ -70,7 +188,7 @@ export function Navbar() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         const el = document.querySelector<HTMLInputElement>(
-          'form[role="search"] input[type="search"]',
+          'input[aria-label="Search tools"]',
         );
         el?.focus();
         el?.select();
@@ -137,7 +255,7 @@ export function Navbar() {
       <div
         className={cn(
           "overflow-hidden border-t border-white/5 md:hidden",
-          open ? "max-h-96" : "max-h-0",
+          open ? "max-h-[28rem]" : "max-h-0",
           "transition-[max-height] duration-300 ease-in-out",
         )}
       >
