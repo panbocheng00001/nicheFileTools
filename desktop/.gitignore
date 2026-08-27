@@ -1,0 +1,52 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Env files (密钥/回流 token 一律不进库)
+.env
+.env.*
+!.env.example
+
+# Tauri build artifacts
+/src-tauri/target
+/src-tauri/gen
+/src-tauri/gen/schemas
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Cache
+.cache
+.vite
+.eslintcache
+*.tsbuildinfo
+
+# Test coverage
+coverage

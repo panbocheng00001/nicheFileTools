@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   nicheFileTools — 设计系统（基于 TuningCalc 设计语言复刻）
+   工程仪表盘 + 暗夜霓虹：中性灰底，暗色荧光绿主色 + 竞速红危险色，
+   等宽字体承载数据/标签/面包屑，玻璃拟态卡片浮在 24px 网格光晕上。
+   ========================================================================= */
+
+/* 2.2 Tailwind 主题映射：语义颜色全部指向 CSS 变量，暗色自动切换 */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-2xl: calc(var(--radius) + 4px);
+}
+
+/* 2.1 设计 Token（调淡版）：亮色=柔灰主色；暗色=深灰蓝底 + 柔和绿，弃纯黑与霓虹 */
+:root {
+  --background: #fafafa;
+  --foreground: #1c1c1f;
+  --card: #ffffff;
+  --card-foreground: #1c1c1f;
+  --primary: #3f3f46; /* 亮色：柔和中灰，不再近黑 */
+  --primary-foreground: #fafafa;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --border: #e8e8ec;
+  --input: #e8e8ec;
+  --ring: #3f3f46;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #101014; /* 深灰蓝，弃纯黑 */
+  --foreground: #f4f4f6;
+  --card: #191920;
+  --card-foreground: #f4f4f6;
+  --primary: #4ade80; /* 柔和绿，弃荧光 */
+  --primary-foreground: #0a120d;
+  --muted: #1e1e26;
+  --muted-foreground: #b4b4c0;
+  --destructive: #fb7185; /* 柔化的玫瑰红 */
+  --destructive-foreground: #1c0d12;
+  --success: #4ade80;
+  --success-foreground: #0a120d;
+  --warning: #fbbf24;
+  --warning-foreground: #1c1305;
+  --border: #38383f;
+  --input: #38383f;
+  --ring: #4ade80;
+}
+
+/* === 基础层 === */
+@layer base {
+  html {
+    @apply scroll-smooth antialiased;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+  /* 暗色下细滚动条，强化仪表盘质感 */
+  .dark ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .dark ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 30%, transparent);
+    border-radius: 9999px;
+    border: 2px solid var(--background);
+  }
+}
+
+/* === 4. 核心工具类 === */
+
+/* 玻璃拟态卡片 */
+.glass {
+  @apply border border-zinc-200/80 bg-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-2xl transition-all duration-300 rounded-2xl relative overflow-hidden;
+}
+.dark .glass {
+  @apply border-white/10 bg-zinc-950/60 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-white/20;
+}
+
+/* 次级玻璃面板（更淡，用于侧栏/分组） */
+.glass-panel {
+  @apply border border-zinc-200/50 bg-zinc-50/50 backdrop-blur-md rounded-2xl transition-all duration-300;
+}
+.dark .glass-panel {
+  @apply border-white/5 bg-zinc-900/40 hover:bg-zinc-900/60;
+}
+
+/* 环境背景：24px 网格 */
+.ambient-grid {
+  background-image: linear-gradient(
+      to right,
+      rgba(128, 128, 128, 0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(128, 128, 128, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* 表单元素（手写，不放进 ui 库） */
+@layer base {
+  input[type="number"],
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="password"],
+  select,
+  textarea {
+    @apply flex h-11 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-all duration-200 outline-none
+      placeholder:text-muted-foreground
+      focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .dark input[type="number"],
+  .dark input[type="text"],
+  .dark input[type="email"],
+  .dark input[type="search"],
+  .dark input[type="password"],
+  .dark select,
+  .dark textarea {
+    @apply bg-zinc-950/50 shadow-none border-white/10
+      focus-visible:shadow-[0_0_15px_rgba(74,222,128,0.18)] focus-visible:border-primary/50;
+  }
+}
+
+/* 强调主词渐变流动（文档关键坑：animate-gradient 源码未定义，这里补上） */
+@keyframes gradient {
+  to {
+    background-position: 200% center;
+  }
+}
+.animate-gradient {
+  animation: gradient 4s linear infinite;
+}
+
+/* === SEO 长文排版（手写 prose，不依赖 typography 插件） === */
+.seo-prose {
+  @apply text-[15px] leading-relaxed text-muted-foreground;
+}
+.seo-prose h2 {
+  @apply mt-10 mb-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
+}
+.seo-prose h3 {
+  @apply mt-8 mb-2 text-xl font-semibold tracking-tight text-foreground;
+}
+.seo-prose p {
+  @apply mb-4 leading-relaxed text-muted-foreground;
+}
+.seo-prose ul {
+  @apply mb-4 list-disc space-y-2 pl-5 text-muted-foreground;
+}
+.seo-prose ol {
+  @apply mb-4 list-decimal space-y-2 pl-5 text-muted-foreground;
+}
+/* prose 内纯文本链接样式；带 no-prose 的样式化链接（按钮/卡片）不受影响 */
+.seo-prose a:not(.no-prose) {
+  @apply text-primary underline underline-offset-4 hover:opacity-80;
+}
+.seo-prose strong {
+  @apply font-semibold text-foreground;
+}
+.seo-prose code {
+  @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground;
+}
+
+/* 工具类：等宽小标签（面包屑/徽章/meta） */
+.mono-label {
+  @apply font-mono text-[10px] uppercase tracking-widest text-muted-foreground;
+}

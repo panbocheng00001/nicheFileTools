@@ -1,0 +1,127 @@
+import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+import { TOOLS } from "@/lib/tools-data";
+
+/**
+ * Footer — 全站规范 §2.16 关键合规要求：
+ * Privacy / Terms / Cookie / Contact 必须出现在每一页 footer。
+ */
+const COLS = [
+  {
+    title: "Tools",
+    links: TOOLS.map((t) => ({
+      href: `/tools/${t.slug}`,
+      label: `${t.sourceFormat} → ${t.targetFormat}`,
+    })),
+  },
+  {
+    title: "Desktop",
+    links: [
+      { href: "/download", label: "Download App" },
+      { href: "/free-trial", label: "Free Unlock Key" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/license", label: "License & Activation" },
+    ],
+  },
+  {
+    title: "Learn",
+    links: [
+      { href: "/convert", label: "Conversion Guides" },
+      { href: "/support", label: "Support Center" },
+      { href: "/about", label: "About Us" },
+      { href: "/contact", label: "Contact" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/privacy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
+      { href: "/cookie", label: "Cookie Policy" },
+      { href: "/sitemap.xml", label: "Sitemap" },
+    ],
+  },
+];
+
+export function Footer() {
+  return (
+    <footer className="relative mt-24 border-t border-white/5 bg-background/60 backdrop-blur-xl">
+      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+          {/* 列1：品牌 + 使命 + 版本徽章 */}
+          <div>
+            <Link href="/" className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 font-mono text-sm font-bold text-primary">
+                n
+              </span>
+              <span className="font-mono text-lg font-bold tracking-tighter text-foreground">
+                niche<span className="text-primary">file</span>tools
+              </span>
+            </Link>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Free, browser-based file converters. Your files are processed
+              locally and never uploaded to a server.
+            </p>
+            <span className="mt-4 inline-flex rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 font-mono text-[10px] font-medium text-primary">
+              v1.0.0
+            </span>
+          </div>
+
+          {/* 列2-5：导航 */}
+          {COLS.map((col) => (
+            <div key={col.title}>
+              <h3 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
+                {col.title}
+              </h3>
+              <ul className="mt-4 space-y-2.5">
+                {col.links.map((l) => (
+                  <li key={l.href + l.label}>
+                    <Link
+                      href={l.href}
+                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* 免责声明 */}
+        <div className="mt-12 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 p-4 text-xs leading-relaxed text-muted-foreground">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p>
+            nichefiletools is provided &ldquo;as is&rdquo; without warranty.
+            Always keep a backup of your original files. Conversions run entirely
+            on your device.
+          </p>
+        </div>
+
+        {/* 底部版权 */}
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 sm:flex-row">
+          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            © {new Date().getFullYear()} nichefiletools
+          </p>
+          <a
+            href="https://github.com/nichefiletools"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+            className="text-muted-foreground transition-colors hover:text-primary"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path d="M12 .5C5.73.5.5 5.73.5 12.02c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.27 5.68.42.36.79 1.08.79 2.18v3.23c0 .31.21.68.8.56A11.53 11.53 0 0 0 23.5 12.02C23.5 5.73 18.27.5 12 .5z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
