@@ -68,7 +68,7 @@ export default function RootLayout({
         <ThemeProvider>
           {/* 环境背景三件套：固定层 + 网格 + 顶部荧光光晕 */}
           <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-            <div className="ambient-grid absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]" />
+            <div className="ambient-grid absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_140%_120%_at_50%_0%,#000_70%,transparent_100%)]" />
             <div className="absolute top-[-5%] left-1/2 h-[500px] w-full max-w-4xl -translate-x-1/2 rounded-full bg-primary/10 blur-[150px]" />
           </div>
 

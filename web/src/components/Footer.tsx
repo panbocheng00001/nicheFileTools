@@ -1,18 +1,23 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, ArrowRight } from "lucide-react";
 import { TOOLS } from "@/lib/tools-data";
 
 /**
  * Footer — 全站规范 §2.16 关键合规要求：
  * Privacy / Terms / Cookie / Contact 必须出现在每一页 footer。
  */
+const TOOLS_PREVIEW = 6;
+
 const COLS = [
   {
     title: "Tools",
-    links: TOOLS.map((t) => ({
+    links: TOOLS.slice(0, TOOLS_PREVIEW).map((t) => ({
       href: `/tools/${t.slug}`,
       label: `${t.sourceFormat} → ${t.targetFormat}`,
     })),
+    more: TOOLS.length > TOOLS_PREVIEW
+      ? { href: "/tools", label: `View all ${TOOLS.length} tools` }
+      : undefined,
   },
   {
     title: "Desktop",
@@ -84,6 +89,17 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
+                {col.more && (
+                  <li className="pt-1">
+                    <Link
+                      href={col.more.href}
+                      className="mono-label inline-flex items-center gap-1 !text-primary hover:opacity-80"
+                    >
+                      {col.more.label}
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           ))}

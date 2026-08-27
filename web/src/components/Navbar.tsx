@@ -7,7 +7,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/#tools", label: "Tools" },
+  { href: "/tools", label: "Tools" },
   { href: "/convert", label: "Guides" },
   { href: "/download", label: "Desktop" },
   { href: "/free-trial", label: "Free Key" },

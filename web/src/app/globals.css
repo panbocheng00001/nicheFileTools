@@ -56,6 +56,8 @@
   --input: #e8e8ec;
   --ring: #3f3f46;
   --radius: 0.75rem;
+  /* 环境网格线：浅色模式约 10%（叠加 opacity-70 后净 ~7%），对齐 tuningCalc 的均匀淡网格 */
+  --grid-line: rgba(0, 0, 0, 0.10);
 }
 
 .dark {
@@ -76,6 +78,8 @@
   --border: #38383f;
   --input: #38383f;
   --ring: #4ade80;
+  /* 深色模式：白色网格线，净 ~5.6%，比原灰线更干净清晰 */
+  --grid-line: rgba(255, 255, 255, 0.08);
 }
 
 /* === 基础层 === */
@@ -124,14 +128,14 @@
   @apply border-white/5 bg-zinc-900/40 hover:bg-zinc-900/60;
 }
 
-/* 环境背景：24px 网格 */
+/* 环境背景：24px 网格（线色随主题切换，见 --grid-line） */
 .ambient-grid {
   background-image: linear-gradient(
       to right,
-      rgba(128, 128, 128, 0.07) 1px,
+      var(--grid-line) 1px,
       transparent 1px
     ),
-    linear-gradient(to bottom, rgba(128, 128, 128, 0.07) 1px, transparent 1px);
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
