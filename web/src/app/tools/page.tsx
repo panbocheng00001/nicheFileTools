@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, Download } from "lucide-react";
 import { TOOLS } from "@/lib/tools-data";
@@ -79,7 +80,9 @@ export default function ToolsIndexPage() {
       </header>
 
       {/* 搜索 + 分组浏览（客户端交互） */}
-      <ToolsExplorer tools={TOOLS} categories={CATEGORIES} />
+      <Suspense fallback={null}>
+        <ToolsExplorer tools={TOOLS} categories={CATEGORIES} />
+      </Suspense>
 
       {/* 桌面端 CTA */}
       <section className="mt-16">

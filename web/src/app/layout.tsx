@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -72,7 +73,9 @@ export default function RootLayout({
             <div className="absolute top-[-5%] left-1/2 h-[500px] w-full max-w-4xl -translate-x-1/2 rounded-full bg-primary/10 blur-[150px]" />
           </div>
 
-          <Navbar />
+          <Suspense fallback={null}>
+            <Navbar />
+          </Suspense>
 
           <PageTransition>
             <div className="flex-1">{children}</div>

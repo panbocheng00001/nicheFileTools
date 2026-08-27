@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
   X,
@@ -29,6 +29,16 @@ export function ToolsExplorer({ tools, categories }: Props) {
   const [showAll, setShowAll] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 从 URL ?q= 预填搜索（来自导航栏搜索框跳转）
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null) {
+      setQuery(q);
+      if (q) inputRef.current?.focus();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
