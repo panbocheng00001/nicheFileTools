@@ -12,6 +12,7 @@ import {
   GuideCard,
 } from "@/components/content";
 import ToolConverter from "@/components/ToolConverter";
+import { Share } from "@/components/Share";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -53,6 +54,7 @@ export default async function ToolPage({ params }: Params) {
         <div className="xl:col-span-8">
           <Breadcrumbs tool={tool} />
           <ToolHero tool={tool} />
+          <Share path={`/tools/${tool.slug}`} title={tool.h1} className="mt-5" />
           {isDesktopOnly ? (
             <DesktopOnlyCta tool={tool} />
           ) : (

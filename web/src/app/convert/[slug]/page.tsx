@@ -5,6 +5,7 @@ import { BookOpen, MonitorSmartphone, ArrowRight, Wrench } from "lucide-react";
 import { CONVERT_GUIDES, getGuide } from "@/lib/convert-content";
 import { getTool } from "@/lib/tools-data";
 import { SITE } from "@/lib/site";
+import { Share } from "@/components/Share";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -130,6 +131,12 @@ export default async function ConvertGuidePage({ params }: Params) {
               </span>
             </h1>
           </header>
+
+          <Share
+            path={`/convert/${guide.slug}`}
+            title={`How to Convert ${tool.sourceFormat} to ${tool.targetFormat}`}
+            className="mb-8"
+          />
 
           <div className="seo-prose">
             {/* 开篇结论（AI Overview 抓取位） */}
