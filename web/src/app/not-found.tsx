@@ -3,8 +3,8 @@ import { Compass } from "lucide-react";
 import { TOOLS } from "@/lib/tools-data";
 
 /**
- * 自定义 404 — 全站规范 §2.15
- * Next.js 自动返回真实 404 状态码（非 soft 404），轻量、带导航出口。
+* Custom 404 — Site-wide specification §2.15
+* Next.js automatically returns the real 404 status code (not soft 404), lightweight, with navigation exit.
  */
 export default function NotFound() {
   return (

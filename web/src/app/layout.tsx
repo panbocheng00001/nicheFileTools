@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-/** 全站 WebSite + Organization schema — 全站规范 §7.4 / 实体 SEO（附录 A「全站」行） */
+/** Full-site WebSite + Organization schema — Full-site specification §7.4 / Entity SEO (Appendix A "Full-site" line)*/
 const globalJsonLd = [
   {
     "@context": "https://schema.org",
@@ -54,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        {/* 字体通过 <link> 在浏览器端加载，避免构建期联网拉取（沙箱无外网） */}
+        {/*Fonts are loaded on the browser side through <link> to avoid pulling from the Internet during the build period (the sandbox does not have an external network)*/}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -67,7 +67,7 @@ export default function RootLayout({
         />
 
         <ThemeProvider>
-          {/* 环境背景三件套：固定层 + 网格 + 顶部荧光光晕 */}
+          {/*Environmental background three-piece set: fixed layer + grid + top fluorescent halo*/}
           <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
             <div className="ambient-grid absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_140%_120%_at_50%_0%,#000_70%,transparent_100%)]" />
             <div className="absolute top-[-5%] left-1/2 h-[500px] w-full max-w-4xl -translate-x-1/2 rounded-full bg-primary/10 blur-[150px]" />

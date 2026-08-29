@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufReader, BufWriter, Read};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
 use crate::convert::converter::{Converter, ProgressPhase, ProgressSink};

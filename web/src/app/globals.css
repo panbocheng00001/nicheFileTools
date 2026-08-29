@@ -6,7 +6,7 @@
    等宽字体承载数据/标签/面包屑，玻璃拟态卡片浮在 24px 网格光晕上。
    ========================================================================= */
 
-/* 2.2 Tailwind 主题映射：语义颜色全部指向 CSS 变量，暗色自动切换 */
+/*2.2 Tailwind theme mapping: all semantic colors point to CSS variables, and dark colors automatically switch*/
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -36,13 +36,13 @@
   --radius-2xl: calc(var(--radius) + 4px);
 }
 
-/* 2.1 设计 Token（调淡版）：亮色=柔灰主色；暗色=深灰蓝底 + 柔和绿，弃纯黑与霓虹 */
+/*2.1 Design Token (lightened version): bright color = soft gray main color; dark color = dark gray blue background + soft green, abandon pure black and neon*/
 :root {
   --background: #fafafa;
   --foreground: #1c1c1f;
   --card: #ffffff;
   --card-foreground: #1c1c1f;
-  --primary: #3f3f46; /* 亮色：柔和中灰，不再近黑 */
+  --primary: #3f3f46; /*Bright color: soft medium gray, no longer nearly black*/
   --primary-foreground: #fafafa;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
@@ -56,20 +56,20 @@
   --input: #e8e8ec;
   --ring: #3f3f46;
   --radius: 0.75rem;
-  /* 环境网格线：浅色模式约 10%（叠加 opacity-70 后净 ~7%），对齐 tuningCalc 的均匀淡网格 */
+  /*Environment grid lines: ~10% in light mode (~7% net after overlaying opacity-70), aligned with tuningCalc's uniform light grid*/
   --grid-line: rgba(0, 0, 0, 0.10);
 }
 
 .dark {
-  --background: #101014; /* 深灰蓝，弃纯黑 */
+  --background: #101014; /*Dark gray blue, abandon pure black*/
   --foreground: #f4f4f6;
   --card: #191920;
   --card-foreground: #f4f4f6;
-  --primary: #4ade80; /* 柔和绿，弃荧光 */
+  --primary: #4ade80; /*Soft green, abandon fluorescence*/
   --primary-foreground: #0a120d;
   --muted: #1e1e26;
   --muted-foreground: #b4b4c0;
-  --destructive: #fb7185; /* 柔化的玫瑰红 */
+  --destructive: #fb7185; /*Soft rose red*/
   --destructive-foreground: #1c0d12;
   --success: #4ade80;
   --success-foreground: #0a120d;
@@ -78,11 +78,11 @@
   --border: #38383f;
   --input: #38383f;
   --ring: #4ade80;
-  /* 深色模式：白色网格线，净 ~5.6%，比原灰线更干净清晰 */
+  /*Dark mode: white grid lines, net ~5.6%, cleaner and clearer than original gray lines*/
   --grid-line: rgba(255, 255, 255, 0.08);
 }
 
-/* === 基础层 === */
+/*=== Base layer ===*/
 @layer base {
   html {
     @apply scroll-smooth antialiased;
@@ -95,7 +95,7 @@
   ::selection {
     background-color: color-mix(in oklab, var(--primary) 30%, transparent);
   }
-  /* 暗色下细滚动条，强化仪表盘质感 */
+  /*Thin scroll bars in dark colors enhance the texture of the dashboard*/
   .dark ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -110,9 +110,9 @@
   }
 }
 
-/* === 4. 核心工具类 === */
+/*=== 4. Core tool classes ===*/
 
-/* 玻璃拟态卡片 */
+/*glass mimicry card*/
 .glass {
   @apply border border-zinc-200/80 bg-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-2xl transition-all duration-300 rounded-2xl relative overflow-hidden;
 }
@@ -128,7 +128,7 @@
   @apply border-white/5 bg-zinc-900/40 hover:bg-zinc-900/60;
 }
 
-/* 环境背景：24px 网格（线色随主题切换，见 --grid-line） */
+/*Environment background: 24px grid (line color switches with theme, see --grid-line)*/
 .ambient-grid {
   background-image: linear-gradient(
       to right,
@@ -139,7 +139,7 @@
   background-size: 24px 24px;
 }
 
-/* 表单元素（手写，不放进 ui 库） */
+/*Form elements (handwritten, not put into ui library)*/
 @layer base {
   input[type="number"],
   input[type="text"],
@@ -165,7 +165,7 @@
   }
 }
 
-/* 强调主词渐变流动（文档关键坑：animate-gradient 源码未定义，这里补上） */
+/*Emphasis on the gradient flow of the main word (key pitfall in the document: animate-gradient source code is not defined, please add it here)*/
 @keyframes gradient {
   to {
     background-position: 200% center;
@@ -175,7 +175,7 @@
   animation: gradient 4s linear infinite;
 }
 
-/* === SEO 长文排版（手写 prose，不依赖 typography 插件） === */
+/*=== SEO long text formatting (handwritten prose, not dependent on typography plug-in) ===*/
 .seo-prose {
   @apply text-[15px] leading-relaxed text-muted-foreground;
 }
@@ -194,7 +194,7 @@
 .seo-prose ol {
   @apply mb-4 list-decimal space-y-2 pl-5 text-muted-foreground;
 }
-/* prose 内纯文本链接样式；带 no-prose 的样式化链接（按钮/卡片）不受影响 */
+/*Plain text link style within prose; styled links (buttons/cards) with no-prose are not affected*/
 .seo-prose a:not(.no-prose) {
   @apply text-primary underline underline-offset-4 hover:opacity-80;
 }
@@ -205,7 +205,7 @@
   @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground;
 }
 
-/* 工具类：等宽小标签（面包屑/徽章/meta） */
+/*Tools: Small labels with equal width (breadcrumbs/badges/meta)*/
 .mono-label {
   @apply font-mono text-[10px] uppercase tracking-widest text-muted-foreground;
 }

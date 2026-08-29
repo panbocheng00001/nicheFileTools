@@ -64,13 +64,29 @@ export async function convertFile(
   inputPath: string,
   outputPath: string,
   options?: object,
+  onProgress?: (p: BatchProgress) => void,
 ): Promise<ConvertOutput> {
-  return await invoke<ConvertOutput>("convert", {
-    slug,
-    inputPath,
-    outputPath,
-    options: options ? JSON.stringify(options) : null,
-  });
+  let rid: string | undefined;
+  let unlisten: UnlistenFn | undefined;
+  // When a progress callback is supplied, correlate the emitted events via a
+  // caller-generated `rid` so they don't collide with batch progress.
+  if (onProgress) {
+    rid = `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    unlisten = await listen<BatchProgress>("convert-progress", (e) => {
+      if (e.payload.rid === rid) onProgress(e.payload);
+    });
+  }
+  try {
+    return await invoke<ConvertOutput>("convert", {
+      slug,
+      inputPath,
+      outputPath,
+      options: options ? JSON.stringify(options) : null,
+      rid: rid ?? null,
+    });
+  } finally {
+    unlisten?.();
+  }
 }
 
 /// One item of a batch conversion.
@@ -91,15 +107,19 @@ export interface BatchResult {
   error: string | null;
 }
 
-/// Live progress for a single batch item.
+/// Live progress for a single batch item (or single-file conversion, when `rid` is set).
 export interface BatchProgress {
   index: number;
   total: number;
   slug: string;
   inputPath: string;
-  status: string; // "start" | "done" | "error"
-  size: number;
+  status: string; // "running" | "done" | "error" | "cancelled"
+  bytesProcessed: number; // bytes written so far (this phase)
+  bytesTotal: number; // total bytes for this phase; 0 = unknown (indeterminate)
+  phase: string; // reading | converting | writing | done
+  size: number; // final output size (on done)
   error: string | null;
+  rid: string | null; // correlation id for single-file calls; null for batch
 }
 
 /// Convert many files in one call (P3 批量队列). Returns a per-item summary;
@@ -167,7 +187,23 @@ export async function pickOutputFolder(): Promise<string | null> {
   return typeof res === "string" ? res : null;
 }
 
-/// Recursively collect files matching `exts` under `root` (the "Add folder" batch flow).
-export async function collectFiles(root: string, exts: string[]): Promise<string[]> {
-  return await invoke<string[]>("collect_files", { root, exts });
+/// Recursively collect files matching `exts` from a set of `roots` (mixed files
+/// and directories). Powers "Add folder" and drag-drop of whole directories.
+export async function collectFiles(roots: string[], exts: string[]): Promise<string[]> {
+  return await invoke<string[]>("collect_files", { roots, exts });
+}
+
+/// Pause an in-flight batch between items (the current item finishes first).
+export async function pauseBatch(): Promise<void> {
+  await invoke("pause_batch");
+}
+
+/// Resume a paused batch.
+export async function resumeBatch(): Promise<void> {
+  await invoke("resume_batch");
+}
+
+/// Cancel an in-flight batch before the next item; unstarted items become "cancelled".
+export async function cancelBatch(): Promise<void> {
+  await invoke("cancel_batch");
 }

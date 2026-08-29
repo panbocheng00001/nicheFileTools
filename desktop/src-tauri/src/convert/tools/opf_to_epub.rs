@@ -6,8 +6,9 @@ use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
 use zip::ZipWriter;
 
-use crate::convert::converter::Converter;
+use crate::convert::converter::{Converter, ProgressPhase, ProgressSink};
 use crate::convert::engine::Engine;
+use crate::convert::progress::ProgressWriter;
 use crate::errors::AppError;
 
 /// OPF (EPUB package / OEBPS) -> EPUB (zip container).
@@ -28,7 +29,13 @@ impl Converter for OpfToEpubConverter {
     fn engines(&self) -> &'static [Engine] {
         &[Engine::RustNative]
     }
-    fn convert(&self, input: &Path, output: &Path) -> Result<u64, AppError> {
+    fn convert_with_progress(
+        &self,
+        input: &Path,
+        output: &Path,
+        _opts: Option<&serde_json::Value>,
+        sink: &dyn ProgressSink,
+    ) -> Result<u64, AppError> {
         let opf_bytes = fs::read(input)?;
         let base = input.parent().unwrap_or_else(|| Path::new("."));
         let opf_name = input
@@ -38,8 +45,20 @@ impl Converter for OpfToEpubConverter {
 
         let hrefs = parse_manifest_hrefs(&opf_bytes)?;
 
+        // Estimate the output size (uncompressed sum) so the UI can show a
+        // determinate bar while zipping (deflate shrinks text, which only makes
+        // the bar reach 100% slightly early — acceptable).
+        let estimate: u64 = opf_bytes.len() as u64
+            + hrefs
+                .iter()
+                .map(|h| {
+                    let src = base.join(normalize(h.trim()));
+                    fs::metadata(&src).map(|m| m.len()).unwrap_or(0)
+                })
+                .sum::<u64>();
+
         let file = fs::File::create(output)?;
-        let mut zip = ZipWriter::new(file);
+        let mut zip = ZipWriter::new(ProgressWriter::new(file, sink, ProgressPhase::Writing, estimate));
         let stored = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
         let deflated = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
         let zip_err = |e| AppError::Other(format!("EPUB zip error: {e}"));
@@ -67,7 +86,6 @@ impl Converter for OpfToEpubConverter {
         zip.write_all(&opf_bytes)?;
 
         // 4) Every referenced resource.
-        let mut written: u64 = 0;
         for href in hrefs {
             let rel = normalize(href.trim());
             let src = base.join(&rel);
@@ -75,14 +93,16 @@ impl Converter for OpfToEpubConverter {
                 let entry = format!("OEBPS/{}", rel.replace('\\', "/"));
                 zip.start_file(entry, deflated).map_err(zip_err)?;
                 zip.write_all(&bytes)?;
-                written += bytes.len() as u64;
             }
             // Missing referenced files are skipped (we still emit a valid EPUB).
         }
 
         zip.finish().map_err(|e| AppError::Other(format!("EPUB zip finalize failed: {e}")))?;
+        // Return the real on-disk size of the produced EPUB so the UI and callers
+        // get an accurate byte count (the progress channel already reported the
+        // uncompressed total while zipping).
         let size = fs::metadata(output).map(|m| m.len()).unwrap_or(0);
-        Ok(size + written)
+        Ok(size)
     }
 }
 
@@ -98,7 +118,7 @@ fn parse_manifest_hrefs(opf: &[u8]) -> Result<Vec<String>, AppError> {
 
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Start(e)) => {
+            Ok(Event::Start(e)) | Ok(Event::Empty(e)) => {
                 let name = e.name().as_ref().to_ascii_lowercase();
                 if name.as_slice() == b"manifest" {
                     in_manifest = true;

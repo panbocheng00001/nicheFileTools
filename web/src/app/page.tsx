@@ -73,7 +73,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== 工具矩阵 ===== */}
+      {/*===== Tool Matrix =====*/}
       <section id="tools" className="mt-20 scroll-mt-24">
         <div className="mb-8 flex items-center gap-4 border-b border-border/50 pb-4">
           <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">

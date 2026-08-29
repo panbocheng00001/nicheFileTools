@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use flate2::read::ZlibDecoder;
 use std::io::Read;
 
-use crate::convert::converter::Converter;
+use crate::convert::converter::{Converter, ProgressPhase, ProgressSink};
 use crate::convert::engine::Engine;
 use crate::errors::AppError;
 
@@ -13,8 +13,16 @@ use crate::errors::AppError;
 /// Supports the classic Doom format (`IWAD`/`PWAD`, 16-byte directory entries)
 /// and the Quake format (`WAD2`/`WAD3`, 32-byte entries where lumps may be
 /// zlib-compressed — handled via `flate2`). Every lump is written to a sibling
-/// directory next to `output`.
+/// directory next to `output`. Byte progress is reported per lump written.
 pub struct WadExtractor;
+
+struct Lump {
+    name: String,
+    file_pos: usize,
+    size: usize,
+    dsize: usize,
+    compressed: bool,
+}
 
 impl Converter for WadExtractor {
     fn slug(&self) -> &'static str {
@@ -26,7 +34,14 @@ impl Converter for WadExtractor {
     fn engines(&self) -> &'static [Engine] {
         &[Engine::RustNative]
     }
-    fn convert(&self, input: &Path, output: &Path) -> Result<u64, AppError> {
+
+    fn convert_with_progress(
+        &self,
+        input: &Path,
+        output: &Path,
+        _opts: Option<&serde_json::Value>,
+        sink: &dyn ProgressSink,
+    ) -> Result<u64, AppError> {
         let data = fs::read(input)?;
         if data.len() < 12 {
             return Err(AppError::InvalidFile("File too small to be a WAD.".into()));
@@ -42,56 +57,86 @@ impl Converter for WadExtractor {
 
         let num = u32::from_le_bytes([data[4], data[5], data[6], data[7]]) as usize;
         let dir_off = u32::from_le_bytes([data[8], data[9], data[10], data[11]]) as usize;
-
-        let out_dir = output_dir(output);
-        fs::create_dir_all(&out_dir)?;
-
         let entry_size: usize = if is_quake { 32 } else { 16 };
-        let mut written: u64 = 0;
-        let mut i = 0usize;
+
+        // Parse the directory into lump descriptors (so we know the total size
+        // up front for a determinate progress bar).
+        let mut lumps: Vec<Lump> = Vec::new();
         let mut off = dir_off;
+        let mut i = 0;
         while i < num && off + entry_size <= data.len() {
-            let (name, file_pos, size, compressed_size, is_compressed) = if is_quake {
-                let file_pos = u32::from_le_bytes([data[off], data[off + 1], data[off + 2], data[off + 3]]) as usize;
-                let size = u32::from_le_bytes([data[off + 4], data[off + 5], data[off + 6], data[off + 7]]) as usize;
-                let dsize = u32::from_le_bytes([data[off + 8], data[off + 9], data[off + 10], data[off + 11]]) as usize;
+            let (name, file_pos, size, dsize, compressed) = if is_quake {
+                let file_pos =
+                    u32::from_le_bytes([data[off], data[off + 1], data[off + 2], data[off + 3]])
+                        as usize;
+                let size =
+                    u32::from_le_bytes([data[off + 4], data[off + 5], data[off + 6], data[off + 7]])
+                        as usize;
+                let dsize = u32::from_le_bytes([
+                    data[off + 8],
+                    data[off + 9],
+                    data[off + 10],
+                    data[off + 11],
+                ]) as usize;
                 let kind = data[off + 12];
                 let name = read_name(&data[off + 16..off + 32]);
                 (name, file_pos, size, dsize, kind == 0x46 && dsize != size)
             } else {
-                let file_pos = u32::from_le_bytes([data[off], data[off + 1], data[off + 2], data[off + 3]]) as usize;
-                let size = u32::from_le_bytes([data[off + 4], data[off + 5], data[off + 6], data[off + 7]]) as usize;
+                let file_pos =
+                    u32::from_le_bytes([data[off], data[off + 1], data[off + 2], data[off + 3]])
+                        as usize;
+                let size =
+                    u32::from_le_bytes([data[off + 4], data[off + 5], data[off + 6], data[off + 7]])
+                        as usize;
                 let name = read_name(&data[off + 8..off + 16]);
                 (name, file_pos, size, size, false)
             };
 
             if !name.is_empty() && file_pos + size <= data.len() {
-                let raw = &data[file_pos..file_pos + size];
-                let bytes: Vec<u8> = if is_compressed {
-                    let mut dec = ZlibDecoder::new(raw);
-                    let mut out = Vec::with_capacity(compressed_size);
-                    dec.read_to_end(&mut out)
-                        .map_err(|e| AppError::InvalidFile(format!("Lump '{name}' inflate failed: {e}")))?;
-                    out
-                } else {
-                    raw.to_vec()
-                };
-
-                let target = safe_target(&out_dir, &name);
-                if let Some(parent) = target.parent() {
-                    let _ = fs::create_dir_all(parent);
-                }
-                fs::write(&target, &bytes)?;
-                written += bytes.len() as u64;
+                lumps.push(Lump {
+                    name,
+                    file_pos,
+                    size,
+                    dsize,
+                    compressed,
+                });
             }
-
             off += entry_size;
             i += 1;
         }
 
-        if i == 0 {
+        if lumps.is_empty() {
             return Err(AppError::InvalidFile("WAD directory parsed zero lumps.".into()));
         }
+
+        let total: u64 = lumps.iter().map(|l| l.size as u64).sum();
+        let out_dir = output_dir(output);
+        fs::create_dir_all(&out_dir)?;
+        sink.report(ProgressPhase::Writing, 0, total);
+
+        let mut written: u64 = 0;
+        for lump in &lumps {
+            let raw = &data[lump.file_pos..lump.file_pos + lump.size];
+            let bytes: Vec<u8> = if lump.compressed {
+                let mut dec = ZlibDecoder::new(raw);
+                let mut out = Vec::with_capacity(lump.dsize);
+                dec.read_to_end(&mut out).map_err(|e| {
+                    AppError::InvalidFile(format!("Lump '{}' inflate failed: {}", lump.name, e))
+                })?;
+                out
+            } else {
+                raw.to_vec()
+            };
+
+            let target = safe_target(&out_dir, &lump.name);
+            if let Some(parent) = target.parent() {
+                let _ = fs::create_dir_all(parent);
+            }
+            fs::write(&target, &bytes)?;
+            written += bytes.len() as u64;
+            sink.report(ProgressPhase::Writing, written, total);
+        }
+
         Ok(written)
     }
 }
@@ -104,10 +149,15 @@ fn read_name(slice: &[u8]) -> String {
 /// `output` may be a file path; we extract into a sibling directory derived from
 /// its stem so we never overwrite the user's picked file.
 fn output_dir(output: &Path) -> PathBuf {
-    if let Some(ext) = output.extension() {
-        let _ = ext;
-        let stem = output.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| "wad".to_string());
-        output.parent().map(|p| p.join(&stem)).unwrap_or_else(|| PathBuf::from(stem))
+    if output.extension().is_some() {
+        let stem = output
+            .file_stem()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "wad".to_string());
+        output
+            .parent()
+            .map(|p| p.join(&stem))
+            .unwrap_or_else(|| PathBuf::from(stem))
     } else {
         output.to_path_buf()
     }
@@ -166,7 +216,10 @@ mod tests {
             .convert(&inp, &outd.join("extracted"))
             .unwrap();
         assert_eq!(n, 4);
-        assert_eq!(std::fs::read(outd.join("extracted").join("AA")).unwrap(), lump);
+        assert_eq!(
+            std::fs::read(outd.join("extracted").join("AA")).unwrap(),
+            lump
+        );
         let _ = std::fs::remove_file(&inp);
         let _ = std::fs::remove_dir_all(&outd);
     }

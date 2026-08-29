@@ -4,7 +4,11 @@ use crate::convert::engine::Engine;
 use crate::errors::AppError;
 
 /// Phase of a conversion, reported to the UI so it can render a granular bar.
+/// `Reading`/`Converting`/`Done` are part of the protocol surface (emitted as
+/// strings by the batch command and available to future converters) even though
+/// the current streaming tools only report `Writing`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum ProgressPhase {
     /// Reading / parsing the input file.
     Reading,
@@ -80,5 +84,77 @@ pub trait Converter: Send + Sync {
     /// [`Converter::convert_with_progress`] instead.
     fn convert(&self, input: &Path, output: &Path) -> Result<u64, AppError> {
         self.convert_with_progress(input, output, None, &NoopSink)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// These strings are the wire protocol for the `convert-progress` event; the
+    /// frontend renders a phase label from them.
+    #[test]
+    fn progress_phase_as_str_is_stable() {
+        assert_eq!(ProgressPhase::Reading.as_str(), "reading");
+        assert_eq!(ProgressPhase::Converting.as_str(), "converting");
+        assert_eq!(ProgressPhase::Writing.as_str(), "writing");
+        assert_eq!(ProgressPhase::Done.as_str(), "done");
+    }
+
+    /// A tool that only implements the simple `convert` must still be reachable
+    /// through the progress-aware entry point (it simply reports nothing).
+    #[test]
+    fn default_convert_with_progress_delegates_to_convert() {
+        struct Simple;
+        impl Converter for Simple {
+            fn slug(&self) -> &'static str {
+                "simple"
+            }
+            fn class_type(&self) -> &'static str {
+                "A"
+            }
+            fn engines(&self) -> &'static [Engine] {
+                &[Engine::RustNative]
+            }
+            fn convert(&self, _input: &Path, _output: &Path) -> Result<u64, AppError> {
+                Ok(42)
+            }
+        }
+        assert_eq!(
+            Simple
+                .convert_with_progress(Path::new("in"), Path::new("out"), None, &NoopSink)
+                .unwrap(),
+            42
+        );
+    }
+
+    /// Symmetrically, the simple entry point must route through the
+    /// progress-aware one with a no-op sink, so a streaming tool stays correct
+    /// even when called without a sink.
+    #[test]
+    fn default_convert_delegates_to_convert_with_progress() {
+        struct Streaming;
+        impl Converter for Streaming {
+            fn slug(&self) -> &'static str {
+                "streaming"
+            }
+            fn class_type(&self) -> &'static str {
+                "A"
+            }
+            fn engines(&self) -> &'static [Engine] {
+                &[Engine::RustNative]
+            }
+            fn convert_with_progress(
+                &self,
+                _input: &Path,
+                _output: &Path,
+                _opts: Option<&serde_json::Value>,
+                sink: &dyn ProgressSink,
+            ) -> Result<u64, AppError> {
+                sink.report(ProgressPhase::Writing, 7, 7);
+                Ok(7)
+            }
+        }
+        assert_eq!(Streaming.convert(Path::new("in"), Path::new("out")).unwrap(), 7);
     }
 }
