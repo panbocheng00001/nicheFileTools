@@ -20,6 +20,8 @@ export interface ConversionOptions {
   compressionLevel?: number;
   /** 工具页选项面板传回的用户参数（如采样率/位深/声道） */
   params?: Record<string, string>;
+  /** PFM→TTF 等需要配套文件（如 .pfb）的工具，由 UI 第二上传区传入 */
+  pfbCompanion?: File;
   // desktop-only passthrough (unused on web)
   batchSize?: number;
   outputDir?: string;

@@ -11,7 +11,7 @@ import {
   Table,
   type LucideIcon,
 } from "lucide-react";
-import { getAllTools } from "@/lib/converters/registry";
+import { TOOLS } from "@/lib/tools-data";
 import { CATEGORIES } from "@/lib/site";
 
 const CATEGORY: Record<
@@ -28,7 +28,7 @@ const CATEGORY: Record<
 };
 
 export default function Home() {
-  const tools = getAllTools();
+  const tools = TOOLS;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">

@@ -1,0 +1,155 @@
+{
+  "tools": [
+    {
+      "slug": "raw-to-iso",
+      "name": "RAW to ISO",
+      "class": "C",
+      "engines": ["rust-native"],
+      "source": [".raw", ".img"],
+      "target": ".iso",
+      "category": "archive",
+      "guide": null
+    },
+    {
+      "slug": "raw-to-wav",
+      "name": "RAW to WAV",
+      "class": "A",
+      "engines": ["rust-native"],
+      "source": [".raw"],
+      "target": ".wav",
+      "category": "audio",
+      "guide": "无头 PCM：可选参数 sample_rate / bits / channels（默认 44100/16/1）"
+    },
+    {
+      "slug": "eot-to-ttf",
+      "name": "EOT to TTF",
+      "class": "A",
+      "engines": ["rust-native"],
+      "source": [".eot"],
+      "target": ".ttf",
+      "category": "font",
+      "guide": null
+    },
+    {
+      "slug": "glb-to-gltf",
+      "name": "GLB to GLTF",
+      "class": "A",
+      "engines": ["rust-native"],
+      "source": [".glb"],
+      "target": ".gltf",
+      "category": "3d",
+      "guide": null
+    },
+    {
+      "slug": "exr-to-png",
+      "name": "EXR to PNG",
+      "class": "A",
+      "engines": ["rust-native"],
+      "source": [".exr"],
+      "target": ".png",
+      "category": "image",
+      "guide": "HDR 浮点映射到 8-bit（预览用）"
+    },
+    {
+      "slug": "opf-to-epub",
+      "name": "OPF to EPUB",
+      "class": "A",
+      "engines": ["rust-native"],
+      "source": [".opf"],
+      "target": ".epub",
+      "category": "ebook",
+      "guide": null
+    },
+    {
+      "slug": "sav-to-csv",
+      "name": "SAV to CSV",
+      "class": "A",
+      "engines": ["python-fonttools"],
+      "source": [".sav"],
+      "target": ".csv",
+      "category": "data",
+      "guide": "需 Python + pandas：pip install pandas"
+    },
+    {
+      "slug": "wad-extractor",
+      "name": "WAD Extractor",
+      "class": "C",
+      "engines": ["rust-native"],
+      "source": [".wad"],
+      "target": ".wad",
+      "output_kind": "dir",
+      "category": "game",
+      "guide": "解包全部 lump 到输出目录（支持 IWAD/PWAD/WAD2/WAD3）"
+    },
+    {
+      "slug": "pvr-to-png",
+      "name": "PVR to PNG",
+      "class": "A",
+      "engines": ["rust-native"],
+      "source": [".pvr"],
+      "target": ".png",
+      "category": "image",
+      "guide": "已支持未压缩 RGBA8888/RGB888/L8；压缩/2字节布局待原生解码器"
+    },
+    {
+      "slug": "gsm-to-wav",
+      "name": "GSM to WAV",
+      "class": "A",
+      "engines": ["ffmpeg"],
+      "source": [".gsm"],
+      "target": ".wav",
+      "category": "audio",
+      "guide": "需安装 FFmpeg"
+    },
+    {
+      "slug": "mts-to-mp4",
+      "name": "MTS to MP4",
+      "class": "B",
+      "engines": ["ffmpeg"],
+      "source": [".mts", ".m2ts"],
+      "target": ".mp4",
+      "category": "video",
+      "guide": "需安装 FFmpeg"
+    },
+    {
+      "slug": "blend-to-glb",
+      "name": "BLEND to GLB",
+      "class": "B",
+      "engines": ["blender"],
+      "source": [".blend"],
+      "target": ".glb",
+      "category": "3d",
+      "guide": "需安装 Blender"
+    },
+    {
+      "slug": "kfx-to-epub",
+      "name": "KFX to EPUB",
+      "class": "A",
+      "engines": ["calibre"],
+      "source": [".kfx"],
+      "target": ".epub",
+      "category": "ebook",
+      "guide": "需安装 Calibre（ebook-convert）"
+    },
+    {
+      "slug": "step-to-stl",
+      "name": "STEP/IGES/BREP to STL",
+      "class": "B",
+      "engines": ["occt"],
+      "source": [".step", ".stp", ".iges", ".igs", ".brep"],
+      "target": ".stl",
+      "category": "3d",
+      "guide": "PRT 请先在 Creo 导出 STEP；需 FreeCAD/OCCT"
+    },
+    {
+      "slug": "pfm-to-ttf",
+      "name": "PFM/PFB to TTF",
+      "class": "A",
+      "engines": ["python-fonttools"],
+      "source": [".pfb", ".pfa"],
+      "target": ".ttf",
+      "category": "font",
+      "guide": "需 Python + fontforge；.pfm 与之同名同目录"
+    }
+  ]
+}

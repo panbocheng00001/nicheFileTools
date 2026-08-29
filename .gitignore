@@ -33,3 +33,4 @@ pnpm-debug.log*
 # WorkBuddy project data — 默认不提交（含本地记忆/密钥回填状态）
 # 如需团队共享规范，可移除此行并挑必要文件白名单
 .workbuddy/
+/test-fixtures/

@@ -81,14 +81,24 @@ pub fn get_quota(app: &tauri::AppHandle) -> QuotaInfo {
 /// Gate for every desktop conversion (密钥回流 doc §3.1 / §4.1).
 /// Decrements the free quota on use; paid licenses bypass the limit.
 pub fn consume_quota(app: &tauri::AppHandle) -> Result<(), AppErrorPayload> {
+    consume_quota_batch(app, 1)
+}
+
+/// Batch variant (P3 批量队列): gate the whole batch up front — if the remaining
+/// free quota cannot cover `count` conversions, reject before any work begins.
+/// Paid licenses bypass the limit. One atomic decrement keeps the store consistent.
+pub fn consume_quota_batch(app: &tauri::AppHandle, count: u32) -> Result<(), AppErrorPayload> {
+    if count == 0 {
+        return Ok(());
+    }
     let mut s = load(app);
     if s.paid {
         return Ok(());
     }
-    if s.free_quota_remaining == 0 {
+    if s.free_quota_remaining < count {
         return Err(AppError::QuotaExhausted.into());
     }
-    s.free_quota_remaining -= 1;
+    s.free_quota_remaining -= count;
     save(app, &s).map_err(AppErrorPayload::from)?;
     Ok(())
 }
@@ -106,14 +116,17 @@ pub fn request_token(
     let url = format!("{}/api/desktop-token", base.trim_end_matches('/'));
     let resp = ureq::post(&url)
         .send_json(ureq::json!({ "device_id": device_id }))
-        .map_err(|e| AppError::Token(format!("request failed: {e}")).into())?;
+        .map_err(|e| AppErrorPayload::from(AppError::Token(format!("request failed: {e}"))))?;
 
-    if resp.status().as_u16() != 200 {
-        return Err(AppError::Token(format!("backend returned {}", resp.status().as_u16())).into());
+    // ureq 2.x returns the HTTP status as a plain `u16` (not `http::StatusCode`),
+    // so there is no `.as_u16()` here.
+    let http_status = resp.status();
+    if http_status != 200 {
+        return Err(AppError::Token(format!("backend returned {http_status}")).into());
     }
     let tr: TokenResponse = resp
         .into_json()
-        .map_err(|e| AppError::Token(format!("bad response: {e}")).into())?;
+        .map_err(|e| AppErrorPayload::from(AppError::Token(format!("bad response: {e}"))))?;
     Ok(tr)
 }
 
@@ -133,9 +146,10 @@ pub fn redeem_key(
     let url = format!("{}/api/desktop-redeem", base.trim_end_matches('/'));
     let resp = ureq::post(&url)
         .send_json(ureq::json!({ "token": token, "key": key, "device_id": device_id }))
-        .map_err(|e| AppError::Token(format!("redeem failed: {e}")).into())?;
+        .map_err(|e| AppErrorPayload::from(AppError::Token(format!("redeem failed: {e}"))))?;
 
-    if resp.status().as_u16() != 200 {
+    let http_status = resp.status();
+    if http_status != 200 {
         return Err(AppError::InvalidKey("key rejected by server".into()).into());
     }
 

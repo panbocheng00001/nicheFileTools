@@ -584,6 +584,297 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     conclusion:
       "For a faithful data export, the online converter handles every compression variant with zero setup. If you need value labels in the output, do one Automatic Recode in SPSS first — that's the only step CSV can't do for you.",
   },
+
+  // PFM to TTF — A class
+  {
+    slug: "pfm-to-ttf",
+    title: "How to Convert PFM to TTF — Free 2026 Guide",
+    metaDescription:
+      "Convert PFM+PFB Type 1 fonts to TTF free: online tool, desktop app, or FontForge. Needs the companion .pfb. Steps, limits, fixes.",
+    quickAnswer:
+      "Yes — but only with both files. A PFM stores metrics (widths/kerning); the glyph outlines live in the companion .pfb. Upload .pfm and .pfb together to the free online tool (≤10 MB) or use the desktop app for batches; FontForge is the pro fallback for tricky fonts.",
+    methods: [
+      {
+        name: "nichefiletools online converter",
+        bestFor: "Single fonts, instant result",
+        price: "Free",
+        limit: "10 MB per file (PC) / 5 MB (mobile)",
+        notes: "Runs in your browser — neither file is uploaded. Converts Type 1 cubic outlines to TrueType quadratics and rebuilds the hmtx/Unicode tables.",
+      },
+      {
+        name: "nichefiletools desktop app",
+        bestFor: "Font families, batches",
+        price: "Free tier + one-time license",
+        limit: "No file-size limit",
+        notes: "Handles whole font directories and large Type 1 families; same curve-conversion engine as the web tool.",
+      },
+      {
+        name: "FontForge (pro)",
+        bestFor: "Custom hinting, edge cases",
+        price: "Free (open source)",
+        limit: "Manual",
+        notes: "Open the .pfb (with .pfm metrics), then File → Generate Fonts → TrueType. Best when you need hand-tuned instructions or unusual encodings.",
+      },
+    ],
+    desktopSteps: [
+      "Download and launch the free nichefiletools desktop app.",
+      "Pick PFM to TTF from the tool list.",
+      "Select the .pfm and its companion .pfb (same folder, same prefix).",
+      "Click Convert — curves are approximated and the TTF is packaged.",
+      "Install the .ttf or reference it in your design tool.",
+    ],
+    desktopNote:
+      "The desktop app is the right choice when you have a whole Type 1 family or very large fonts the 10 MB web cap rejects.",
+    troubleshooting: [
+      {
+        problem: "The tool says I need a .pfb but I only have .pfm",
+        fix: "A PFM alone has no glyph shapes, so no TTF can be built. Find the matching .pfb on the original install media, a backup, or the font vendor. They share a filename prefix.",
+      },
+      {
+        problem: "Converted TTF looks slightly different at 6pt",
+        fix: "Expected. Cubic→quadratic approximation holds under 0.1% of the em; only sub-8pt hinting behavior may shift a hair. It is not data loss — the outlines are faithful.",
+      },
+      {
+        problem: "Accented/composite glyphs came out wrong",
+        fix: "They shouldn't — composite glyphs (à, ö) are rebuilt as TrueType composites and the Unicode map is reconstructed from the PFM. If one is off, the source .pfb may use a non-standard encoding; try FontForge.",
+      },
+    ],
+    conclusion:
+      "With both files in hand, PFM to TTF is a quick, lossless-shape conversion. Use the online tool for one-off fonts and the desktop app or FontForge when you need batches or custom hinting.",
+  },
+
+  // EXR to PNG — A class
+  {
+    slug: "exr-to-png",
+    title: "How to Convert EXR to PNG — Free HDR Guide 2026",
+    metaDescription:
+      "Convert OpenEXR HDR to PNG free: online tone-mapping tool, desktop app, or Nuke/Blender. Reinhard vs ACES, exposure tips, fixes.",
+    quickAnswer:
+      "Yes. An EXR is 32-bit float HDR; a PNG is 8-bit sRGB LDR, so the step is tone mapping. The free online tool maps HDR→LDR (Reinhard or ACES) in your browser — no upload. For 16-bit/TIFF or multi-layer control, use the desktop app or Nuke/Blender.",
+    methods: [
+      {
+        name: "nichefiletools online converter",
+        bestFor: "Single images, instant preview",
+        price: "Free",
+        limit: "200 MB (PC) / 50 MB (mobile)",
+        notes: "Runs in your browser — the EXR is never uploaded. Auto-detects PIZ/ZIP/PXR24/B44 compression and tone-maps the first RGBA layer.",
+      },
+      {
+        name: "nichefiletools desktop app",
+        bestFor: "16-bit, TIFF, layer picks",
+        price: "Free tier + one-time license",
+        limit: "No file-size limit",
+        notes: "Exports 16-bit PNG or TIFF (full HDR) and can select specific aux channels as false-color PNGs.",
+      },
+      {
+        name: "Blender / Nuke (pro)",
+        bestFor: "Studio pipelines",
+        price: "Free / paid",
+        limit: "Manual",
+        notes: "Compositing nodes give the most control over exposure, color spaces, and layer recombination.",
+      },
+    ],
+    desktopSteps: [
+      "Download and launch the free nichefiletools desktop app.",
+      "Pick EXR to PNG from the tool list.",
+      "Select the .exr and choose 8-bit PNG, 16-bit PNG, or TIFF.",
+      "Set tone mapping (Reinhard/ACES) and exposure if needed.",
+      "Click Convert and save the output.",
+    ],
+    desktopNote:
+      "Use the desktop app when you need more than 8-bit or a specific depth/normal/motion layer as its own image.",
+    troubleshooting: [
+      {
+        problem: "The PNG is too dark or too bright",
+        fix: "Raise or lower the Exposure control. EXR values are absolute scene luminance; Reinhard can crush bright scenes. Try 2.0–3.0, or switch to ACES for softer highlight roll-off.",
+      },
+      {
+        problem: "I need 16-bit, not 8-bit PNG",
+        fix: "The web tool emits 8-bit sRGB for compatibility. The desktop app exports 16-bit PNG or TIFF that keeps far more mid-tone headroom.",
+      },
+      {
+        problem: "Depth/normal/motion layers are missing",
+        fix: "PNG has no extra channels; the web tool keeps the first RGBA layer. The desktop app can export aux channels individually as false-color PNGs.",
+      },
+    ],
+    conclusion:
+      "EXR to PNG is really HDR→LDR tone mapping. The online tool is perfect for quick previews; reach for the desktop app or a compositor when you need bit depth or layer control.",
+  },
+
+  // GSM to WAV — A class
+  {
+    slug: "gsm-to-wav",
+    title: "How to Convert GSM to WAV — Free Telephony Guide 2026",
+    metaDescription:
+      "Decode GSM 06.10 to WAV free: online tool, desktop app, or ffmpeg. Voicemail & call recordings, quality notes, fixes.",
+    quickAnswer:
+      "Yes. GSM 06.10 is 13 kbps speech; decoding to 16-bit PCM WAV is lossless and fast. The free online tool decodes in your browser (no upload). For batches or archival as FLAC, use the desktop app or ffmpeg.",
+    methods: [
+      {
+        name: "nichefiletools online converter",
+        bestFor: "Single recordings, instant",
+        price: "Free",
+        limit: "500 MB (PC) / 100 MB (mobile)",
+        notes: "Runs in your browser — the .gsm is never uploaded. Output is standard 16-bit PCM mono @ 8000 Hz.",
+      },
+      {
+        name: "nichefiletools desktop app",
+        bestFor: "Batches, voicemail archives",
+        price: "Free tier + one-time license",
+        limit: "No file-size limit",
+        notes: "Process a folder of recordings and optionally re-wrap to FLAC for lossless archival.",
+      },
+      {
+        name: "ffmpeg (CLI)",
+        bestFor: "Scripting",
+        price: "Free",
+        limit: "Manual",
+        notes: "ffmpeg -i in.gsm out.wav decodes GSM via its native decoder; pair with -acodec flac for archival.",
+      },
+    ],
+    desktopSteps: [
+      "Download and launch the free nichefiletools desktop app.",
+      "Pick GSM to WAV from the tool list.",
+      "Select the .gsm (or a folder of them).",
+      "Click Convert — frames decode to 16-bit PCM WAV.",
+      "Optionally export to FLAC for lossless storage.",
+    ],
+    desktopNote:
+      "Use the desktop app when you have a mailbox full of recordings and want them batch-decoded and archived as FLAC.",
+    troubleshooting: [
+      {
+        problem: "The WAV sounds like a telephone",
+        fix: "Normal — GSM is telephone-band (300–3400 Hz). The decode is mathematically exact; no post-processing recovers highs GSM discarded.",
+      },
+      {
+        problem: "Can I go to MP3 or FLAC instead of WAV?",
+        fix: "GSM→WAV is lossless decode; WAV→FLAC is also lossless (smaller). WAV→MP3 loses another generation. Workflow: GSM → WAV → FLAC for archive.",
+      },
+      {
+        problem: "A .gsmcodec file won't open",
+        fix: "It's still GSM 06.10 — the tool detects by frame structure, not extension. Drag it in; even a renamed .txt/.dat with valid frames decodes.",
+      },
+    ],
+    conclusion:
+      "GSM to WAV is a clean, lossless decode. The online tool handles one-off recordings; the desktop app or ffmpeg suits batches and FLAC archival.",
+  },
+
+  // MTS to MP4 — B class
+  {
+    slug: "mts-to-mp4",
+    title: "How to Convert MTS to MP4 — Free AVCHD Guide 2026",
+    metaDescription:
+      "Convert AVCHD MTS/M2TS to MP4 free: online FFmpeg tool (PC), desktop app, or HandBrake. Remux vs transcode, fixes.",
+    quickAnswer:
+      "Yes, on a PC. AVCHD MTS wraps H.264 in MPEG-TS; the free online tool remuxes it to MP4 (copy video, AAC audio) in your browser — no upload. Mobile browsers can't handle the 31 MB FFmpeg WASM, so they're guided to the desktop app. For 4K or batches use the desktop app.",
+    methods: [
+      {
+        name: "nichefiletools online converter (PC)",
+        bestFor: "Single clips, quick share",
+        price: "Free",
+        limit: "100 MB per file (PC only)",
+        notes: "Runs FFmpeg WASM in your browser. Defaults to remux (zero quality loss); falls back to transcode only if needed.",
+      },
+      {
+        name: "nichefiletools desktop app",
+        bestFor: "4K, batches, hardware accel",
+        price: "Free tier + one-time license",
+        limit: "No file-size limit",
+        notes: "Uses NVENC/QSV for 10x+ real-time and handles multi-GB 4K footage the web cap rejects.",
+      },
+      {
+        name: "HandBrake (pro)",
+        bestFor: "Deep encode tweaks",
+        price: "Free",
+        limit: "Manual",
+        notes: "Open the .mts, pick MP4/H.264, and tune bitrate/quality. Great when you want specific encode settings.",
+      },
+    ],
+    desktopSteps: [
+      "Download and launch the free nichefiletools desktop app.",
+      "Pick MTS to MP4 from the tool list.",
+      "Select the .mts/.m2ts (or a batch).",
+      "Choose remux or transcode; set audio to AAC.",
+      "Click Convert — hardware-accelerated, then save the .mp4.",
+    ],
+    desktopNote:
+      "Use the desktop app for 4K, long clips, or whole SD-card folders — the 100 MB web cap and mobile limits don't apply.",
+    troubleshooting: [
+      {
+        problem: "Quality dropped after conversion",
+        fix: "Only if a transcode was forced. The default remux copies the video stream bit-for-bit, so quality is identical; only AC3→AAC audio is a near-transparent re-encode. If you saw loss, the source used an MP4-incompatible audio track.",
+      },
+      {
+        problem: "It's slow / the browser froze",
+        fix: "You likely hit transcode on a long clip in WASM. Move to the desktop app (hardware accelerated) or pre-trim the clip. Never run it on mobile.",
+      },
+      {
+        problem: "Second audio track disappeared",
+        fix: "The web tool keeps the first audio stream. For multi-track output pick the desktop app's advanced options.",
+      },
+    ],
+    conclusion:
+      "MTS to MP4 is usually just a remux — fast and lossless. Use the online tool for quick PC clips and the desktop app for 4K, batches, or transcode control.",
+  },
+
+  // WAD File Extractor — C class (desktop only)
+  {
+    slug: "wad-extractor",
+    title: "How to Extract WAD Files — Desktop Guide 2026",
+    metaDescription:
+      "Extract DOOM/Quake/BA2 WAD archives — desktop app only, no online tool. Selective extraction, type detection, fixes.",
+    quickAnswer:
+      "WAD extraction is desktop-only — a browser can't safely memory-map or stream-decompress GB-scale archives. The free nichefiletools desktop app detects DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2, previews the file list, and extracts selectively with checksum verification.",
+    methods: [
+      {
+        name: "nichefiletools desktop app",
+        bestFor: "Everything — the only supported path",
+        price: "Free download",
+        limit: "No file-size limit",
+        notes: "Auto-detects WAD type by magic bytes, previews the directory, supports selective extraction and CRC32/MD5 verification.",
+      },
+      {
+        name: "Why no online converter",
+        bestFor: "Understanding the limit",
+        price: "—",
+        limit: "Browser memory/CPU caps",
+        notes: "WADs span MB to 10 GB+; decompression (zlib/bzip2/lzma) in WASM is slow and can OOM a tab. Native streaming I/O is the honest solution.",
+      },
+      {
+        name: "Quake tools (pro)",
+        bestFor: "Quake-only tinkering",
+        price: "Free",
+        limit: "Manual",
+        notes: "QuArK or the Quake SDK can unpack WAD2/WAD3; less convenient than a single desktop app covering all variants.",
+      },
+    ],
+    stepsTitle: "Extract on Desktop",
+    desktopSteps: [
+      "Download and install the free nichefiletools desktop app.",
+      "Open WAD File Extractor and drag in your .wad.",
+      "Preview the file list — names, sizes, compression state.",
+      "Check the entries you want (or select all).",
+      "Pick an output folder and click Extract; watch the progress bar.",
+    ],
+    desktopNote:
+      "Selective extraction saves time and disk when you only need MAP01 or the SPRITE set, not the whole archive.",
+    troubleshooting: [
+      {
+        problem: "The tool reports 'Unknown WAD format'",
+        fix: "Our detector covers DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2. Anything else (Build .grp, Source .vpk, renamed, or encrypted) won't match — submit a small sample via GitHub Issue.",
+      },
+      {
+        problem: "Can I extract from Steam game WADs?",
+        fix: "Yes — they live under SteamApps/common/[game]/. DOOM Classic is in base/doom.wad; Quake in id1/. Extracted assets are for personal learning/modding only.",
+      },
+      {
+        problem: "Extracted files won't open in my project",
+        fix: "They're technically usable, but mind copyright: original DOOM source is GPL (1997) yet assets stay protected. GPL games like Freedoom allow free reuse; commercial games are personal-use only.",
+      },
+    ],
+    conclusion:
+      "WAD extraction belongs on the desktop. The free app detects the variant, lets you preview and pick entries, and verifies checksums — the safe way to open game archives.",
+  },
 ];
 
 export function getGuide(slug: string): ConvertGuide | undefined {

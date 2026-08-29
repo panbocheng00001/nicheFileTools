@@ -598,6 +598,293 @@ export const TOOLS: ToolContent[] = [
     ],
     relatedTools: ["opf-to-epub", "eot-to-ttf", "raw-to-wav"],
   },
+
+  // 11) PFM to TTF — A class
+  {
+    slug: "pfm-to-ttf",
+    id: "pfm-to-ttf",
+    name: "PFM to TTF",
+    className: "A",
+    category: "font",
+    categoryLabel: "Font",
+    sourceFormat: "PFM",
+    targetFormat: "TTF",
+    sourceExt: ".pfm",
+    targetExt: ".ttf",
+    title: "PFM to TTF Converter – Free Printer Font Metrics to TrueType",
+    metaDescription:
+      "Convert PFM font metrics files to TTF (TrueType Font) free online. Requires companion PFB file. Browser-based, no upload. Output works in all OS.",
+    h1: "PFM to TTF Converter",
+    webMaxFilePc: 10 * MB,
+    webMaxFileMobile: 5 * MB,
+    desktopUnlimited: false,
+    whatIs:
+      "PFM (Printer Font Metrics) and PFB (Printer Font Binary) are the two complementary components of an Adobe Type 1 font. The PFB file stores the glyph outline data — the Bezier curve description of every character (encoded as Type 1 CharStrings). The PFM file stores metric information — character widths, kerning pairs, ASCII encoding mapping, and Windows font attributes. The two must appear together to form a complete Type 1 font. This split design dates back to 1980s PostScript printer architecture: the PFB was downloaded into printer memory to render glyphs, while the PFM lived in the host driver to provide metrics for text layout.",
+    whyConvert:
+      "TTF (TrueType Font), co-developed by Apple and Microsoft (1991), has become the cross-platform de-facto standard: (1) universal OS support — Windows/macOS/Linux/iOS/Android all render TTF natively; (2) web fonts — @font-face CSS prefers WOFF2/TTF, and Type 1 has been removed from all modern browsers; (3) better hinting — TrueType's instruction-based hinting (grid-fitting instructions) outperforms Type 1's bitmap hinting at small on-screen sizes; (4) file consolidation — a single TTF carries outlines + metrics + layout + bitmaps, ending the PFM/PFB pairing hassle. Adobe formally announced in 2023 that Photoshop 2024 would drop Type 1 support, making this conversion urgent.",
+    howTo:
+      "Important: you need BOTH the .pfm and the .pfb file. They usually sit in the same directory sharing a filename prefix (e.g. Arial.pfm + Arial.pfb). Step 1: Upload the .pfm file in the first drop zone. Step 2: Upload the companion .pfb file in the second drop zone. Step 3: Click Convert and wait for curve conversion and TTF packaging (usually 5–20 seconds). Step 4: Download the .ttf file, double-click to install or reference it in your design tool.",
+    vs: "Type 1 glyphs use cubic Bezier curves (4 control points); TrueType uses quadratic B-splines (3 control points). The core algorithm approximates each cubic with several quadratics, keeping the error under 1 design unit (1/1000 of the em box) so the difference is visually invisible. It also remaps: Type 1 BlueValues → TrueType cvt/cvt-program instructions (stem hints), composite glyphs (é = e + acute) → TrueType composite format, and the PFM widths array → the TTF hmtx table. Common sources: legacy Adobe font folders (Windows only installs .pfm; .pfb is on the original media), Adobe Fonts order history, PostScript printer drivers, and LaTeX distributions (TeX Live / MiKTeX psfonts contain many open Type 1 fonts like Computer Modern).",
+    faqs: [
+      {
+        question: "I only have the PFM file but not the PFB. Can I still convert?",
+        answer:
+          "Unfortunately, no. A PFM contains only metrics (character widths/kerning) — no actual glyph outline data. Without the PFB there is no letter 'shape', so a TTF cannot be generated. You must find the companion PFB file on the original install media, a backup disk, or from the font vendor.",
+      },
+      {
+        question: "Will the converted TTF look exactly like the original Type 1 font?",
+        answer:
+          "In almost all cases the visual difference is under 1 pixel at normal display sizes. The cubic→quadratic conversion error is kept within 0.1% of the design unit. The only perceptible difference is at very small sizes (<8pt) where hinting behavior differs slightly and individual stroke weights may shift microscopically.",
+      },
+      {
+        question: "Does the converter handle composite/accented characters correctly?",
+        answer:
+          "Yes. Type 1 composite glyphs (à = a + grave, ö = o + umlaut) are decomposed and rebuilt as TrueType composite glyphs. The Unicode mapping is reconstructed from the PFM encoding information.",
+      },
+      {
+        question: "Can I convert OpenType CFF fonts (.otf with CFF outlines) as well?",
+        answer:
+          "This tool targets PFM+PFB (Type 1) specifically. OTF/CFF fonts use cubic Bezier too but a completely different container (sfnt/OpenType). For OTF→TTF use our EOT to TTF tool (which also accepts OpenType input) or a professional editor like FontForge.",
+      },
+    ],
+    relatedTools: ["eot-to-ttf", "opf-to-epub", "kfx-to-epub", "sav-to-csv"],
+  },
+
+  // 12) EXR to PNG — A class
+  {
+    slug: "exr-to-png",
+    id: "exr-to-png",
+    name: "EXR to PNG",
+    className: "A",
+    category: "image",
+    categoryLabel: "Image",
+    sourceFormat: "EXR",
+    targetFormat: "PNG",
+    sourceExt: ".exr",
+    targetExt: ".png",
+    extraSourceExts: [".sxr", ".mxr"],
+    title: "EXR to PNG Converter – Free OpenEXR HDR to PNG Online",
+    metaDescription:
+      "Convert OpenEXR HDR images to PNG (8-bit sRGB) free online. Browser-based tone mapping (Reinhard/ACES). No upload. Handles multi-layer EXR files.",
+    h1: "EXR to PNG Converter",
+    webMaxFilePc: 200 * MB,
+    webMaxFileMobile: 50 * MB,
+    desktopUnlimited: false,
+    webOptions: [
+      {
+        key: "toneMap",
+        label: "Tone mapping",
+        default: "reinhard",
+        choices: [
+          { value: "reinhard", label: "Reinhard" },
+          { value: "aces", label: "ACES Filmic" },
+        ],
+      },
+      {
+        key: "exposure",
+        label: "Exposure",
+        default: "1",
+        choices: [
+          { value: "0.25", label: "0.25×" },
+          { value: "0.5", label: "0.5×" },
+          { value: "1", label: "1.0×" },
+          { value: "2", label: "2.0×" },
+          { value: "3", label: "3.0×" },
+          { value: "5", label: "5.0×" },
+        ],
+      },
+    ],
+    whatIs:
+      "EXR (OpenEXR) is a High Dynamic Range (HDR) image format created by Industrial Light & Magic (ILM, Lucasfilm's VFX division) in 2003. It is the industry standard for film and high-end visual effects — over 90% of Hollywood feature VFX pipelines use EXR as the intermediate exchange format. Core traits: (1) 32-bit float per channel — each color channel is an IEEE 754 single-precision float, with a dynamic range far beyond human perception (can represent 10^38:1 luminance ratios); (2) multi-layer support — a single EXR can hold RGBA, depth (Z-buffer), motion vectors, normals, and more channel layers; (3) compression — common schemes are ZIP/ZIPS (deflate), RLE, and uncompressed, which this in-browser decoder handles directly; (4) tiled storage — supports reading局部 regions without decoding the whole image.",
+    whyConvert:
+      "EXR is a pro format; PNG is universal. The need comes from: (1) preview & sharing — EXR needs pro software (Nuke/DaVinci Resolve/Photoshop CC) to view correctly; PNG displays on any device/browser; (2) web publishing — no browser natively shows EXR; HDR must be downgraded to LDR to appear online; (3) document embedding — Word/PPT/Markdown accept PNG but not EXR; (4) print — most print services and photo printers accept sRGB PNG/JPG, not linear-float EXR.",
+    howTo:
+      "Step 1: Prepare the .exr file (usually from a 3D renderer like Blender/V-Ray/Arnold/Redshift, or photogrammetry like RealityCapture). Step 2: Drag it into the conversion area above (PC ≤200MB, mobile ≤50MB). Step 3: Choose a tone-mapping algorithm (Reinhard or ACES Filmic) and an exposure value (default 1.0, adjustable 0.1–5.0). Step 4: Click Convert and wait for decode + map + encode (a 10MB EXR takes ~3–10 seconds). Step 5: Download the .png and check highlight/shadow detail; re-convert with a different exposure if unsatisfied.",
+    vs: "The core challenge of EXR→PNG is tone mapping — compressing infinite-range float pixels into 0–255 8-bit while preserving visual detail. This tool offers two algorithms: Reinhard (classic global map, Ld = L/(1+L), natural but can look flat) and ACES Filmic (Academy filmic curve, higher contrast, better shadow detail, more cinematic). Both include gamma correction (linear→sRGB) because PNG assumes non-linear sRGB values. The in-browser decoder handles the most common EXR compressions directly — uncompressed, RLE, and ZIP/ZIPS (deflate) — which covers the vast majority of render outputs (Blender, V-Ray, Arnold, Redshift default to ZIP). PIZ, PXR24, and B44/B44A variants are not yet decodable in the browser; re-export those with ZIP compression or use the desktop app.",
+    faqs: [
+      {
+        question: "The converted PNG looks too dark/bright. How do I fix it?",
+        answer:
+          "Adjust the Exposure parameter. An EXR's absolute brightness depends on the render's light setup — some EXR peaks exceed 10 (sun-surface brightness), so after Reinhard most of the frame is dark. Try raising Exposure from 1.0 to 2.0 or 3.0. If highlights blow out (pure white), lower exposure or switch to ACES (its highlight roll-off is softer).",
+      },
+      {
+        question: "Can I get a 16-bit PNG instead of 8-bit?",
+        answer:
+          "The web version outputs 8-bit sRGB PNG (widest compatibility). For 16-bit PNG (more mid-tone headroom) or TIFF (full HDR data), use the desktop app.",
+      },
+      {
+        question: "Will multi-layer EXR files (RGBA + Depth + Motion Vector) be handled correctly?",
+        answer:
+          "The tool extracts the first RGBA layer (or first RGB/RGBA found) by default. Depth, normal, and motion-vector auxiliary channels are NOT included in the PNG output (PNG has no extra channels). The desktop version can export specific layers or encode aux channels as false-color PNGs for debugging.",
+      },
+      {
+        question: "What's the largest EXR file this can handle?",
+        answer:
+          "Web PC cap is 200MB (~8K uncompressed EXR or a larger compressed one). Mobile is 50MB. EXR decode needs 3–5x the file size in memory (decompressed float buffer), so a 200MB EXR may need 600MB–1GB of browser memory. Larger files (8K film frame sequences) should use the desktop app.",
+      },
+    ],
+    relatedTools: ["pvr-to-png", "blend-to-glb", "glb-to-gltf", "raw-to-wav"],
+  },
+
+  // 13) GSM to WAV — A class
+  {
+    slug: "gsm-to-wav",
+    id: "gsm-to-wav",
+    name: "GSM to WAV",
+    className: "A",
+    category: "audio",
+    categoryLabel: "Audio",
+    sourceFormat: "GSM",
+    targetFormat: "WAV",
+    sourceExt: ".gsm",
+    targetExt: ".wav",
+    extraSourceExts: [".gsmcodec"],
+    title: "GSM to WAV Converter – Free GSM 06.10 Audio to WAV Online",
+    metaDescription:
+      "Decode GSM 06.10 compressed audio to WAV (PCM) free online. Browser-based, no upload. Converts voicemail, telephony recordings instantly.",
+    h1: "GSM to WAV Converter",
+    webMaxFilePc: 500 * MB,
+    webMaxFileMobile: 100 * MB,
+    desktopUnlimited: false,
+    whatIs:
+      "GSM 06.10 (short: GSM) is a speech compression standard defined by ETSI in 1988 for the GSM digital cellular network (2G). It is a lossy codec that compresses 64 kbps PCM down to 13 kbps — about 5:1, optimized specifically for the human voice band (300 Hz – 3400 Hz). The basic unit is a frame: 33 bytes (264 bits) representing 20 ms of audio (160 samples @ 8kHz). Encoding is based on Linear Predictive Coding (LPC) plus Long-Term Prediction (LTP) and Regular-Pulse Excitation (RPE) — a hybrid of waveform and parametric coding that preserves acceptable intelligibility at very low bitrates.",
+    whyConvert:
+      "A GSM file only plays in specialized telephony software. Converting to WAV (PCM) gives: (1) universal playback — any media player, phone, or car stereo; (2) audio editing — import into Audacity/Audition/DaVinci for noise reduction, trimming, mixing; (3) transcription & archival — turn voicemail, call-center recordings, legacy answering-machine messages into a standard format for long-term storage; (4) legal forensics — agencies need GSM recordings in a standard format for evidence and speech-recognition analysis; (5) format migration — many legacy telecom systems still emit GSM and need modern-workflow compatibility.",
+    howTo:
+      "Step 1: Get the .gsm file (common sources: voicemail exports, call-center recording systems, GSM phone intercept/recording devices, legacy voice-mail backups). Step 2: Drag it into the conversion area above (PC ≤500MB, mobile ≤100MB). Step 3: Click Convert — the GSM decoder processes frame by frame (very fast, usually <1% of the audio's real duration). Step 4: Download the .wav — output is standard 16-bit PCM mono @ 8000 Hz. Step 5: Verify speech intelligibility in a player.",
+    vs: "The GSM decoder's signal path: (1) frame parse — extract 76 parameters (LPC coefficients, LTP lag/gain, RPE pulse position & amplitude); (2) short-term analysis filter — use LPC coefficients to build the inverse filter, separating vocal-tract formants from the excitation; (3) long-term synthesis filter — use LTP parameters to rebuild pitch periodicity; (4) RPE excitation synthesis — generate the excitation from pulse positions & amplitudes; (5) post-processing — de-emphasis, high-pass, amplitude normalization. Output is 16-bit PCM mono @ 8000 Hz. Audio Quality note: GSM's 13 kbps bitrate sets the ceiling — it covers only 300–3400 Hz (telephone bandwidth, missing high-frequency harmonics/breath), has ~32 dB SNR with audible background hiss, and may show 'warbling' artifacts at fast syllable transitions (an LPC trait). Music becomes mush. These are limits of the GSM format itself, not decoder bugs; the decoded WAV is mathematically identical (lossless decode) to what GSM carried.",
+    faqs: [
+      {
+        question: "The WAV file sounds 'like a telephone'. Is this normal?",
+        answer:
+          "Completely normal. GSM is designed for telephone bandwidth (300–3400 Hz), lacking high frequencies (>3400 Hz harmonics and breath). The decoded WAV faithfully reproduces all information GSM carried — i.e. 'telephone quality'. No post-processing can recover high frequencies GSM discarded.",
+      },
+      {
+        question: "Can I convert GSM to a higher-quality format like MP3 or FLAC?",
+        answer:
+          "Yes, but note: GSM→WAV is a lossless decode (recovers everything GSM held). WAV→MP3/FLAC is a re-encode. FLAC losslessly stores the WAV content (smaller, same quality). MP3 loses more (one more generation on already-limited GSM). Recommended workflow: GSM → WAV (lossless decode) → FLAC (lossless archive).",
+      },
+      {
+        question: "My file has .gsmcodec extension. Is it supported?",
+        answer:
+          "Yes. .gsm, .gsmcodec, and audio/gsm are all valid GSM 06.10 extensions/MIME types. The tool auto-detects by frame structure, not extension — even a .txt or .dat containing valid GSM frames decodes correctly.",
+      },
+      {
+        question: "What's the relationship between GSM 06.10 and the mobile network 'GSM'?",
+        answer:
+          "Same name, different concept. 'GSM network' (Global System for Mobile Communications) is the 2G cellular standard (radio access, core network, SIM). 'GSM 06.10' is just one numbered spec within it, defining the Full-Rate Speech Transcoding codec. GSM later adopted enhanced codecs (EFR, AMR, AMR-WB), but GSM 06.10's simplicity and wide deployment keep it in legacy systems and VoIP gateways today.",
+      },
+    ],
+    relatedTools: ["raw-to-wav", "sav-to-csv", "eot-to-ttf", "kfx-to-epub"],
+  },
+
+  // 14) MTS to MP4 — B class (desktop recommended)
+  {
+    slug: "mts-to-mp4",
+    id: "mts-to-mp4",
+    name: "MTS to MP4",
+    className: "B",
+    category: "video",
+    categoryLabel: "Video",
+    sourceFormat: "MTS",
+    targetFormat: "MP4",
+    sourceExt: ".mts",
+    targetExt: ".mp4",
+    extraSourceExts: [".m2ts", ".avchd"],
+    title: "MTS to MP4 Converter – Free AVCHD MTS to MP4 Online",
+    metaDescription:
+      "Convert AVCHD MTS/M2TS video files to MP4 (H.264/AAC) free online. Browser-based FFmpeg conversion. PC only (mobile users: download desktop app). Files up to 100MB.",
+    h1: "MTS to MP4 Converter",
+    webMaxFilePc: 100 * MB,
+    webMaxFileMobile: 50 * MB,
+    desktopUnlimited: true,
+    whatIs:
+      "MTS (MPEG Transport Stream) is the video container used by Sony/Canon/Panasonic/JVC camcorders under the AVCHD (Advanced Video Coding High Definition) standard. The extension is usually .mts or .m2ts. Inside, MTS wraps an H.264/AVC video stream (sometimes H.265/HEVC) and a Dolby Digital (AC3) or Linear PCM audio stream, using the MPEG-TS (ISO 13818-1) container spec. It was designed for constant-bitrate streaming writes to optical discs (DVD/BD), so its structure optimizes sequential I/O over random access. MTS is the default recording format of HD camcorders, common in home videos, weddings, and documentary footage.",
+    whyConvert:
+      "MP4 (ISO Base Media File Format / MPEG-4 Part 14) is today's most universal video container. MTS→MP4 matters because: (1) playback compatibility — Windows Media Player/macOS QuickTime/iOS/Android play MP4 natively, while MTS needs a special player or codec pack; (2) easy sharing — YouTube/Facebook/Instagram/TikTok accept MP4 uploads, not MTS; (3) editing friendly — Premiere Pro/Final Cut Pro/DaVinci Resolve seek MP4 far better than MTS (MP4 supports faststart by moving the moov box to the front); (4) file size — remux (re-container only) usually shrinks 5–15% by dropping MPEG-TS padding and sync overhead.",
+    howTo:
+      "Note: video conversion loads FFmpeg WASM (~31MB); first use waits for it to load. Step 1: Prepare the .mts/.m2ts/.avchd file (copy from the camera SD card or the AVCHD directory). Step 2: Drag it into the conversion area above (PC web ≤100MB). Step 3: Click Convert and wait (remux usually 5–30s; transcode depends on duration/resolution). Step 4: Download the .mp4 and verify picture and sound in a player.",
+    vs: "MTS→MP4 has two paths. Remux (re-container): pull the H.264 stream out of MPEG-TS and into MP4, video data unchanged. Pros: fast (<10s), zero quality loss. Cons: if the source used an MP4-incompatible encoding (some AC3 variants), compatibility may suffer. Transcode: re-encode video/audio to the target. Pros: max compatibility. Cons: slow (minutes), possible generational quality loss. This tool defaults to remux (copy video + re-encode audio to AAC), falling back to transcode only when needed. Mobile note: mobile browsers are unsuited to video conversion — FFmpeg WASM (~31MB) is slow to download on cellular, video transcode needs GBs of RAM (iOS Safari cap ~1.5GB, easy OOM), phone WASM is 1/5–1/3 of desktop speed, and sustained high CPU drains battery fast. Mobile users see a desktop-app download prompt.",
+    faqs: [
+      {
+        question: "Will the conversion reduce video quality?",
+        answer:
+          "On the remux path (video copy) quality loss is zero — every pixel identical. Only the audio stream is re-encoded AC3→AAC with a negligible theoretical loss (192kbps AAC is transparent to human ears vs original AC3). If compatibility forces a transcode, perceptible quality drop depends on the target bitrate.",
+      },
+      {
+        question: "How long does a 1-minute 1080p video take to convert?",
+        answer:
+          "Remux: usually 3–8 seconds (mostly I/O). Transcode: in a PC browser WASM environment, 1080p@30fps H.264 encode runs at ~1/3–1/5 native speed, so 1 minute needs 3–5 minutes. The desktop app uses hardware acceleration (NVENC/QSV) for 10x+ real-time.",
+      },
+      {
+        question: "My MTS file has multiple audio tracks. Will they all be preserved?",
+        answer:
+          "The tool keeps the first audio stream by default (usually the main language/mix). For specific-track or multi-track output, use the desktop app's advanced options panel.",
+      },
+      {
+        question: "Can I convert 4K MTS files?",
+        answer:
+          "Technically yes, but even remux needs large RAM buffers for frames. The 100MB web cap means only ~1–2 minutes of 4K fits. Longer 4K footage must use the desktop app.",
+      },
+    ],
+    relatedTools: ["raw-to-wav", "blend-to-glb", "pvr-to-png", "glb-to-gltf"],
+  },
+
+  // 15) WAD File Extractor — C class (desktop only)
+  {
+    slug: "wad-extractor",
+    id: "wad-extractor",
+    name: "WAD File Extractor",
+    className: "C",
+    category: "archive",
+    categoryLabel: "Game Archive",
+    sourceFormat: "WAD",
+    targetFormat: "extracted files",
+    sourceExt: ".wad",
+    targetExt: ".wad",
+    title: "WAD File Extractor – Extract DOOM/Quake/Game Archive Files",
+    metaDescription:
+      "Extract game archive files from DOOM WAD, Quake WAD2/WAD3, and other WAD formats. Desktop application only — free download. Selective extraction supported.",
+    h1: "WAD File Extractor",
+    webMaxFilePc: 0,
+    webMaxFileMobile: 0,
+    desktopUnlimited: true,
+    whatIs:
+      "WAD (Where's All the Data?) is the game resource archive format id Software invented for DOOM in 1993. It packs a game's resources (textures, sounds, music, level data, scripts, fonts) into one binary file, located via a directory index in the header. This let DOOM run on machines with only 4MB RAM — mmap just the needed resource instead of loading everything. The format was later borrowed or衍生 by the Quake engine (WAD2/WAD3), Half-Life (pak/wad), and Fallout/Skyrim (BA2), becoming one of the most influential archive formats in game history.",
+    whyConvert:
+      "WAD extraction underpins game modding, preservation research, and game-dev education: (1) modding — extract sprites/textures from a DOOM WAD, edit them, repack into a new WAD; the core DOOM modding workflow; (2) asset reuse — indie devs pull free sounds/textures from classic games for prototypes (mind copyright); (3) preservation — game historians and digital-preservation experts extract WAD contents to archive disappearing retro assets; (4) learning — students analyze WAD level geometry and texture design to study 90s game design.",
+    howTo:
+      "Step 1: Download and install the nichefiletools Desktop app (free). Step 2: Launch it and pick the WAD File Extractor tool. Step 3: Drag in the .wad file (the app auto-detects DOOM/Quake/BA2 type). Step 4: Preview the file list — the app parses the directory and shows every entry's name, size, and compression state. Step 5: Check the files you want (or select all). Step 6: Choose an output directory and click Extract; a progress bar tracks extraction in real time.",
+    vs: "WAD is a family, not one format. DOOM WAD (IWAD/PWAD): 12-byte header (4-byte ID + 4-byte count + 4-byte directory offset), each directory entry 16 bytes (4-byte offset + 4-byte size + 8-byte ASCII name). Quake WAD2/WAD3: similar but with optional compression (zlib) and 32-byte entries. Gamebryo BA2 (Bethesda, Fallout 4/Skyrim SE): a different proprietary variant with the same design philosophy. The tool auto-detects type by magic bytes. Desktop extras: selective extraction (check only MAP01 or SPRITE entries to save time/space) and checksum verification (CRC32/MD5 per extracted file vs the WAD directory, re-checked after zlib/bzip2 decompression to catch corruption).",
+    faqs: [
+      {
+        question: "Why isn't WAD extraction available as an online tool?",
+        answer:
+          "WAD files range from a few MB (DOOM shareware WAD, ~4MB) to several GB (Skyrim SE Textures.ba2, 10GB+). A browser cannot allocate or decompress GB-scale files in memory. Also, some WAD variants' decompression (bzip2/lzma) performs poorly in WASM. The native desktop app uses multi-threading and streaming file I/O to do it efficiently.",
+      },
+      {
+        question: "Can I extract from Steam game WAD files?",
+        answer:
+          "Yes. Steam games install under SteamApps/common/[gamename]/. DOOM Classic's WAD is usually in base/doom.wad or base/doom1.wad; Quake's pak/wad is in id1/. Note: extracted assets are for personal learning and modding only — redistributing may violate the game's EULA and copyright.",
+      },
+      {
+        question: "The tool says 'Unknown WAD format'. What now?",
+        answer:
+          "Our detector covers DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2. If yours isn't recognized it may be: (1) a more obscure variant (Build engine .grp, Source engine .vpk); (2) renamed but not actually a WAD; (3) encrypted or custom. You can submit a sample (if small) via GitHub Issue and we'll try to add support.",
+      },
+      {
+        question: "Are extracted files ready to use in my own project?",
+        answer:
+          "Technically yes, but mind copyright. id Software released original DOOM source (GPL) in 1997, but game assets stay copyrighted. For GPL games (e.g. Freedoom) extracted assets are free under GPL. For commercial games, extracted assets are personal-use/study only.",
+      },
+    ],
+    relatedTools: ["raw-to-iso", "prt-to-stl", "blend-to-glb", "sav-to-csv"],
+    whyDesktopOnly:
+      "WAD files range from a few MB to several GB and need byte-exact, streaming decompression that a browser tab cannot safely do. The free nichefiletools desktop app handles DOOM/Quake/BA2 extraction natively with selective extraction and checksum verification.",
+    desktopOnlyIntro: "WAD archives are too large and decompression-heavy for any browser. Use the free desktop app to extract them safely.",
+    desktopSteps:
+      "Download the free desktop app, open WAD File Extractor, drag in your .wad, preview the file list, select entries, choose an output folder, and click Extract.",
+  },
 ];
 
 export function getTool(slug: string): ToolContent | undefined {

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { allSlugs, getToolContent } from "@/lib/converters/registry";
+import { TOOLS, getTool } from "@/lib/tools-data";
+const allSlugs = () => TOOLS.map((t) => t.slug);
+const getToolContent = (slug: string) => getTool(slug);
 import { softwareAppSchema, breadcrumbSchema, faqSchema } from "@/lib/schema";
 import {
   Breadcrumbs,

@@ -15,6 +15,9 @@ pub enum AppError {
     #[error("Missing dependency: {0}")]
     MissingDependency(String),
 
+    #[error("Required engine not installed: {0}")]
+    EngineMissing(String),
+
     #[error("Invalid or corrupted file: {0}")]
     InvalidFile(String),
 
@@ -29,6 +32,12 @@ pub enum AppError {
 
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+
+    #[error("Failed to launch external engine: {0}")]
+    SidecarSpawn(String),
+
+    #[error("External engine failed: {0}")]
+    SidecarFailed(String),
 
     #[error("{0}")]
     Other(String),
@@ -48,11 +57,14 @@ impl From<AppError> for AppErrorPayload {
             AppError::UnsupportedTool(_) => "unsupported_tool",
             AppError::NotImplemented(_) => "not_implemented",
             AppError::MissingDependency(_) => "missing_dependency",
+            AppError::EngineMissing(_) => "engine_missing",
             AppError::InvalidFile(_) => "invalid_file",
             AppError::QuotaExhausted => "quota_exhausted",
             AppError::Token(_) => "token",
             AppError::InvalidKey(_) => "invalid_key",
             AppError::Json(_) => "json",
+            AppError::SidecarSpawn(_) => "sidecar_spawn",
+            AppError::SidecarFailed(_) => "sidecar_failed",
             AppError::Other(_) => "other",
         }
         .to_string();

@@ -17,6 +17,7 @@ interface Result {
 export default function ToolConverter({ tool }: { tool: ToolContent }) {
   const converter = getConverter(tool.slug);
   const [file, setFile] = useState<File | null>(null);
+  const [companionFile, setCompanionFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [desktopMessage, setDesktopMessage] = useState<string | null>(null);
   const [converting, setConverting] = useState(false);
@@ -25,7 +26,9 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
     Object.fromEntries((tool.webOptions ?? []).map((o) => [o.key, o.default])),
   );
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef2 = useRef<HTMLInputElement>(null);
   const accept = [tool.sourceExt, ...(tool.extraSourceExts ?? [])].join(",");
+  const needsCompanion = tool.slug === "pfm-to-ttf";
 
   useEffect(() => {
     return () => {
@@ -39,6 +42,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
     setError(null);
     setDesktopMessage(null);
     setFile(null);
+    setCompanionFile(null);
   }
 
   function handleFile(f: File | undefined) {
@@ -77,6 +81,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         inputFile: file,
         outputFormat: tool.targetExt,
         params,
+        pfbCompanion: companionFile ?? undefined,
       });
       const url = URL.createObjectURL(res.data);
       setResult({ url, filename: res.filename, size: res.size });
@@ -142,6 +147,45 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </p>
       </div>
 
+      {/* PFM→TTF 的第二个上传区：配套 .pfb（含字形轮廓） */}
+      {needsCompanion && file && !error && !desktopMessage && !result && (
+        <div className="mt-4 rounded-xl border border-dashed border-border/70 p-4">
+          <p className="mono-label mb-2">
+            Companion <span className="font-semibold text-foreground">.pfb</span> file
+            (glyph outlines) — required
+          </p>
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const f = e.dataTransfer.files?.[0];
+              if (f) setCompanionFile(f);
+            }}
+            className="flex flex-col items-center justify-center rounded-lg bg-muted/30 px-4 py-6 text-center"
+          >
+            <input
+              ref={inputRef2}
+              type="file"
+              accept=".pfb"
+              className="hidden"
+              onChange={(e) => setCompanionFile(e.target.files?.[0] ?? null)}
+            />
+            <button
+              type="button"
+              onClick={() => inputRef2.current?.click()}
+              className="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            >
+              {companionFile ? "Change .pfb" : "Select .pfb file"}
+            </button>
+            {companionFile && (
+              <p className="mt-2 truncate font-mono text-sm text-foreground">
+                {companionFile.name}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 选项面板（如 RAW→WAV 的采样率/位深/声道） */}
       {tool.webOptions && file && !error && !desktopMessage && !result && (
         <div className="mt-4 grid gap-3 rounded-xl border border-border/50 bg-muted/20 p-4 sm:grid-cols-3">
@@ -167,7 +211,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
       )}
 
       {/* 已选文件 + 转换按钮 */}
-      {file && !desktopMessage && !error && (
+      {file && !desktopMessage && !error && (!needsCompanion || companionFile) && (
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="truncate font-mono text-sm text-foreground">
             {file.name}{" "}
@@ -184,6 +228,11 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
             {converting ? "Converting…" : "Convert"}
           </button>
         </div>
+      )}
+      {needsCompanion && file && !companionFile && !error && !desktopMessage && !result && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Please also provide the companion .pfb file above to enable conversion.
+        </p>
       )}
 
       {/* 进度条 */}
