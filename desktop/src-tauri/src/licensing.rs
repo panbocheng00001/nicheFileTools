@@ -103,6 +103,18 @@ fn status_of(store: &Store, slug: &str, now: i64) -> LicenseInfo {
     }
 }
 
+/// The unlock code pasted by the user is derived from the slug of the matching
+/// **web** page (`/tools/{web_slug}`), which differs from the desktop slug for
+/// `step-to-stl` → `/tools/prt-to-stl`. Verification must use the web slug or
+/// codes copied from the site never match (auth spec §3.3.1). The store stays
+/// keyed by the desktop slug, so `ensure_unlocked` / `convert` are unchanged.
+fn verification_slug(slug: &str) -> &str {
+    match crate::convert::manifest::tool(slug) {
+        Some(t) => t.web_slug.as_deref().unwrap_or(slug),
+        None => slug,
+    }
+}
+
 /// Pure activation. Mutates `store` only when the code verifies.
 fn apply_activation(
     store: &mut Store,
@@ -110,7 +122,7 @@ fn apply_activation(
     code: &str,
     now: i64,
 ) -> Result<LicenseInfo, AppError> {
-    match desktop_code::verify_code(slug, code, now) {
+    match desktop_code::verify_code(verification_slug(slug), code, now) {
         Some(expires_at) => {
             store.tools.insert(
                 slug.to_string(),
@@ -196,6 +208,27 @@ mod tests {
         assert!(!info.unlocked);
         assert_eq!(info.expires_at, 0);
         assert_eq!(info.remaining_ms, 0);
+    }
+
+    /// Desktop `step-to-stl` fetches its code from `/tools/prt-to-stl`, so the
+    /// pasted code is derived from the **web** slug. Verification must accept
+    /// it while the store stays keyed by the desktop slug, and the conversion
+    /// gate must still pass (auth spec §3.3.1).
+    #[test]
+    fn activation_verifies_against_the_web_slug() {
+        let mut s = Store::default();
+        let code = code_for("prt-to-stl", 497_100);
+        let info = apply_activation(&mut s, "step-to-stl", &code, at(497_100, 1_000))
+            .expect("code copied from /tools/prt-to-stl must unlock step-to-stl");
+        assert!(info.unlocked);
+        assert_eq!(info.slug, "step-to-stl");
+        assert!(require_unlocked(&s, "step-to-stl", at(497_100, 2_000)).is_ok());
+
+        // A code derived from the desktop slug is NOT what the web page shows,
+        // so it must be rejected.
+        let wrong = code_for("step-to-stl", 497_100);
+        let mut s2 = Store::default();
+        assert!(apply_activation(&mut s2, "step-to-stl", &wrong, at(497_100, 1_000)).is_err());
     }
 
     /// Accepting the current code unlocks the tool until the top of the hour.

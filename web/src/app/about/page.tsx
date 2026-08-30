@@ -35,8 +35,8 @@ const values = [
   },
   {
     icon: HeartHandshake,
-    title: "Free where possible",
-    body: "Core conversions stay free. A one-time desktop license funds development — no subscriptions.",
+    title: "Free, period",
+    body: "Everything is free: web tools are unlimited, desktop tools unlock with a free hourly code. No payments, no accounts, no upsells.",
   },
 ];
 

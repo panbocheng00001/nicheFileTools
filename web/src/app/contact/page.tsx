@@ -32,7 +32,7 @@ export default function ContactPage() {
           <br />
           Conversion failures, unlock-key issues, desktop app problems.
           Include your OS, browser, file size, and the exact error text.
-          Response: within 48 hours (12 hours for paid licenses).
+          Response: within 48 hours.
         </p>
 
         <h2>General &amp; partnership</h2>

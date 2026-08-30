@@ -1,0 +1,6 @@
+# 手动测试素材：二进制不进仓库，仅说明文档可提交
+*
+!.gitignore
+!README.md
+!**/NEED_REAL_FILE.md
+!**/README.md

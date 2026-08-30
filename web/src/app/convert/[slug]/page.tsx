@@ -198,10 +198,10 @@ export default async function ConvertGuidePage({ params }: Params) {
               </div>
             )}
 
-            {/*Desktop step-by-step tutorial*/}
+            {/*Desktop step-by-step tutorial (stepsTitle overrides for online-tool guides)*/}
             <h2>
-              Step-by-Step: {tool.sourceFormat} to {tool.targetFormat} on
-              Desktop
+              {guide.stepsTitle ??
+                `Step-by-Step: ${tool.sourceFormat} to ${tool.targetFormat} on Desktop`}
             </h2>
             <ol>
               {guide.desktopSteps.map((s) => (
@@ -213,6 +213,10 @@ export default async function ConvertGuidePage({ params }: Params) {
               <Link href="/download">Download the free desktop app →</Link>{" "}
               <Link href="/free-trial">How the unlock code works →</Link>
             </p>
+
+            {/*Batch & large files (SEO spec §2.2)*/}
+            <h2>Batch &amp; Large Files</h2>
+            <p>{guide.batchLarge}</p>
 
             {/*Troubleshooting*/}
             <h2>Common Problems &amp; Solutions</h2>

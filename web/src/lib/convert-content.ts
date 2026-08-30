@@ -46,6 +46,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Three ways to convert KFX to EPUB: free online tool, desktop app for batches, or Calibre. DRM-free files only. Steps, limits, and fixes.",
     quickAnswer:
       "Yes — you can convert KFX to EPUB in about a minute, provided the book is DRM-free. For a single book up to 50 MB, the free online tool is the fastest route; the desktop app handles whole libraries and batches. DRM-protected KFX files cannot be converted by any legitimate tool, ours included.",
+    formatDeep:
+      "KFX is what Amazon delivers to modern Kindles (2017+): an Enhanced Typesetting container that splits a book into positionally-addressed fragments so each device can reflow typography its own way. EPUB is the IDPF/W3C open standard every non-Kindle reader uses — Apple Books, Kobo, Google Play Books. The trade-off when moving between them is typographic, not textual: Amazon's dynamic hyphenation and floating elements rebuild as standard EPUB CSS, while text, chapter order, and the table of contents carry over intact. Teams that archive or re-edit purchased DRM-free books standardize on EPUB because every downstream tool — editors, validators, repositories — reads it.",
+    batchLarge:
+      "Whole-library jobs are where the desktop app earns its keep: point it at a folder of DRM-free KFX files and the batch queue rebuilds each book with chapter order and table of contents intact — no 50 MB per-file cap, nothing uploaded. The hourly unlock code covers the entire batch, so a shelf of fifty books is one paste, one click, one wait.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -57,9 +61,9 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "Batch conversion, large libraries",
-        price: "Free hourly codes (per tool), then a one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
-        notes: "Native processing for entire book folders. Open the desktop app, pick a tool, and paste the current hourly code from its page here — no payment needed for the first hour, and a one-time license removes the limit.",
+        notes: "Native processing for entire book folders. Open the desktop app, pick a tool, and paste the current hourly code from its page here — no payment, no account, and a fresh code is always free on the same page.",
       },
       {
         name: "Calibre + KFX Input plugin",
@@ -76,7 +80,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Click Convert — the app reports progress and writes the EPUB next to your chosen path.",
     ],
     desktopNote:
-      "First time using the desktop app? Every tool unlocks for an hour with a free code copied from its page here — paste it, convert, and the tool re-locks on the hour. The one-time license removes the need to re-grab codes.",
+      "First time using the desktop app? Every tool unlocks for an hour with a free code copied from its page here — paste it, convert, and the tool re-locks on the hour. Codes are always free; grab a fresh one from the same page any time.",
     troubleshooting: [
       {
         problem: "Conversion stops with an encryption error",
@@ -101,11 +105,15 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Convert PRT (Creo/Pro-E) parts to STL via STEP export: the free desktop STEP-to-STL tool or Creo's own exporter. Tessellation settings and fixes.",
     quickAnswer:
       "PRT stores exact parametric geometry; STL stores a triangle approximation, so every PRT→STL conversion is a tessellation. Creo's PRT is a closed format no third-party tool reads directly — the reliable route is to export STEP from Creo (lossless geometry), then tessellate it with the desktop app's STEP to STL tool, or use Creo's own STL export if it's installed.",
+    formatDeep:
+      "PRT is PTC Creo/Pro-ENGINEER's native part format: an exact parametric B-Rep model — NURBS surfaces, features, and feature history. STL is none of that: a raw triangle soup with unit-less vertices, no assembly structure, and no materials. Every PRT→STL conversion is therefore a tessellation (a chord-tolerance approximation), which is fine for 3D printing and mesh analysis but lossy by definition. Engineers exchange STEP between CAD systems precisely because it carries exact geometry; STL is the handoff format for slicers, not for design round-trips.",
+    batchLarge:
+      "Print farms and assemblies are the volume case: export each Creo part as STEP, drop the whole folder into the desktop app's batch queue, and every file meshes at the 0.1 mm chord tolerance in one run. Complex parts can take 10–30 seconds each to tessellate — batch mode keeps the queue moving unattended, with no size cap on individual files.",
     methods: [
       {
         name: "STEP export + nichefiletools desktop app",
         bestFor: "Anyone without Creo's exporter at hand",
-        price: "Free hourly codes (per tool), then a one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "In Creo: File → Save a Copy → STEP AP214. The desktop STEP to STL tool then tessellates the exact B-Rep geometry with a 0.1 mm default chord tolerance — the sweet spot for FDM printing — and outputs binary or ASCII STL.",
       },
@@ -155,6 +163,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Decode PVR textures (PVRTC/ETC/ASTC) to PNG: free online tool, desktop batch mode, or PVRTexTool. Auto format detection and common fixes.",
     quickAnswer:
       "Decoding PVR to PNG is a decompression step, so it's fast and lossless at the pixel level: the PNG shows exactly what the compressed texture contains. The online tool auto-detects PVRTC, ETC, and ASTC variants up to 100 MB; texture sets from a real game project belong in the desktop app's batch mode.",
+    formatDeep:
+      "PVR is the PowerVR texture container: a 52-byte v3 header followed by GPU-ready block-compressed pixels (PVRTC, ETC2, or ASTC). Block compression is why .pvr files are tiny for their resolution — 4 bits per pixel for PVRTC4 — and why decoding is deterministic: the same input always yields the same pixels. PNG is the opposite philosophy: lossless, verbose, readable everywhere. Mobile pipelines standardized on PVR during the iOS PowerVR era; today the format mostly appears in game archives, engine caches, and mod projects that need those textures as ordinary images.",
+    batchLarge:
+      "Texture sets are the real workload — a character ships as diffuse, normal, and specular PVRs with mip chains. Desktop batch mode converts an entire folder in one queue and exports each file's largest mipmap as a PNG named after its source, which is exactly what asset recovery and inspection work needs.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -166,7 +178,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "Batch texture sets",
-        price: "Free hourly codes (per tool), then a one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "A character asset is rarely one file — diffuse, normal, and specular PVRs come in sets. Batch mode converts a whole folder in one queue.",
       },
@@ -199,7 +211,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "For inspecting one texture, the online decoder is instant. Modders and devs recovering a full asset set should use desktop batch mode — two free conversions are enough to verify quality on real files.",
+      "For inspecting one texture, the online decoder is instant. Modders and devs recovering a full asset set should use desktop batch mode — the hourly unlock code covers the whole queue.",
   },
   {
     slug: "raw-to-iso",
@@ -209,12 +221,14 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     quickAnswer:
       "This conversion cannot happen in a browser: RAW images span hundreds of MB to 50 GB, far beyond browser memory limits, and need byte-exact sector I/O. The free nichefiletools desktop app extracts the 2048-byte user data from every 2352-byte sector and writes a standard ISO 9660 image.",
     formatDeep:
-      "KFX is what Amazon delivers to modern Kindles (2017+): an Enhanced Typesetting container that splits a book into positionally-addressed fragments so each device can reflow typography its own way. EPUB is the IDPF/W3C open standard every non-Kindle reader uses — Apple Books, Kobo, Google Play Books. The trade-off when moving between them is typographic, not textual: Amazon's dynamic hyphenation and floating elements rebuild as standard EPUB CSS, while text, chapter order, and the table of contents carry over intact. Teams that archive or re-edit purchased DRM-free books standardize on EPUB because every downstream tool — editors, validators, repositories — reads it.",
+      "A RAW disc image is a sector-for-sector dump of a CD: every 2352-byte sector including sync patterns, headers, and EDC/ECC error-correction bytes. ISO 9660 keeps only the 2048-byte user-data area of each Mode 1 sector — the part an operating system actually mounts. The formats come from different worlds: RAW is what disc drives and dumping hardware produce (preserving copy protection and subchannel data), while ISO is the interchange format emulators, archival tools, and mounting software expect. Converting between them is lossless for user data and intentionally discards the ~13% of the image that is transport overhead.",
+    batchLarge:
+      "Disc archives are multi-GB by nature, which is exactly why this tool is desktop-only. Native streaming I/O processes a 4 GB image in seconds on an SSD, and batch mode walks a folder of dumps unattended — no browser memory ceiling, no upload, no per-file caps.",
     methods: [
       {
         name: "nichefiletools desktop app",
         bestFor: "Everything — this is the recommended path",
-        price: "Free hourly codes (per tool), then a one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "Auto-detects Mode 1 and Mode 2 sectors, handles mixed-mode discs, processes .raw/.bin/.img variants, and verifies output integrity.",
       },
@@ -240,7 +254,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Click Convert — a progress bar tracks sector processing in real time; a multi-GB image finishes in seconds on an SSD.",
     ],
     desktopNote:
-      "Each desktop tool unlocks with a free hourly code from its page here — try it on one disc image, and if your archive is bigger, the one-time license removes the need to re-grab codes every hour.",
+      "Each desktop tool unlocks with a free hourly code from its page here — try it on one disc image, then let batch mode walk the rest of your archive. Codes refresh free every hour on the same page.",
     troubleshooting: [
       {
         problem: "A converted game image doesn't boot in an emulator",
@@ -256,7 +270,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "RAW to ISO is inherently a desktop job, so keep the unlock flow simple: open the app, pick the tool, paste the current hourly code from its page, and convert. If your archive is bigger, a one-time license removes the need to re-grab codes.",
+      "RAW to ISO is inherently a desktop job, so keep the unlock flow simple: open the app, pick the tool, paste the current hourly code from its page, and convert — codes stay free and refresh every hour.",
   },
   {
     slug: "blend-to-glb",
@@ -265,11 +279,15 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Convert Blender .blend to glTF GLB for the web: the free desktop app for big scenes and batches, or Blender's own exporter. Steps and quality fixes.",
     quickAnswer:
       "Two reliable routes: the free desktop app (no size limit, batch queues, powered by Blender's own runtime) or — if Blender is already installed — its built-in File → Export → glTF 2.0, the reference implementation. There is no in-browser converter: BLEND's DNA structure only parses reliably through Blender's API.",
+    formatDeep:
+      "A .blend file is Blender's save format: a DNA-structured database of every data-block in the session — meshes, modifiers, node trees, even undo history. GLB is the binary glTF 2.0 container, the de facto 3D format of the web: PBR materials, skeletal animation, and compressed geometry in one file that three.js, Babylon.js, and AR runtimes load natively. The conversion is a projection, not a mirror — parametric modifiers and procedural nodes are evaluated and baked, because glTF has no concept of them. It's the standard handoff from DCC tools to real-time renderers.",
+    batchLarge:
+      "Scene libraries and product catalogs are batch jobs: the desktop app drives Blender's Python API headless, so a folder of .blend files exports to GLB in one queue with identical settings. Run File → Clean Up → Purge inside Blender first if the files carry years of orphaned data-blocks — old project files often ship far heavier than they need to be.",
     methods: [
       {
         name: "nichefiletools desktop app",
         bestFor: "Large scenes, batch exports, no Blender UI needed",
-        price: "Free hourly codes (per tool), then a one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "Drives Blender's Python API natively, mapping meshes, UVs, Principled BSDF materials, and transform animations to glTF 2.0 — headless and in batch queues.",
       },
@@ -319,6 +337,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Wrap headerless PCM/RAW audio in a WAV header: free online tool, Audacity's RAW import, or ffmpeg. Parameter guide and fixes for static noise.",
     quickAnswer:
       "A RAW audio file is just PCM samples with no header, so 'converting' it means declaring the correct sample rate, bit depth, and channels once and letting a tool write the 44-byte WAV header for you. If you don't know the parameters, start with 44100 Hz / 16-bit / stereo — that covers most consumer recordings.",
+    formatDeep:
+      "RAW audio is PCM with no container: a bare stream of amplitude samples whose meaning depends entirely on three unstated parameters — sample rate, bit depth, and channel count. WAV is the RIFF container that states those parameters in a 44-byte header and wraps the same bytes. Nothing is decoded or re-encoded in the conversion; it is a lossless declaration of metadata the file was missing. Raw PCM appears wherever systems write audio without negotiation: DSP dumps, telephony recorders, oscilloscope captures, and recovered files whose headers were truncated.",
+    batchLarge:
+      "The three parameters are usually identical across a whole capture session, so batches are mechanical: ffmpeg scripted over a directory wraps thousands of files unattended. The online tool covers one-off files up to 500 MB; scripted or desktop batch work handles the rest.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -375,6 +397,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Unpack GLB into .gltf JSON: free online converter, Microsoft gltf-pipeline CLI, or Blender. What changes (and what doesn't) in the output.",
     quickAnswer:
       "GLB and .gltf hold identical data in different containers, so unpacking is lossless and instant. The online converter outputs a self-contained .gltf (binary buffer embedded as a data URI); if you need the classic .gltf + .bin + textures file set, use Microsoft's gltf-pipeline CLI on it.",
+    formatDeep:
+      "GLB and .gltf are the same glTF 2.0 asset in two containers: GLB packs the JSON document plus binary buffers into one file with a 12-byte header and chunk table, while .gltf is the JSON alone, referencing buffers by URI. The data model — nodes, meshes, materials, animations — is byte-identical between them, so the conversion is a repack, never a reinterpretation. Pipelines that inspect, diff, or hand-edit scene graphs prefer .gltf because JSON is text; delivery pipelines prefer GLB because one file can't have broken relative paths.",
+    batchLarge:
+      "Asset QA passes are scriptable: run Microsoft's gltf-pipeline over a directory of GLBs to emit .gltf + .bin pairs and validate each in the same pass, optionally chaining Draco compression for web delivery. The online tool handles one-off inspection; automation belongs to the CLI.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -435,6 +461,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Extract TTF/OTF from legacy IE .eot web fonts: free online tool, why subsetting loses glyphs, MicroType limits, and licensing notes.",
     quickAnswer:
       "An EOT file is a wrapper around an ordinary sfnt font, so conversion is extraction, not transcoding — instant and lossless. The one real gotcha is subsetting: many EOTs contain only the glyphs the old page used, so the recovered TTF may have fewer characters than the retail font.",
+    formatDeep:
+      "EOT (Embedded OpenType) is Microsoft's 1997 answer to web fonts: a wrapper bundling an sfnt font with subsetting, root-string domain binding, and optional MicroType compression — built for IE 4+ and dead in practice since 2016. Inside nearly every EOT is an ordinary TTF or OTF, byte-for-byte, which is why conversion is extraction rather than transcoding. The practical surprise is subsetting: many EOTs carry only the glyphs the old page rendered, not the full retail character set. The format survives in legacy site audits, web-archive recovery, and font-licensing forensics.",
+    batchLarge:
+      "Legacy site recovery usually means many fonts, not one: pull every .eot referenced by an old @font-face cascade, recover the TTFs, then let fonttools' scripting (pyftsubset, woff2 compress) turn the whole batch into a modern WOFF2 stack in a single pass. The desktop app runs the same extraction over directories without the 10 MB web cap.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -491,6 +521,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Package an OPF manifest and its resources into a valid EPUB 3: free online packager, Sigil, or Calibre. OCF ZIP rules and path pitfalls explained.",
     quickAnswer:
       "An OPF is the manifest of an EPUB, not the book itself — so 'conversion' is packaging: the OPF plus every file its manifest references go into a ZIP that follows EPUB's OCF rules (mimetype first, stored). Zip your OPF folder, drop it in, and download a valid .epub.",
+    formatDeep:
+      "The OPF is an EPUB's manifest: an XML file declaring the book's metadata (dc:title, dc:identifier), its resource list (manifest), and its reading order (spine). It is one of three required pieces of an EPUB — alongside mimetype and META-INF/container.xml — inside an OCF ZIP with an unusual rule: mimetype must be the first entry and stored uncompressed. 'Converting' OPF to EPUB is therefore packaging: gathering everything the manifest references and writing a ZIP that follows those rules, which is why a bare .opf can't become a complete book without its resources.",
+    batchLarge:
+      "Back-catalog repackaging is the classic batch job: a folder of unzipped EPUB sources (OPF + XHTML + assets) re-packages into validated .epub files in one queue, with the desktop app verifying every manifest href resolves case-sensitively. Run epubcheck over the output batch afterwards — it catches path and spine issues no converter can silently fix.",
     methods: [
       {
         name: "nichefiletools online packager",
@@ -551,6 +585,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Export SPSS .sav/.zsav to CSV: free online converter, SPSS itself, or R/pspp. What's lost (value labels), Excel encoding fixes, limits explained.",
     quickAnswer:
       "Yes — SPSS data exports to CSV completely, including compressed .zsav files. Two things to know upfront: value labels (1 = Male / 2 = Female) don't exist in CSV, so you get the codes; and the output needs a UTF-8 BOM or Excel will mangle international characters — the online tool writes it for you.",
+    formatDeep:
+      "SAV is SPSS Statistics' native format: a binary file pairing a variable dictionary (names, types, value labels, missing-value sentinels) with a data matrix that may be uncompressed, byte-compressed, or zlib-compressed (.zsav). CSV is the universal tabular interchange — but a flat one: it carries values, not meaning, so value labels, variable metadata, and SPSS's missing-value semantics don't survive export (the codes do). Researchers standardize on SAV because the dictionary is half the dataset; the world outside SPSS speaks CSV.",
+    batchLarge:
+      "Survey archives run to hundreds of megabytes, and .zsav compression is the norm — the converter detects all three layouts per file, and desktop batch mode processes a whole repository folder in one queue. For reproducible pipelines, R's haven::read_sav() plus write.csv() does the same job inside scripts, with value labels attachable via the labelled class.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -608,6 +646,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Convert PFM+PFB Type 1 fonts to TTF free: online tool, desktop app, or FontForge. Needs the companion .pfb. Steps, limits, fixes.",
     quickAnswer:
       "Yes — but only with both files. A PFM stores metrics (widths/kerning); the glyph outlines live in the companion .pfb. Upload .pfm and .pfb together to the free online tool (≤10 MB) or use the desktop app for batches; FontForge is the pro fallback for tricky fonts.",
+    formatDeep:
+      "PFM and PFB are the two halves of an Adobe Type 1 (PostScript) font: the PFM ('printer font metrics') holds widths, kerning pairs, and character-set info for Windows, while the PFB ('printer font binary') holds the glyph outlines as cubic Bézier curves. TTF stores outlines as quadratic B-splines in an sfnt table structure with Unicode cmap tables. The conversion re-parameterizes every curve — cubic-to-quadratic approximation within a fraction of an em — and rebuilds metrics from the PFM. Adobe declared Type 1 end-of-life in 2023, which is exactly why these migrations are suddenly urgent.",
+    batchLarge:
+      "Type 1 estates are families, not files — regular, bold, italic, and their companions across decades of jobs. The desktop app batches a whole font directory in one queue; FontForge's Python scripting handles the odd cases that need per-font hand-tuning before conversion.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -619,7 +661,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "Font families, batches",
-        price: "Free tier + one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "Handles whole font directories and large Type 1 families; same curve-conversion engine as the web tool.",
       },
@@ -666,6 +708,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Convert OpenEXR HDR to PNG free: online tone-mapping tool, desktop app, or Nuke/Blender. Reinhard vs ACES, exposure tips, fixes.",
     quickAnswer:
       "Yes. An EXR is 32-bit float HDR; a PNG is 8-bit sRGB LDR, so the step is tone mapping. The free online tool maps HDR→LDR (Reinhard or ACES) in your browser — no upload. For 16-bit/TIFF or multi-layer control, use the desktop app or Nuke/Blender.",
+    formatDeep:
+      "OpenEXR is Industrial Light & Magic's HDR format: floating-point pixels (16-bit 'half' or 32-bit float) in linear light, multiple layers, and per-image compression (PIZ, ZIP, B44). PNG is 8- or 16-bit integer sRGB with a hard ceiling at 1.0 white. Going from EXR to PNG is therefore a creative decision encoded as math — tone mapping (Reinhard, ACES) chooses which luminance range survives. One EXR can yield many legitimate PNGs; VFX and rendering pipelines standardize on EXR precisely because displays are not HDR-linear.",
+    batchLarge:
+      "Render passes are EXR farms — beauty, depth, normals, and motion vectors per frame, thousands of frames per shot. The desktop app batch-converts directories, exports 16-bit PNG or TIFF for the beauty pass, and can pull individual aux channels out as false-color images, with per-shot exposure settings riding along in the queue.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -677,7 +723,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "16-bit, TIFF, layer picks",
-        price: "Free tier + one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "Exports 16-bit PNG or TIFF (full HDR) and can select specific aux channels as false-color PNGs.",
       },
@@ -723,7 +769,11 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     metaDescription:
       "Decode GSM 06.10 to WAV free: online tool, desktop app, or ffmpeg. Voicemail & call recordings, quality notes, fixes.",
     quickAnswer:
-      "Yes. GSM 06.10 is 13 kbps speech; decoding to 16-bit PCM WAV is lossless and fast. The free online tool decodes in your browser (no upload). For batches or archival as FLAC, use the desktop app or ffmpeg.",
+      "Yes. GSM 06.10 is 13 kbps speech; decoding to 16-bit PCM WAV is lossless and fast — mathematically exact, though it still sounds like a phone call because GSM discarded those frequencies at encode time. The free online tool decodes in your browser with no upload; for voicemail batches or FLAC archival, use the desktop app or ffmpeg.",
+    formatDeep:
+      "GSM 06.10 (GSM Full Rate) is the RPE-LTP speech codec of 2G cellular: 13 kbps, mono, band-limited to roughly 300–3400 Hz, frame-based (160 samples per 33-byte frame). Decoding to WAV expands each frame back to 16-bit PCM — mathematically exact, which is why the output still sounds like a phone call: the codec discarded those frequencies at encode time and no tool can recover them. The format persists because voicemail systems, IVR platforms, and call recorders standardized on it decades ago and never left.",
+    batchLarge:
+      "Voicemail archives are the volume case: a mailbox export can be hundreds of .gsm files. The desktop app batch-decodes a folder to WAV and optionally re-wraps to FLAC for lossless archival — GSM→WAV is an exact decode, WAV→FLAC is lossless compression, while MP3 would add a further lossy generation.",
     methods: [
       {
         name: "nichefiletools online converter",
@@ -735,7 +785,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "Batches, voicemail archives",
-        price: "Free tier + one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "Process a folder of recordings and optionally re-wrap to FLAC for lossless archival.",
       },
@@ -782,6 +832,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Convert AVCHD MTS/M2TS to MP4 free: online FFmpeg tool (PC), desktop app, or HandBrake. Remux vs transcode, fixes.",
     quickAnswer:
       "Yes, on a PC. AVCHD MTS wraps H.264 in MPEG-TS; the free online tool remuxes it to MP4 (copy video, AAC audio) in your browser — no upload. Mobile browsers can't handle the 31 MB FFmpeg WASM, so they're guided to the desktop app. For 4K or batches use the desktop app.",
+    formatDeep:
+      "MTS/M2TS is AVCHD — the MPEG transport stream wrapper (H.264 video, AC-3 or PCM audio) used by HD camcorders from 2008 to the mid-2010s. MP4 is the ISO base media file format every player, editor, and platform actually wants. The streams inside are largely compatible, which is why most conversions are remuxes — the H.264 payload is copied bit-for-bit into the new container, with only the AC3 audio re-encoded to AAC where MP4 compatibility demands it. That distinction matters: remux is lossless and fast; transcode is neither, and is only needed for problem footage.",
+    batchLarge:
+      "A camcorder SD card is a folder of hundreds of clips — the desktop app batch-remuxes the lot, with NVENC/QSV hardware acceleration where a transcode is forced, and handles multi-GB 4K files the 100 MB web cap turns away. Multi-track audio survives via the desktop app's advanced options; the web tool keeps the first stream.",
     methods: [
       {
         name: "nichefiletools online converter (PC)",
@@ -793,7 +847,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "4K, batches, hardware accel",
-        price: "Free tier + one-time license",
+        price: "Free (hourly unlock code)",
         limit: "No file-size limit",
         notes: "Uses NVENC/QSV for 10x+ real-time and handles multi-GB 4K footage the web cap rejects.",
       },
@@ -839,7 +893,11 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     metaDescription:
       "Extract DOOM/Quake/BA2 WAD archives — desktop app only, no online tool. Selective extraction, type detection, fixes.",
     quickAnswer:
-      "WAD extraction is desktop-only — a browser can't safely memory-map or stream-decompress GB-scale archives. The free nichefiletools desktop app detects DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2, previews the file list, and extracts selectively with checksum verification.",
+      "WAD extraction is desktop-only — a browser cannot safely memory-map or stream-decompress GB-scale game archives. The free nichefiletools desktop app detects DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2 by magic bytes, previews the lump directory, and extracts selected entries with CRC32 checksum verification — no online tool can do this reliably.",
+    formatDeep:
+      "WAD — 'Where's All the Data' — is the lump-archive format id Software introduced with DOOM in 1993: a small header, a directory of lump entries (name, size, offset), then raw data. The family diverged over time: DOOM IWAD/PWAD for retail content and mods, Quake's WAD2/WAD3 for textures, and (via Bethesda) BA2 archives for the modern Gamebryo era. Because the container is just an index plus bytes, extraction is precise and verifiable — CRC32 checks confirm each lump against its stored checksum. Modding and game-preservation communities still live in these archives.",
+    batchLarge:
+      "Game archives run from a few MB (shareware WADs) past 10 GB (modern BA2s), so streaming native I/O matters: the desktop app reads the directory first, lets you extract only the lumps you need, and verifies checksums on write. Selective extraction is the batch story — pulling 200 lumps out of a 4 GB archive beats unpacking all of it.",
     methods: [
       {
         name: "nichefiletools desktop app",

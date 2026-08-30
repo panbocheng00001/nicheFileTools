@@ -36,7 +36,7 @@ const options: SupportOption[] = [
     icon: Mail,
     title: "Email support",
     body: SUPPORT_EMAIL,
-    note: "Free users: within 48 hours · Paid licenses: within 12 hours",
+    note: "Typical response: within 48 hours",
   },
   {
     icon: BookOpen,

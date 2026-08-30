@@ -38,8 +38,8 @@ export default function TermsPage() {
         </li>
         <li>
           Do not attempt to abuse the free desktop unlock system, including
-          automated requests, device-identifier manipulation, or reselling
-          keys.
+          automated bulk fetching of tool pages or misrepresenting the
+          Services as your own product.
         </li>
         <li>
           Do not interfere with, overload, or probe the Services or their
@@ -47,29 +47,17 @@ export default function TermsPage() {
         </li>
       </ul>
 
-      <h2>3. Free tier &amp; licenses</h2>
+      <h2>3. Free service &amp; unlock codes</h2>
       <p>
-        Online tools are free. The desktop application is gated per tool by a
-        free, hourly unlock code shown on the matching page of this site (see
+        All tools are free; there is no paid tier. The desktop application is
+        gated per tool by a free, hourly unlock code shown on the matching
+        page of this site (see{" "}
         <a href="/free-trial">How the unlock code works</a>). Codes are
         case-insensitive, rotate on the hour, and unlock only the tool whose
-        page they came from. Continued desktop use without re-grabbing a code
-        each hour is available with a paid license (see{" "}
-        <a href="/pricing">Pricing</a>); abusing the rate of unlock attempts
-        may result in refusal of service.
+        page they came from.
       </p>
 
-      <h2>4. Paid licenses</h2>
-      <p>
-        Paid licenses are a one-time purchase, bound to a device as described
-        on the <a href="/license">License page</a>, and include the update
-        window stated at purchase. License keys are personal and may not be
-        shared or resold. Refunds are handled per applicable consumer law;
-        contact us within 14 days of purchase if the software does not work as
-        described.
-      </p>
-
-      <h2>5. Disclaimer of warranties</h2>
+      <h2>4. Disclaimer of warranties</h2>
       <p>
         The Services are provided &ldquo;as is&rdquo; without warranty of any
         kind. Format conversion is inherently lossy for some formats; always
@@ -78,7 +66,7 @@ export default function TermsPage() {
         maximum extent permitted by law.
       </p>
 
-      <h2>6. Limitation of liability</h2>
+      <h2>5. Limitation of liability</h2>
       <p>
         To the maximum extent permitted by law, our aggregate liability
         arising from your use of the Services is limited to the amount you
@@ -86,14 +74,14 @@ export default function TermsPage() {
         services).
       </p>
 
-      <h2>7. Changes</h2>
+      <h2>6. Changes</h2>
       <p>
         We may update these terms as the Services evolve. Continued use after
         an update constitutes acceptance. The date at the top of this page
         reflects the current version.
       </p>
 
-      <h2>8. Contact</h2>
+      <h2>7. Contact</h2>
       <p>
         Questions about these terms: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
       </p>
