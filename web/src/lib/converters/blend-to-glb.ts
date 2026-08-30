@@ -9,7 +9,7 @@ import {
 
 // BLEND -> GLB requires parsing Blender's DNA structure. A correct parser needs a
 // bundled Blender/blend WASM which is not included in this web build, so we degrade
-// gracefully to the desktop app (which calls Blender's Python API). See 技术需求文档 §4.2.2.
+//gracefully to the desktop app (which calls Blender's Python API). See Technical Requirements Document §4.2.2.
 export class BlendToGlbConverter implements IConverter {
   readonly info: ConverterInfo = {
     id: "blend-to-glb",

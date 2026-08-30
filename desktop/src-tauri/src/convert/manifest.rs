@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// A single tool descriptor — the **desktop single source of truth** (技术文档 §3.4).
+/// A single tool descriptor — the **desktop single source of truth** (technical document §3.4).
 ///
 /// This mirrors `tools.json`, which is embedded into the binary at compile time
 /// and also consumed by the desktop UI. It is intentionally separate from the
@@ -23,15 +23,22 @@ pub struct ToolMeta {
     pub target: String,
     /// How the converter writes output: `"file"` (single output path) or
     /// `"dir"` (extracts into a directory, e.g. WAD). Drives batch output-path
-    /// derivation on the frontend (P3 批量队列).
+    /// derivation on the frontend (P3 batch queue).
     #[serde(default = "default_output_kind")]
     pub output_kind: String,
-    /// Optional user-facing guidance (e.g. "需安装 Calibre").
+    /// Optional user-facing guidance (e.g. "Requires Calibre").
     #[serde(default)]
     pub guide: Option<String>,
     /// Optional UI grouping category.
     #[serde(default)]
     pub category: Option<String>,
+    /// Slug of the matching page on nichefiletools.com, when it differs from
+    /// the desktop slug. Needed because the two catalogues are not identical
+    /// (desktop `step-to-stl` lives at `/tools/prt-to-stl` on the web). The
+    /// desktop app links to `/tools/{web_slug}` so users can fetch the unlock
+    /// code for a tool.
+    #[serde(default)]
+    pub web_slug: Option<String>,
 }
 
 fn default_output_kind() -> String {
@@ -129,6 +136,31 @@ mod tests {
                 t.slug
             );
         }
+    }
+
+    /// The web catalogue is not a byte-for-byte copy of the desktop one, so the
+    /// override has to be right or the "get the code" link 404s.
+    #[test]
+    fn web_slug_overrides_only_where_the_catalogues_differ() {
+        let step = tool("step-to-stl").expect("step-to-stl must exist");
+        assert_eq!(
+            step.web_slug.as_deref(),
+            Some("prt-to-stl"),
+            "desktop step-to-stl lives at /tools/prt-to-stl on the web"
+        );
+
+        // The frontend falls back to `slug` when this is null, so an override is
+        // only ever correct when the two catalogues genuinely disagree.
+        let overrides = tools()
+            .iter()
+            .filter(|t| t.web_slug.is_some())
+            .count();
+        for t in tools() {
+            if let Some(web) = t.web_slug.as_deref() {
+                assert_ne!(web, t.slug, "`{}` sets a redundant web_slug", t.slug);
+            }
+        }
+        assert_eq!(overrides, 1, "exactly one catalogue mismatch expected");
     }
 
     #[test]

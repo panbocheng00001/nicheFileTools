@@ -21,14 +21,14 @@ pub enum AppError {
     #[error("Invalid or corrupted file: {0}")]
     InvalidFile(String),
 
-    #[error("Free quota exhausted. Unlock with a free desktop key to continue.")]
-    QuotaExhausted,
+    /// The tool has no active unlock. Codes are per tool and refresh on the
+    /// hour; copy the current one from that tool's page on nichefiletools.com.
+    #[error("This tool is locked. Copy the current unlock code from its page on nichefiletools.com to unlock it for the next hour.")]
+    LicenseRequired(String),
 
-    #[error("Token / network error: {0}")]
-    Token(String),
-
-    #[error("Invalid key: {0}")]
-    InvalidKey(String),
+    /// The pasted code did not match this tool's code for the current hour.
+    #[error("That code is not valid for this tool right now. Codes refresh on the hour — copy the latest one from the tool's page.")]
+    InvalidCode,
 
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
@@ -59,9 +59,8 @@ impl From<AppError> for AppErrorPayload {
             AppError::MissingDependency(_) => "missing_dependency",
             AppError::EngineMissing(_) => "engine_missing",
             AppError::InvalidFile(_) => "invalid_file",
-            AppError::QuotaExhausted => "quota_exhausted",
-            AppError::Token(_) => "token",
-            AppError::InvalidKey(_) => "invalid_key",
+            AppError::LicenseRequired(_) => "license_required",
+            AppError::InvalidCode => "invalid_code",
             AppError::Json(_) => "json",
             AppError::SidecarSpawn(_) => "sidecar_spawn",
             AppError::SidecarFailed(_) => "sidecar_failed",
@@ -80,8 +79,9 @@ mod tests {
     use super::*;
 
     /// Every variant must keep its stable, snake_case `code`. The frontend
-    /// branches on these exact strings (e.g. `quota_exhausted` opens the unlock
-    /// modal), so a silent rename here would break UX without failing to compile.
+    /// branches on these exact strings (e.g. `license_required` switches the
+    /// tool card into its locked state), so a silent rename here would break UX
+    /// without failing to compile.
     #[test]
     fn every_variant_maps_to_a_stable_code() {
         let json_err = serde_json::from_str::<u32>("not a number").unwrap_err();
@@ -95,9 +95,11 @@ mod tests {
             (AppError::MissingDependency("t".into()), "missing_dependency"),
             (AppError::EngineMissing("ffmpeg".into()), "engine_missing"),
             (AppError::InvalidFile("t".into()), "invalid_file"),
-            (AppError::QuotaExhausted, "quota_exhausted"),
-            (AppError::Token("t".into()), "token"),
-            (AppError::InvalidKey("t".into()), "invalid_key"),
+            (
+                AppError::LicenseRequired("t".into()),
+                "license_required",
+            ),
+            (AppError::InvalidCode, "invalid_code"),
             (AppError::Json(json_err), "json"),
             (AppError::SidecarSpawn("t".into()), "sidecar_spawn"),
             (AppError::SidecarFailed("t".into()), "sidecar_failed"),
@@ -120,9 +122,8 @@ mod tests {
             "missing_dependency",
             "engine_missing",
             "invalid_file",
-            "quota_exhausted",
-            "token",
-            "invalid_key",
+            "license_required",
+            "invalid_code",
             "json",
             "sidecar_spawn",
             "sidecar_failed",
@@ -132,18 +133,18 @@ mod tests {
         for c in codes {
             assert!(seen.insert(c), "duplicate error code `{c}`");
         }
-        assert_eq!(seen.len(), 13);
+        assert_eq!(seen.len(), 12);
     }
 
-    /// `ToolConverter.runBatch` detects quota exhaustion with `/quota exhausted/i`
-    /// on the error *message*. Keep the user-facing copy in sync with that check.
+    /// The locked-tool copy must name the site, because the whole flow depends
+    /// on the user knowing where to fetch a code.
     #[test]
-    fn quota_message_matches_frontend_detection() {
-        let payload: AppErrorPayload = AppError::QuotaExhausted.into();
-        assert_eq!(payload.code, "quota_exhausted");
+    fn license_required_message_points_at_the_site() {
+        let payload: AppErrorPayload = AppError::LicenseRequired("kfx-to-epub".into()).into();
+        assert_eq!(payload.code, "license_required");
         assert!(
-            payload.message.to_lowercase().contains("quota exhausted"),
-            "message must contain \"quota exhausted\", got: {}",
+            payload.message.contains("nichefiletools.com"),
+            "message must tell the user where to get a code, got: {}",
             payload.message
         );
     }

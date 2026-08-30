@@ -105,10 +105,10 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
       aria-label="Conversion tool"
       className="relative overflow-hidden rounded-2xl border border-border/50 bg-background/60 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md sm:p-6 lg:p-8"
     >
-      {/* 描边光晕 */}
+      {/*stroke glow*/}
       <div className="pointer-events-none absolute -inset-0.5 -z-10 rounded-2xl bg-gradient-to-b from-primary/20 to-transparent opacity-20 blur" />
 
-      {/* 拖拽区 */}
+      {/*drag area*/}
       <div
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -147,7 +147,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </p>
       </div>
 
-      {/* PFM→TTF 的第二个上传区：配套 .pfb（含字形轮廓） */}
+      {/*The second upload area of ​​PFM→TTF: supporting .pfb (including glyph outline)*/}
       {needsCompanion && file && !error && !desktopMessage && !result && (
         <div className="mt-4 rounded-xl border border-dashed border-border/70 p-4">
           <p className="mono-label mb-2">
@@ -186,7 +186,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </div>
       )}
 
-      {/* 选项面板（如 RAW→WAV 的采样率/位深/声道） */}
+      {/*Options panel (such as RAW→WAV sample rate/bit depth/channels)*/}
       {tool.webOptions && file && !error && !desktopMessage && !result && (
         <div className="mt-4 grid gap-3 rounded-xl border border-border/50 bg-muted/20 p-4 sm:grid-cols-3">
           {tool.webOptions.map((opt) => (
@@ -210,7 +210,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </div>
       )}
 
-      {/* 已选文件 + 转换按钮 */}
+      {/*Selected files + Convert button*/}
       {file && !desktopMessage && !error && (!needsCompanion || companionFile) && (
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="truncate font-mono text-sm text-foreground">
@@ -235,14 +235,14 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </p>
       )}
 
-      {/* 进度条 */}
+      {/*progress bar*/}
       {converting && (
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div className="h-full w-1/3 animate-pulse rounded-full bg-primary" />
         </div>
       )}
 
-      {/* 错误（危险色） */}
+      {/*Error (danger color)*/}
       {error && (
         <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -250,7 +250,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </div>
       )}
 
-      {/* 桌面端引导 */}
+      {/*Desktop boot*/}
       {desktopMessage && (
         <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
           <p className="leading-relaxed text-foreground">{desktopMessage}</p>
@@ -263,7 +263,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         </div>
       )}
 
-      {/* 结果（成功色） */}
+      {/*Result (success color)*/}
       {result && (
         <div className="mt-4 rounded-xl border border-success/30 bg-success/10 p-5">
           <p className="text-sm text-foreground">

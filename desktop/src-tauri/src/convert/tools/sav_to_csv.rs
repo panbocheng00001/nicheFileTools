@@ -14,7 +14,7 @@ use crate::convert::sidecar::run_command;
 /// Python's `pandas.read_spss` (which wraps the C `readstat` library). We shell
 /// out to a detected Python interpreter as a **separate process** (MIT). If
 /// `pandas` is not installed we return a clear `MissingDependency` guiding the
-/// user to `pip install pandas` (技术文档 §7.7).
+/// user to `pip install pandas` (technical document §7.7).
 pub struct SavToCsvConverter;
 
 impl Converter for SavToCsvConverter {

@@ -1,7 +1,7 @@
-// EXR (OpenEXR) → PNG：纯 JS 解码器（技术需求文档 §4.3.2）。
-// 支持单 part 的 scanline EXR，压缩方式：NO_COMPRESSION / RLE / ZIPS / ZIP / PXR24。
-// PIZ / B44 / B44A / DWAA / DWAB 及 tiled / multipart 如实报错（与 eot-to-ttf 的处理风格一致）。
-// 解码后做色调映射（Reinhard / ACES Filmic）+ sRGB gamma，再用 upng-js 编码 PNG。
+//EXR (OpenEXR) → PNG: Pure JS decoder (Technical Requirements Document §4.3.2).
+//Supports single part scanline EXR, compression method: NO_COMPRESSION / RLE / ZIPS / ZIP / PXR24.
+//PIZ / B44 / B44A / DWAA / DWAB and tiled / multipart report errors truthfully (consistent with the processing style of eot-to-ttf).
+//After decoding, do tone mapping (Reinhard/ACES Filmic) + sRGB gamma, and then use upng-js to encode PNG.
 import UPNG from "upng-js";
 import {
   IConverter,
@@ -11,7 +11,7 @@ import {
   defaultValidate,
 } from "./interfaces";
 
-// ---- 低层解压（zlib / raw deflate 通过 DecompressionStream）----
+//---- Low-level decompression (zlib/raw deflate via DecompressionStream)----
 async function inflateZlib(bytes: Uint8Array): Promise<Uint8Array> {
   // OpenEXR ZIP/ZIPS use RAW DEFLATE (RFC 1951), not zlib-wrapped.
   const ds = new DecompressionStream("deflate-raw");
@@ -20,7 +20,7 @@ async function inflateZlib(bytes: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(buf);
 }
 
-// 半精度浮点 (IEEE 754 half) → 单精度浮点
+//half-precision floating point (IEEE 754 half) → single-precision floating point
 function halfToFloat(h: number): number {
   const s = (h & 0x8000) >> 15;
   const e = (h & 0x7c00) >> 10;
@@ -56,7 +56,7 @@ interface ExrHeader {
   compression: number;
 }
 
-// 解析头（只读单 part scanline 的常见情况）
+//Parsing headers (common case of read-only single part scanline)
 function parseHeader(view: DataView, u8: Uint8Array): { header: ExrHeader; dataOffset: number } {
   let o = 0;
   for (let i = 0; i < 4; i++) {
@@ -82,7 +82,7 @@ function parseHeader(view: DataView, u8: Uint8Array): { header: ExrHeader; dataO
     );
   }
 
-  // 属性列表，直到 name 为空
+  //list of properties until name is empty
   let xMin = 0,
     yMin = 0,
     xMax = 0,
@@ -96,7 +96,7 @@ function parseHeader(view: DataView, u8: Uint8Array): { header: ExrHeader; dataO
     while (u8[o] !== 0) {
       s += String.fromCharCode(u8[o++]);
     }
-    o++; // 跳过 null
+    o++; //skip null
     return s;
   };
   const readAttrValue = (size: number): Uint8Array => {
@@ -123,7 +123,7 @@ function parseHeader(view: DataView, u8: Uint8Array): { header: ExrHeader; dataO
         yMax = dv.getInt32(12, true);
       }
     } else if (type === "chlist") {
-      // 解析 channel 列表
+      //Parse channel list
       const end = o + size;
       while (o < end) {
         const cname = readString();
@@ -171,7 +171,7 @@ function parseHeader(view: DataView, u8: Uint8Array): { header: ExrHeader; dataO
     throw new Error("EXR dimensions are out of range.");
   }
 
-  // 通道按字母序排序（EXR 数据按此顺序存储）
+  //Channels are sorted alphabetically (EXR data is stored in this order)
   channels.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
   // OpenEXR scanline-offset table: one int64 per scanline BLOCK, placed
@@ -194,7 +194,7 @@ function parseHeader(view: DataView, u8: Uint8Array): { header: ExrHeader; dataO
   };
 }
 
-// 解压单条 scanline 的像素字节（含 EXR 的预测/PXR24 还原）
+//Decompress the pixel bytes of a single scanline (including EXR prediction/PXR24 restoration)
 async function decompressScanline(
   comp: number,
   raw: Uint8Array,
@@ -205,8 +205,8 @@ async function decompressScanline(
       return raw;
     case 1: // RLE
       return rleDecode(raw, expectedBytes);
-    case 2: // ZIPS（单 scanline deflate + uint16 预测）
-    case 3: // ZIP（deflate + uint16 预测）
+    case 2: //ZIPS (single scanline deflate + uint16 prediction)
+    case 3: //ZIP (deflate + uint16 prediction)
       return unzipPredict(await inflateZlib(raw), expectedBytes);
     case 5: // PXR24
       throw new Error(
@@ -243,7 +243,7 @@ function rleDecode(raw: Uint8Array, expected: number): Uint8Array {
   return out;
 }
 
-// ZIP/ZIPS：解压后是"预测"后的字节，按 uint16 数组做累加还原
+//ZIP/ZIPS: After decompression, it is the "predicted" bytes, which are restored cumulatively according to the uint16 array.
 function unzipPredict(inflated: Uint8Array, expected: number): Uint8Array {
   const out = inflated.slice(0, expected);
   // Offset-agnostic: read/write the uint16 values via explicit byte indexing
@@ -259,7 +259,7 @@ function unzipPredict(inflated: Uint8Array, expected: number): Uint8Array {
   return out;
 }
 
-// 从一条 scanline 的字节中按通道顺序读取样本到 float
+//Read samples in channel order from bytes of a scanline to float
 function readSample(
   ch: Channel,
   u8: Uint8Array,
@@ -297,7 +297,7 @@ export class ExrToPngConverter implements IConverter {
     const view = new DataView(buf);
     const { header, dataOffset } = parseHeader(view, u8);
 
-    // 选取颜色通道
+    //Select color channel
     const lower = (s: string) => s.toLowerCase();
     const find = (n: string) =>
       header.channels.find((c) => lower(c.name) === lower(n));
@@ -341,9 +341,9 @@ export class ExrToPngConverter implements IConverter {
       }
       const row = await decompressScanline(header.compression, raw, bytesPerRow);
 
-      // 每条 scanline 内像素按 pixelStride 顺序排布：
-      // 第 x 个像素从 bo = x * pixelStride 开始读取，否则每个像素都会
-      // 从行首读起（导致第 2、3... 像素重复第 1 个像素的颜色）。
+      //Pixels in each scanline are arranged in pixelStride order:
+      //The x-th pixel is read starting from bo = x * pixelStride, otherwise every pixel will
+      //Read from the beginning of the line (causing pixels 2, 3... to repeat the color of pixel 1).
       const pixelStride = bytesPerRow / width;
       const rowBase = (sy - yMin) * width;
       for (let x = 0; x < width; x++) {
@@ -369,7 +369,7 @@ export class ExrToPngConverter implements IConverter {
       }
     }
 
-    // 色调映射 + gamma
+    //tone mapping + gamma
     const p = options.params ?? {};
     const tone = (p.toneMap ?? "reinhard").toLowerCase();
     const exposure = Math.max(0.01, Math.min(20, Number(p.exposure ?? 1)));
@@ -427,7 +427,7 @@ function toneMap(
   return out;
 }
 
-// ACES Filmic (Narkowicz 近似)
+//ACES Filmic (Narkowicz approximation)
 function aces(x: number): number {
   const a = 2.51,
     b = 0.03,

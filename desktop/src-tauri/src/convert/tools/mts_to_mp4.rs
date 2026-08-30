@@ -8,7 +8,7 @@ use crate::errors::AppError;
 /// MTS / M2TS (AVCHD, MPEG-2 TS) -> MP4.
 ///
 /// Most MTS clips only need a container remux (`-c copy`); FFmpeg (bundled, LGPL)
-/// is invoked as a separate process (技术文档 §8.2).
+/// is invoked as a separate process (technical document §8.2).
 pub struct MtsToMp4Converter;
 
 impl Converter for MtsToMp4Converter {

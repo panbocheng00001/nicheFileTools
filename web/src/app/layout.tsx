@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
-import { SITE, BRAND, SUPPORT_EMAIL } from "@/lib/site";
+import { SITE, BRAND, SUPPORT_EMAIL, REPO_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: {
@@ -24,13 +24,23 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-/** Full-site WebSite + Organization schema — Full-site specification §7.4 / Entity SEO (Appendix A "Full-site" line)*/
+/**
+ * Full-site WebSite + Organization + SoftwareSourceCode schema.
+ *
+ * Full-site specification §7.4 / Entity SEO (Appendix A "Full-site" line).
+ *
+ * `sameAs` is the load-bearing field here: it lets Google tie the
+ * "nichefiletools" entity to a real, verifiable GitHub profile instead of
+ * guessing. The repository is also described as `SoftwareSourceCode` so the
+ * open-source claim is machine-readable, not just marketing copy.
+ */
 const globalJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: BRAND,
     url: SITE,
+    publisher: { "@type": "Organization", name: BRAND, url: SITE },
   },
   {
     "@context": "https://schema.org",
@@ -38,11 +48,25 @@ const globalJsonLd = [
     name: BRAND,
     url: SITE,
     logo: `${SITE}/logo.png`,
+    sameAs: [REPO_URL],
     contactPoint: {
       "@type": "ContactPoint",
       email: SUPPORT_EMAIL,
       contactType: "customer support",
     },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    name: BRAND,
+    description:
+      "Open-source file converters: browser-based web app plus a Tauri 2 desktop app with native Rust conversion kernels.",
+    codeRepository: REPO_URL,
+    programmingLanguage: ["TypeScript", "Rust"],
+    runtimePlatform: ["Web Browser", "Windows", "macOS", "Linux"],
+    // `license` intentionally omitted until a LICENSE file exists in the repo —
+    // claiming one that isn't there is worse for trust than leaving it out.
+    author: { "@type": "Organization", name: BRAND, url: SITE },
   },
 ];
 

@@ -6,6 +6,7 @@ import { CONVERT_GUIDES, getGuide } from "@/lib/convert-content";
 import { getTool } from "@/lib/tools-data";
 import { SITE } from "@/lib/site";
 import { Share } from "@/components/Share";
+import { DesktopCodeCard } from "@/components/DesktopCodeCard";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -31,20 +32,18 @@ export default async function ConvertGuidePage({ params }: Params) {
   const guide = getGuide(slug);
   const tool = getTool(slug);
   if (!guide || !tool) notFound();
+  // Claim-consistency (SEO spec v1.3 §1.2): degraded tools have no web page CTA.
+  const hasWebTool = tool.className !== "C" && tool.webStatus !== "desktop";
 
-  // Schema：HowTo（真实步骤）+ Article（author=Organization，不虚构真人）+ BreadcrumbList
+  //Schema: HowTo (real steps) + Article (author=Organization, not fictional real people) + BreadcrumbList
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "HowTo",
       name: `How to Convert ${tool.sourceFormat} to ${tool.targetFormat}`,
       description: guide.metaDescription,
-      totalTime:
-        tool.className === "C"
-          ? "PT10M"
-          : tool.webMaxFilePc > 52428800
-            ? "PT3M"
-            : "PT1M",
+      // totalTime intentionally omitted: schema fields must be measured, not
+      // guessed from file-size buckets (SEO spec v1.3 §1.3).
       step: guide.desktopSteps.map((s, i) => ({
         "@type": "HowToStep",
         position: i + 1,
@@ -96,7 +95,7 @@ export default async function ConvertGuidePage({ params }: Params) {
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 gap-10 xl:grid-cols-12">
         <article className="xl:col-span-8">
-          {/* 面包屑 */}
+          {/*bread crumbs*/}
           <nav aria-label="Breadcrumb" className="mb-8">
             <ol className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
               <li>
@@ -139,12 +138,12 @@ export default async function ConvertGuidePage({ params }: Params) {
           />
 
           <div className="seo-prose">
-            {/* 开篇结论（AI Overview 抓取位） */}
+            {/*Opening conclusion (AI Overview grab bit)*/}
             <p>
               <strong>Quick answer:</strong> {guide.quickAnswer}
             </p>
 
-            {/* 方法对比 */}
+            {/*Method comparison*/}
             <h2>
               Ways to Convert {tool.sourceFormat} to {tool.targetFormat}
             </h2>
@@ -178,7 +177,7 @@ export default async function ConvertGuidePage({ params }: Params) {
               </p>
             ))}
 
-            {/* 在线工具 CTA（仅 A/B 类有网页工具） */}
+            {/*Online tool CTA (only category A/B has web tool)*/}
             {tool.className !== "C" && (
               <div className="glass my-8 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -199,7 +198,7 @@ export default async function ConvertGuidePage({ params }: Params) {
               </div>
             )}
 
-            {/* 桌面分步教程 */}
+            {/*Desktop step-by-step tutorial*/}
             <h2>
               Step-by-Step: {tool.sourceFormat} to {tool.targetFormat} on
               Desktop
@@ -212,10 +211,10 @@ export default async function ConvertGuidePage({ params }: Params) {
             {guide.desktopNote && <p>{guide.desktopNote}</p>}
             <p>
               <Link href="/download">Download the free desktop app →</Link>{" "}
-              <Link href="/free-trial">How the free unlock key works →</Link>
+              <Link href="/free-trial">How the unlock code works →</Link>
             </p>
 
-            {/* 排错 */}
+            {/*Troubleshooting*/}
             <h2>Common Problems &amp; Solutions</h2>
             {guide.troubleshooting.map((t) => (
               <div key={t.problem}>
@@ -224,12 +223,12 @@ export default async function ConvertGuidePage({ params }: Params) {
               </div>
             ))}
 
-            {/* 结论 */}
+            {/*in conclusion*/}
             <h2>Conclusion</h2>
             <p>{guide.conclusion}</p>
             <p>
               Ready to convert?{" "}
-              {tool.className !== "C" ? (
+              {hasWebTool ? (
                 <>
                   Try the free{" "}
                   <Link href={`/tools/${tool.slug}`}>{tool.h1}</Link>, or
@@ -241,9 +240,10 @@ export default async function ConvertGuidePage({ params }: Params) {
           </div>
         </article>
 
-        {/* 侧栏 */}
+        {/*sidebar*/}
         <aside className="xl:col-span-4">
           <div className="space-y-6 xl:sticky xl:top-24">
+            <DesktopCodeCard slug={tool.slug} toolName={tool.name} />
             <section className="glass-panel p-5">
               <div className="mb-3 flex items-center gap-2">
                 <MonitorSmartphone className="h-5 w-5 text-primary" />
@@ -254,9 +254,9 @@ export default async function ConvertGuidePage({ params }: Params) {
               <ul className="space-y-2.5 text-sm leading-relaxed text-muted-foreground">
                 <li className="flex gap-2">
                   <span className="text-primary">▹</span>
-                  {tool.className === "C"
-                    ? `Desktop only — browsers cannot process ${tool.sourceFormat} files.`
-                    : `Web: up to ${Math.round(tool.webMaxFilePc / 1024 / 1024)} MB, instant, private.`}
+                  {hasWebTool
+                    ? `Web: up to ${Math.round(tool.webMaxFilePc / 1024 / 1024)} MB, instant, private.`
+                    : `Desktop only — browsers cannot process ${tool.sourceFormat} files reliably.`}
                 </li>
                 <li className="flex gap-2">
                   <span className="text-primary">▹</span>
@@ -264,7 +264,7 @@ export default async function ConvertGuidePage({ params }: Params) {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-primary">▹</span>
-                  Free desktop trial: 2 conversions per device.
+                  Codes refresh on the hour — one code, one tool, one hour.
                 </li>
               </ul>
               <Link

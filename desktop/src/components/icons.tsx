@@ -67,6 +67,21 @@ export const CheckIcon = (p: IconProps) => (
   </Svg>
 );
 
+export const LockIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4" y="10" width="16" height="11" rx="2" />
+    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+  </Svg>
+);
+
+export const ExternalLinkIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4 11 13" />
+    <path d="M18 14v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5" />
+  </Svg>
+);
+
 export const XIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M6 6l12 12M18 6 6 18" />

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const card = "glass p-6 sm:p-8";
 
-/* ===== 面包屑：mono 大写 ===== */
+/*===== Breadcrumbs: mono uppercase =====*/
 export function Breadcrumbs({ tool }: { tool: ToolContent }) {
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
@@ -32,7 +32,7 @@ export function Breadcrumbs({ tool }: { tool: ToolContent }) {
   );
 }
 
-/* ===== 工具 Hero：渐变主词 + mono 徽章 ===== */
+/*===== Tools Hero: gradient subject + mono badge =====*/
 function ClassBadge({ tool }: { tool: ToolContent }) {
   const map: Record<string, { label: string; cls: string }> = {
     A: { label: "Online only", cls: "bg-primary/20 text-primary" },
@@ -72,7 +72,8 @@ export function ToolHero({ tool }: { tool: ToolContent }) {
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
         {desktopOnly
-          ? "Free desktop application for optical disc images."
+          ? (tool.desktopOnlyIntro ??
+            "Free desktop application — this conversion is not available in the browser.")
           : "Free online tool. No upload — your files never leave your device."}
       </p>
       {!desktopOnly && (
@@ -86,7 +87,7 @@ export function ToolHero({ tool }: { tool: ToolContent }) {
   );
 }
 
-/* ===== SEO 长文区块 ===== */
+/*===== SEO Long Article Block =====*/
 function Section({ title, body }: { title: string; body: string }) {
   return (
     <section>
@@ -110,7 +111,9 @@ export function SeoContent({ tool }: { tool: ToolContent }) {
         />
         <Section
           title={`How to Convert ${tool.sourceFormat} to ${tool.targetFormat}${
-            tool.className === "C" ? " (Desktop)" : " Online Free"
+            tool.className === "C" || tool.webStatus === "desktop"
+              ? " (Desktop)"
+              : " Online Free"
           }`}
           body={tool.howTo}
         />
@@ -155,7 +158,7 @@ export function FaqSection({ tool }: { tool: ToolContent }) {
   );
 }
 
-/* ===== 教程入口卡（侧栏，/tools ↔ /convert 双向互链） ===== */
+/*===== Tutorial entry card (sidebar, /tools ↔ /convert two-way interlinking) =====*/
 export function GuideCard({ slug }: { slug: string }) {
   const guide = getGuide(slug);
   const tool = getTool(slug);
@@ -181,7 +184,7 @@ export function GuideCard({ slug }: { slug: string }) {
   );
 }
 
-/* ===== 相关工具（侧栏） ===== */
+/*===== Related Tools (Sidebar) =====*/
 export function RelatedTools({ tool }: { tool: ToolContent }) {
   const related = tool.relatedTools
     .map((s) => getTool(s))
@@ -218,7 +221,7 @@ export function RelatedTools({ tool }: { tool: ToolContent }) {
   );
 }
 
-/* ===== 桌面端专属 CTA（C 类工具） ===== */
+/*===== Desktop-exclusive CTA (C-type tool) =====*/
 export function DesktopOnlyCta({ tool }: { tool: ToolContent }) {
   return (
     <section className={`${card} border-primary/30`}>
@@ -246,7 +249,7 @@ export function DesktopOnlyCta({ tool }: { tool: ToolContent }) {
   );
 }
 
-/* ===== 信任卡（侧栏 EEAT） ===== */
+/*===== Trust Card (Sidebar EEAT) =====*/
 export function TrustCard() {
   return (
     <section className="glass-panel p-5">

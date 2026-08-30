@@ -65,7 +65,7 @@ export default async function CategoryPage({ params }: Params) {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
-      {/* 面包屑 */}
+      {/*bread crumbs*/}
       <nav aria-label="Breadcrumb" className="mb-8">
         <ol className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           <li>
@@ -96,7 +96,7 @@ export default async function CategoryPage({ params }: Params) {
         </p>
       </header>
 
-      {/* 工具网格 */}
+      {/*tool grid*/}
       <section aria-label={`${meta.label} converters`} className="mt-12">
         <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
           All {meta.label} Converters
@@ -120,7 +120,7 @@ export default async function CategoryPage({ params }: Params) {
                     Class {t.className}
                   </span>
                   <span className="mono-label">
-                    {t.className === "C"
+                    {t.className === "C" || t.webStatus === "desktop"
                       ? "Desktop only"
                       : `≤ ${Math.round(t.webMaxFilePc / 1024 / 1024)} MB web`}
                   </span>
@@ -131,7 +131,7 @@ export default async function CategoryPage({ params }: Params) {
         </ul>
       </section>
 
-      {/* 选型建议 */}
+      {/*Selection suggestions*/}
       <section className="glass mt-10 p-6 sm:p-8">
         <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
           Which {meta.label} converter do you need?

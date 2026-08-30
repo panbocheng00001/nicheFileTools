@@ -1,4 +1,4 @@
-// 共享的 FFmpeg (WASM) 单例加载器：MTS→MP4 与 GSM→WAV 共用同一引擎，避免重复加载 31MB core。
+//Shared FFmpeg (WASM) singleton loader: MTS→MP4 and GSM→WAV share the same engine to avoid repeated loading of the 31MB core.
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
 

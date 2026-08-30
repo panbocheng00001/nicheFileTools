@@ -9,7 +9,7 @@ use super::run_command;
 ///
 /// PTC Creo `.prt` is proprietary and **not** supported by FreeCAD — callers
 /// must first export to STEP/IGES in Creo. OCCT is LGPL and invoked as a
-/// separate `freecadcmd` process (技术文档 §8.6).
+/// separate `freecadcmd` process (technical document §8.6).
 pub fn step_to_stl(occt: &Path, input: &Path, output: &Path) -> Result<u64, AppError> {
     let script = format!(
         "import FreeCAD, Mesh\n\

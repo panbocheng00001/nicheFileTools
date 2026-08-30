@@ -15,6 +15,7 @@ import {
 } from "@/components/content";
 import ToolConverter from "@/components/ToolConverter";
 import { Share } from "@/components/Share";
+import { DesktopCodeCard } from "@/components/DesktopCodeCard";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -52,7 +53,7 @@ export default async function ToolPage({ params }: Params) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 gap-10 xl:grid-cols-12">
-        {/* 左：8 列 — Hero + 工具 + SEO 长文 */}
+        {/*Left: 8 columns — Hero + Tools + SEO Long Article*/}
         <div className="xl:col-span-8">
           <Breadcrumbs tool={tool} />
           <ToolHero tool={tool} />
@@ -65,11 +66,14 @@ export default async function ToolPage({ params }: Params) {
           <SeoContent tool={tool} />
         </div>
 
-        {/* 右：4 列 — sticky 侧栏 */}
+        {/*Right: 4 columns — sticky sidebar*/}
         <aside className="xl:col-span-4">
           <div className="space-y-6 xl:sticky xl:top-24">
+            <DesktopCodeCard slug={tool.slug} toolName={tool.name} />
             <GuideCard slug={tool.slug} />
-            <TrustCard />
+            {/* Privacy card claims in-browser conversion — only show it for
+                tools that actually convert in the browser (spec v1.3 §1.2). */}
+            {!isDesktopOnly && <TrustCard />}
             <RelatedTools tool={tool} />
           </div>
         </aside>

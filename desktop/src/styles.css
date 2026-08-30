@@ -184,6 +184,33 @@ body {
   overflow: hidden;
 }
 
+/* Shown only when the bundle runs in a plain browser (no Tauri IPC). */
+.preview-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  padding: 9px 22px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--warning-text);
+  background: var(--warning-soft);
+  border-bottom: 1px solid var(--warning-border);
+}
+.preview-banner strong {
+  font-weight: 700;
+}
+.preview-banner code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  padding: 1px 5px;
+  border-radius: var(--r-xs);
+  background: color-mix(in srgb, var(--warning-border) 55%, transparent);
+}
+.preview-banner > svg {
+  flex: none;
+}
+
 .topbar {
   display: flex;
   align-items: center;
@@ -244,7 +271,7 @@ body {
   gap: 10px;
   flex: none;
 }
-.quota-pill {
+.license-pill {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -256,18 +283,36 @@ body {
   color: var(--text-2);
   white-space: nowrap;
 }
-.quota-pill .dot {
+.license-pill .dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: var(--success);
   flex: none;
 }
-.quota-pill.paid .dot {
-  background: var(--accent);
-}
-.quota-pill.low .dot {
+.license-pill.low .dot {
   background: var(--warning);
+}
+/* Locked / unlocked state of the tool currently on screen. */
+.license-pill.unlocked {
+  color: var(--success);
+  border-color: var(--success-border);
+  background: var(--success-soft);
+}
+.license-pill.unlocked .dot {
+  background: var(--success);
+}
+.license-pill.low.unlocked {
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+  background: var(--warning-soft);
+}
+.license-pill.low.unlocked .dot {
+  background: var(--warning);
+}
+.license-pill.total {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
 }
 
 .icon-btn {
@@ -408,6 +453,15 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.navitem-lock {
+  flex: none;
+  margin-right: 6px;
+  vertical-align: -1px;
+  color: var(--text-3);
+}
+.navitem-lock.unlocked {
+  color: var(--success);
 }
 .navitem-fmt {
   font-size: 11px;
@@ -568,6 +622,117 @@ body {
 }
 
 /* ============================== Engine warning ============================== */
+/* ========================= Per-tool unlock panel ========================= */
+.license-panel {
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: var(--surface-2);
+}
+.license-panel.unlocked {
+  background: var(--success-soft);
+  border-color: var(--success-border);
+}
+.license-panel.unlocked.low {
+  background: var(--warning-soft);
+  border-color: var(--warning-border);
+}
+.license-panel.locked {
+  background: var(--warning-soft);
+  border-color: var(--warning-border);
+}
+.license-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.license-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+.license-panel.unlocked .license-icon {
+  color: var(--success);
+}
+.license-panel.unlocked.low .license-icon {
+  color: var(--warning-text);
+}
+.license-panel.locked .license-icon {
+  color: var(--warning-text);
+}
+.license-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.license-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.license-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.license-clock {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.license-actions {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.license-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.license-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.license-input::placeholder {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-3);
+}
+.license-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--ring);
+}
+.license-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--danger);
+}
+.license-note {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
 .engine-warn {
   display: flex;
   flex-direction: column;

@@ -16,6 +16,8 @@ export interface ToolDef {
   outputKind: string;
   description: string;
   engines: string[];
+  /** Slug of the matching page on nichefiletools.com (differs for step-to-stl). */
+  webSlug: string;
 }
 
 /// Map a backend `ToolMeta` to the UI `ToolDef`.
@@ -33,8 +35,9 @@ export function toToolDef(m: ToolMeta): ToolDef {
     sourceExt,
     sourceExts: m.source.length ? m.source : [m.source[0] ?? ""],
     targetExt: m.target,
-    outputKind: m.outputKind || "file",
+    outputKind: m.output_kind || "file",
     description: m.guide ?? `Convert ${sourceFormat} to ${targetFormat}.`,
     engines: m.engines,
+    webSlug: m.web_slug || m.slug,
   };
 }

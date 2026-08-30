@@ -1,8 +1,10 @@
 /**
- * /convert/[slug] 教程页内容 — 全站规范 §2.2
- * 与 /tools/* 的分工：工具页重「执行」，本页重「方法对比 + 桌面教程 + 排错」。
- * 红线：不得复用 /tools 页正文段落（重复度 <30%）；步骤须真实。
+* /convert/[slug] Tutorial page content — Site-wide specifications §2.2
+* Division of labor with /tools/*: The tools page focuses on "execution", and this page focuses on "method comparison + desktop tutorial + troubleshooting".
+* Red line: Do not reuse the body paragraphs of the /tools page (repetition <30%); the steps must be true.
  */
+
+import { REPO_ISSUES_URL } from "./site";
 
 export interface ConvertMethod {
   name: string;
@@ -14,15 +16,25 @@ export interface ConvertMethod {
 
 export interface ConvertGuide {
   slug: string;
-  title: string; // ≤60 字符（含品牌模板后缀）
-  metaDescription: string; // ≤160 字符
+  title: string; //≤60 characters (including brand template suffix)
+  metaDescription: string; //≤155 characters
   quickAnswer: string;
+  /** §3.2 格式深度解析：定义 + 行业应用 + 优缺点（原创，与 /tools/ whatIs 重复 <30%） */
+  formatDeep: string;
   methods: ConvertMethod[];
-  /** 分步教程小节标题（默认 "… on Desktop"）；在线工具类工具用在线步骤标题 */
+  /** §3.2 在线操作步骤（仅网页转换器真实可用时填写） */
+  onlineSteps?: string[];
+  /** Step-by-step tutorial section title (default "... on Desktop"); online tool tools use online step titles*/
   stepsTitle?: string;
   desktopSteps: string[];
   desktopNote?: string;
   troubleshooting: { problem: string; fix: string }[];
+  /** §3.2 批量 / 大文件专属方案 */
+  batchLarge: string;
+  /** §3.2 页级 FAQ（与 /tools/ 页 FAQ 差异化，2 条为宜） */
+  faqs?: { question: string; answer: string }[];
+  /** §7.1 最后更新日期（页脚标注 + Article dateModified） */
+  updated?: string;
   conclusion: string;
 }
 
@@ -45,9 +57,9 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "Batch conversion, large libraries",
-        price: "2 free conversions per device, then a one-time license",
+        price: "Free hourly codes (per tool), then a one-time license",
         limit: "No file-size limit",
-        notes: "Native processing for entire book folders. Start with the free unlock key to try it on two books before paying anything.",
+        notes: "Native processing for entire book folders. Open the desktop app, pick a tool, and paste the current hourly code from its page here — no payment needed for the first hour, and a one-time license removes the limit.",
       },
       {
         name: "Calibre + KFX Input plugin",
@@ -64,7 +76,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Click Convert — the app reports progress and writes the EPUB next to your chosen path.",
     ],
     desktopNote:
-      "First time using the desktop app? The free unlock key grants 2 conversions per device — request it right inside the app.",
+      "First time using the desktop app? Every tool unlocks for an hour with a free code copied from its page here — paste it, convert, and the tool re-locks on the hour. The one-time license removes the need to re-grab codes.",
     troubleshooting: [
       {
         problem: "Conversion stops with an encryption error",
@@ -75,34 +87,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         fix: "Amazon's Enhanced Typesetting features (dynamic hyphenation, floating elements) have no direct EPUB equivalent. Text, chapters, and the table of contents are preserved; fine typography is rebuilt with standard EPUB CSS.",
       },
       {
-        problem: "My book is larger than 50 MB",
-        fix: "Comic compilations and image-heavy books can exceed the browser limit. Use the desktop app, which has no size cap and processes the same conversion natively.",
+        problem: "My book is very large (image-heavy comic compilation)",
+        fix: "No problem — the desktop app has no size cap and processes the same conversion natively regardless of file size. This is exactly why KFX stays a desktop-only conversion.",
       },
     ],
     conclusion:
-      "For one DRM-free book, the online converter is all you need. For a shelf of them, the desktop app's batch mode saves an evening of dragging files — start with the free 2-conversion key and see the quality yourself.",
+      "For one DRM-free book, the desktop app's free hourly code is all you need — copy it, paste it, convert. For a shelf of them, batch mode saves an evening of dragging files — and Calibre users get the same result with the KFX Input plugin.",
   },
   {
     slug: "prt-to-stl",
     title: "How to Convert PRT to STL — Free 2026 Guide",
     metaDescription:
-      "Convert PRT (Creo/Pro-E) parts to STL for 3D printing: online tool, desktop app, or Creo's own export. Tessellation settings and fixes explained.",
+      "Convert PRT (Creo/Pro-E) parts to STL via STEP export: the free desktop STEP-to-STL tool or Creo's own exporter. Tessellation settings and fixes.",
     quickAnswer:
-      "PRT stores exact parametric geometry; STL stores a triangle approximation, so every PRT→STL conversion is a tessellation. For parts up to 20 MB, the free online tool handles it in your browser. Bigger parts and assemblies belong in the desktop app — or, if you have Creo installed, its own STL export.",
+      "PRT stores exact parametric geometry; STL stores a triangle approximation, so every PRT→STL conversion is a tessellation. Creo's PRT is a closed format no third-party tool reads directly — the reliable route is to export STEP from Creo (lossless geometry), then tessellate it with the desktop app's STEP to STL tool, or use Creo's own STL export if it's installed.",
     methods: [
       {
-        name: "nichefiletools online converter",
-        bestFor: "Single parts up to 20 MB",
-        price: "Free",
-        limit: "20 MB per file (PC) / 5 MB (mobile)",
-        notes: "Tessellates with a 0.1 mm default chord tolerance — the sweet spot for FDM printing — and outputs binary or ASCII STL without uploading your CAD data.",
-      },
-      {
-        name: "nichefiletools desktop app",
-        bestFor: "Large parts, batches of files",
-        price: "2 free conversions per device, then a one-time license",
+        name: "STEP export + nichefiletools desktop app",
+        bestFor: "Anyone without Creo's exporter at hand",
+        price: "Free hourly codes (per tool), then a one-time license",
         limit: "No file-size limit",
-        notes: "The same conversion kernel with native memory access, so multi-hundred-MB parts that would freeze a browser tab convert normally.",
+        notes: "In Creo: File → Save a Copy → STEP AP214. The desktop STEP to STL tool then tessellates the exact B-Rep geometry with a 0.1 mm default chord tolerance — the sweet spot for FDM printing — and outputs binary or ASCII STL.",
       },
       {
         name: "Creo native export",
@@ -111,17 +116,25 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         limit: "Requires Creo installed",
         notes: "In Creo, File → Save a Copy → STL exposes chord height and angle control directly. Use it when you need a very specific tolerance for SLA/DLP printing.",
       },
+      {
+        name: "Why no direct PRT converter exists",
+        bestFor: "Understanding the limit",
+        price: "—",
+        limit: "PRT is PTC's closed native format",
+        notes: "No third-party geometry kernel — browser or desktop — parses PRT directly, and any site claiming to is overselling. The STEP export from Creo is lossless for geometry, and everything downstream works on the STEP file.",
+      },
     ],
     desktopSteps: [
+      "In Creo, export your part: File → Save a Copy → STEP AP214 (.stp).",
       "Download and launch the free nichefiletools desktop app.",
-      "Pick PRT to STL from the tool list in the sidebar.",
-      "Select your .prt file and choose the output .stl location.",
+      "Pick STEP to STL from the tool list in the sidebar.",
+      "Select the exported .stp file and choose the output .stl location.",
       "Click Convert — tessellation of complex parts can take 10–30 seconds; the app shows progress while it meshes.",
     ],
     troubleshooting: [
       {
-        problem: "The browser tab crashes or runs out of memory",
-        fix: "PRT tessellation builds the full B-Rep structure before meshing — a large part can need several GB of RAM. That's exactly why the web tool caps at 20 MB; switch to the desktop app for heavy parts.",
+        problem: "The exported STEP file won't open",
+        fix: "Re-export with Creo's default STEP profile (AP214 or AP242). AP203 works too — it carries no colors, which is irrelevant for STL. Avoid renaming or emailing the file through tools that re-encode attachments.",
       },
       {
         problem: "The printed part looks faceted",
@@ -133,7 +146,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "One part, under 20 MB? Convert it online in seconds. Production batches or heavy CAD files? The desktop app is built for exactly that — and Creo users can always export straight from the source.",
+      "Export STEP once from Creo, and the desktop app turns it into print-ready STL in seconds — production batches included. Creo users can also write STL directly at Save a Copy when a specific tolerance is needed.",
   },
   {
     slug: "pvr-to-png",
@@ -153,7 +166,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       {
         name: "nichefiletools desktop app",
         bestFor: "Batch texture sets",
-        price: "2 free conversions per device, then a one-time license",
+        price: "Free hourly codes (per tool), then a one-time license",
         limit: "No file-size limit",
         notes: "A character asset is rarely one file — diffuse, normal, and specular PVRs come in sets. Batch mode converts a whole folder in one queue.",
       },
@@ -177,8 +190,8 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         fix: "Check the header in a hex editor: PVR v3 files start with the bytes 'PVR!' (0x50 0x56 0x52 0x21). Old v2 files, or textures that were actually renamed DDS/KTX files, use different headers.",
       },
       {
-        problem: "Transparency comes out as solid black or white",
-        fix: "ETC1 has no alpha channel — transparent regions are filled with a solid color during decode. PVRTC 4bpp and ASTC both carry alpha and export it correctly to PNG.",
+        problem: "A compressed texture is refused",
+        fix: "PVRTC/ETC/ASTC data is outside the current decoder's scope — the tool reports a data-size mismatch instead of guessing. Re-export the texture uncompressed from your engine (Unity/Unreal texture settings), or decode compressed files with PVRTexTool.",
       },
       {
         problem: "The output looks blurrier than expected",
@@ -195,11 +208,13 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "RAW disc images need desktop software — no online tool can process 2352-byte sector images. Free app steps, Mode 1/Mode 2 explained, common fixes.",
     quickAnswer:
       "This conversion cannot happen in a browser: RAW images span hundreds of MB to 50 GB, far beyond browser memory limits, and need byte-exact sector I/O. The free nichefiletools desktop app extracts the 2048-byte user data from every 2352-byte sector and writes a standard ISO 9660 image.",
+    formatDeep:
+      "KFX is what Amazon delivers to modern Kindles (2017+): an Enhanced Typesetting container that splits a book into positionally-addressed fragments so each device can reflow typography its own way. EPUB is the IDPF/W3C open standard every non-Kindle reader uses — Apple Books, Kobo, Google Play Books. The trade-off when moving between them is typographic, not textual: Amazon's dynamic hyphenation and floating elements rebuild as standard EPUB CSS, while text, chapter order, and the table of contents carry over intact. Teams that archive or re-edit purchased DRM-free books standardize on EPUB because every downstream tool — editors, validators, repositories — reads it.",
     methods: [
       {
         name: "nichefiletools desktop app",
         bestFor: "Everything — this is the recommended path",
-        price: "2 free conversions per device, then a one-time license",
+        price: "Free hourly codes (per tool), then a one-time license",
         limit: "No file-size limit",
         notes: "Auto-detects Mode 1 and Mode 2 sectors, handles mixed-mode discs, processes .raw/.bin/.img variants, and verifies output integrity.",
       },
@@ -225,7 +240,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       "Click Convert — a progress bar tracks sector processing in real time; a multi-GB image finishes in seconds on an SSD.",
     ],
     desktopNote:
-      "One free unlock key per device grants 2 conversions — enough to test on two real disc images before deciding on a license.",
+      "Each desktop tool unlocks with a free hourly code from its page here — try it on one disc image, and if your archive is bigger, the one-time license removes the need to re-grab codes every hour.",
     troubleshooting: [
       {
         problem: "A converted game image doesn't boot in an emulator",
@@ -241,29 +256,22 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "RAW to ISO is inherently a desktop job, so pick native software and keep the free unlock flow simple: try it on two images, and if your archive is bigger, the one-time license removes the limit.",
+      "RAW to ISO is inherently a desktop job, so keep the unlock flow simple: open the app, pick the tool, paste the current hourly code from its page, and convert. If your archive is bigger, a one-time license removes the need to re-grab codes.",
   },
   {
     slug: "blend-to-glb",
     title: "How to Convert BLEND to GLB — Free 2026 Guide",
     metaDescription:
-      "Convert Blender .blend to glTF GLB for the web: free online tool, desktop app for big scenes, or Blender's own exporter. Steps and quality fixes.",
+      "Convert Blender .blend to glTF GLB for the web: the free desktop app for big scenes and batches, or Blender's own exporter. Steps and quality fixes.",
     quickAnswer:
-      "There are two reliable routes: the free online converter (scenes up to 30 MB, nothing uploaded) or — if Blender is already installed — its built-in exporter via File → Export → glTF 2.0, which is the reference implementation. Large scenes and batches are handled by the desktop app.",
+      "Two reliable routes: the free desktop app (no size limit, batch queues, powered by Blender's own runtime) or — if Blender is already installed — its built-in File → Export → glTF 2.0, the reference implementation. There is no in-browser converter: BLEND's DNA structure only parses reliably through Blender's API.",
     methods: [
       {
-        name: "nichefiletools online converter",
-        bestFor: "Scenes up to 30 MB",
-        price: "Free",
-        limit: "30 MB per file (PC) / 10 MB (mobile)",
-        notes: "Maps Blender meshes, UVs, Principled BSDF materials, and transform animations to glTF 2.0 — entirely client-side, so unreleased 3D work stays on your machine.",
-      },
-      {
         name: "nichefiletools desktop app",
-        bestFor: "Large scenes, batch exports",
-        price: "2 free conversions per device, then a one-time license",
+        bestFor: "Large scenes, batch exports, no Blender UI needed",
+        price: "Free hourly codes (per tool), then a one-time license",
         limit: "No file-size limit",
-        notes: "Same glTF 2.0 output with native memory access. If a scene crashes the browser version, it belongs here.",
+        notes: "Drives Blender's Python API natively, mapping meshes, UVs, Principled BSDF materials, and transform animations to glTF 2.0 — headless and in batch queues.",
       },
       {
         name: "Blender native exporter",
@@ -271,6 +279,13 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         price: "Free, open source",
         limit: "Requires Blender",
         notes: "File → Export → glTF 2.0 inside Blender. It's the most complete path — shape keys, armatures, and custom properties included — and always matches your Blender version.",
+      },
+      {
+        name: "Why there is no online converter",
+        bestFor: "Understanding the limit",
+        price: "—",
+        limit: "BLEND parsing needs Blender's runtime",
+        notes: "A .blend is a DNA-structured database that only Blender's own API reads reliably; the desktop app bundles that runtime. Any site advertising instant in-browser BLEND conversion is overselling what a tab can do.",
       },
     ],
     desktopSteps: [
@@ -289,12 +304,12 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         fix: "Noise, Voronoi, and other procedural nodes don't exist in glTF. Bake them to image maps first (Blender: bake to image, then reference the image texture) before converting.",
       },
       {
-        problem: "The browser tab dies on a big scene",
-        fix: "A 30 MB .blend can expand to hundreds of MB in memory while the DNA structure is rebuilt. That's the web limit doing its job — move the file to the desktop app.",
+        problem: "A huge scene exhausts memory",
+        fix: "Full production scenes can be heavy even natively. Close other apps, and in Blender run File → Clean Up → Purge to remove unused data-blocks before exporting — project files often carry years of orphaned data.",
       },
     ],
     conclusion:
-      "Quick web preview? Convert online. Final asset for production? Export from Blender when it's open, and use the desktop app for everything in between.",
+      "Export from Blender when it's already open — it's the reference path. Use the desktop app for batch queues and headless conversion of big scenes; there is no honest browser shortcut for BLEND.",
   },
 
   {
@@ -806,7 +821,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
       {
         problem: "It's slow / the browser froze",
-        fix: "You likely hit transcode on a long clip in WASM. Move to the desktop app (hardware accelerated) or pre-trim the clip. Never run it on mobile.",
+        fix: "You likely hit transcode on a long clip in WASM. Move to the desktop app (hardware accelerated) or pre-trim the clip; phones rarely survive this workload, so prefer a desktop browser or the app.",
       },
       {
         problem: "Second audio track disappeared",
@@ -861,7 +876,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     troubleshooting: [
       {
         problem: "The tool reports 'Unknown WAD format'",
-        fix: "Our detector covers DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2. Anything else (Build .grp, Source .vpk, renamed, or encrypted) won't match — submit a small sample via GitHub Issue.",
+        fix: `Our detector covers DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2. Anything else (Build .grp, Source .vpk, renamed, or encrypted) won't match — open an issue at ${REPO_ISSUES_URL} with a small sample and we'll try to add support.`,
       },
       {
         problem: "Can I extract from Steam game WADs?",

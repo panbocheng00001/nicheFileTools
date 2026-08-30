@@ -26,9 +26,9 @@ export default function CookiePage() {
           localStorage and never leaves your device.
         </li>
         <li>
-          <strong>Desktop unlock state.</strong> The desktop application stores
-          your free-quota count locally on your computer. This never reaches
-          the web session.
+          <strong>Desktop unlock state.</strong> The desktop application records
+          which tools are unlocked and until when, in a file on your own
+          computer. This never reaches the web session.
         </li>
       </ul>
 
@@ -41,11 +41,11 @@ export default function CookiePage() {
 
       <h2>URL parameters</h2>
       <p>
-        Links from the desktop app to the unlock page may include a{" "}
-        <code>token</code> and a <code>utm_source</code> parameter. These exist
-        only to deliver your one-time unlock key and to tell apart the two
-        entry paths (&ldquo;opened directly&rdquo; vs &ldquo;copied
-        link&rdquo;). Tokens expire after 24 hours and are single-use. See our{" "}
+        Links from the desktop app point at the plain tool page — for example{" "}
+        <code>/tools/kfx-to-epub</code>. They carry no tracking parameters of
+        any kind: no <code>utm_*</code>, no <code>token</code>, no referral
+        tags. The unlock code is shown on the page itself and is computed in
+        your own browser, so nothing needs to be passed through the URL. See our{" "}
         <a href="/privacy">Privacy Policy</a> for the data involved.
       </p>
 

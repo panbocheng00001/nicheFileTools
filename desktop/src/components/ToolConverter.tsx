@@ -10,14 +10,19 @@ import {
   openFile,
   revealFile,
   pickOutputFolder,
+  pickInputFiles,
+  pickDirectory,
   collectFiles,
   pauseBatch,
   resumeBatch,
   cancelBatch,
+  licenseStatus,
+  isTauri,
   type EngineStatus as EngineStatusT,
+  type LicenseInfo,
 } from "../lib/tauri";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import type { UnlistenFn } from "@tauri-apps/api/event";
+import { LicensePanel } from "./LicensePanel";
 import {
   UploadCloudIcon,
   PlayIcon,
@@ -57,10 +62,16 @@ const LS_FOLDER = "niche_out_folder";
 
 export function ToolConverter({
   tool,
-  onQuotaExhausted,
+  license,
+  now,
+  onLicenseChange,
 }: {
   tool: ToolDef;
-  onQuotaExhausted: () => void;
+  /** Unlock state for this tool; null while it is still being fetched. */
+  license: LicenseInfo | null;
+  /** Ticking clock (ms) shared with the parent so countdowns stay in sync. */
+  now: number;
+  onLicenseChange: (info: LicenseInfo) => void;
 }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -69,6 +80,8 @@ export function ToolConverter({
   const [engine, setEngine] = useState<EngineStatusT | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [dragOver, setDragOver] = useState(false);
+
+  const locked = !license?.unlocked;
 
   // Output destination: "same" (next to source) or "folder" (user-chosen dir).
   const [outMode, setOutMode] = useState<"same" | "folder">(
@@ -104,8 +117,10 @@ export function ToolConverter({
     localStorage.setItem(LS_FOLDER, outFolder);
   }, [outFolder]);
 
-  // Drag & drop real file paths via the Tauri webview API.
+  // Drag & drop real file paths via the Tauri webview API. Outside the native
+  // window there is no webview handle, so skip it (browser preview mode).
   useEffect(() => {
+    if (!isTauri()) return;
     let unlisten: UnlistenFn | undefined;
     getCurrentWebview()
       .onDragDropEvent((event) => {
@@ -173,16 +188,14 @@ export function ToolConverter({
       name: ext.replace(".", "").toUpperCase(),
       extensions: [ext.replace(".", "")],
     }));
-    const res = await openDialog({ multiple: true, filters });
-    const paths = Array.isArray(res) ? res : res ? [res] : [];
+    const paths = await pickInputFiles(filters);
     if (paths.length) addFiles(paths);
   }
 
   // "Add folder": recursively pull every matching file from a directory.
   async function pickFolder() {
     const t = toolRef.current;
-    const res = await openDialog({ directory: true, multiple: false });
-    const dir = typeof res === "string" ? res : null;
+    const dir = await pickDirectory();
     if (!dir) return;
     const found = await collectFiles([dir], t.sourceExts);
     if (found.length) addFiles(found);
@@ -304,8 +317,12 @@ export function ToolConverter({
       setStatus("");
     } catch (e: any) {
       const msg: string = e?.message ?? (typeof e === "string" ? e : JSON.stringify(e));
-      if (/quota exhausted/i.test(String(msg))) {
-        onQuotaExhausted();
+      // Branch on the stable Rust error *code*, never on user-facing copy — the
+      // wording is free to change, the code is part of the IPC contract.
+      if (e?.code === "license_required") {
+        licenseStatus(toolRef.current.slug)
+          .then(onLicenseChange)
+          .catch(() => {});
       }
       setError(msg);
       setStatus("");
@@ -341,6 +358,13 @@ export function ToolConverter({
         </div>
       </div>
       <p className="tool-desc">{tool.description}</p>
+
+      <LicensePanel
+        tool={tool}
+        license={license}
+        now={now}
+        onChange={onLicenseChange}
+      />
 
       {engineMissing && (
         <div className="engine-warn">
@@ -630,13 +654,15 @@ export function ToolConverter({
         <button
           className="btn primary"
           onClick={runBatch}
-          disabled={busy || engineMissing || queue.length === 0}
+          disabled={busy || locked || engineMissing || queue.length === 0}
           title={
-            engineMissing
-              ? "Install the required engine first"
-              : queue.length === 0
-                ? "Add files first"
-                : ""
+            locked
+              ? "Unlock this tool with the code from its page first"
+              : engineMissing
+                ? "Install the required engine first"
+                : queue.length === 0
+                  ? "Add files first"
+                  : ""
           }
         >
           <PlayIcon size={15} />

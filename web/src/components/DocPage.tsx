@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 /**
- * 文档/合规页通用骨架 — 全站规范 §2.16
- * 统一 H1、更新日期（EEAT 时效信号）与正文排版。
+* Common skeleton of document/compliance page - site-wide specification §2.16
+* Unify H1, update date (EEAT aging signal) and text layout.
  */
 export function DocPage({
   eyebrow,

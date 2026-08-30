@@ -9,7 +9,7 @@ use crate::errors::AppError;
 ///
 /// BLEND is a private Blender database; we drive Blender in background mode
 /// (`blender -b -P script`) to export glTF. Blender is GPL-3.0 but invoked as a
-/// separate process, so it does not infect the main binary (技术文档 §8.3). The
+/// separate process, so it does not infect the main binary (technical document §8.3). The
 /// router pre-checks for an installed Blender and the UI guides install if absent.
 pub struct BlendToGlbConverter;
 

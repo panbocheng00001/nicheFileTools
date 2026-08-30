@@ -2,24 +2,50 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { open as openUrl } from "@tauri-apps/plugin-shell";
+import {
+  isTauri,
+  mockActivateTool,
+  mockCollectFiles,
+  mockConvertBatch,
+  mockConvertFile,
+  mockEngineStatus,
+  mockLicenseStatus,
+  mockLicenseStatusAll,
+  mockListTools,
+  mockOnConvertProgress,
+  mockOpenFile,
+  mockOpenInBrowser,
+  mockPickDirectory,
+  mockPickInput,
+  mockPickInputFiles,
+  mockPickOutput,
+  mockRevealFile,
+} from "./mock";
 
 export interface ConvertOutput {
   output_path: string;
   size: number;
 }
 
-export interface QuotaInfo {
-  free_quota_remaining: number;
+/// Unlock state for one tool. Time-boxed: a code copied from the tool's page on
+/// nichefiletools.com unlocks it until the top of the hour, then it locks again.
+///
+/// Field names follow the Rust struct (`src-tauri/src/licensing.rs`), which has
+/// no `rename_all`, so the IPC payload is snake_case.
+export interface LicenseInfo {
+  slug: string;
   unlocked: boolean;
-  paid: boolean;
-}
-
-export interface TokenResponse {
-  token: string;
-  expires_at: string;
+  /** Epoch ms at which the unlock lapses; 0 while locked. */
+  expires_at: number;
+  /** Milliseconds left; 0 while locked. */
+  remaining_ms: number;
 }
 
 /// Tool descriptor mirrored from the Rust `tools.json` manifest.
+///
+/// Field names follow the Rust struct exactly (`src-tauri/src/convert/manifest.rs`
+/// has no `rename_all`), so the IPC payload is snake_case — `output_kind`, not
+/// `outputKind`.
 export interface ToolMeta {
   slug: string;
   name: string;
@@ -27,10 +53,16 @@ export interface ToolMeta {
   engines: string[];
   source: string[];
   target: string;
-  outputKind: string;
+  output_kind: string;
   guide: string | null;
   category: string | null;
+  /** Slug of the matching page on nichefiletools.com when it differs. */
+  web_slug: string | null;
 }
+
+/// Re-exported so components can branch on the runtime without importing the
+/// mock module (which pulls in the generated manifest).
+export { isTauri };
 
 /// Per-tool engine availability (Rust `EngineStatus`).
 export interface EngineInfo {
@@ -47,6 +79,7 @@ export interface EngineStatus {
 }
 
 export async function pickInput(ext?: string): Promise<string | null> {
+  if (!isTauri()) return mockPickInput(ext);
   const filters = ext
     ? [{ name: ext.replace(".", "").toUpperCase(), extensions: [ext.replace(".", "")] }]
     : [];
@@ -55,7 +88,24 @@ export async function pickInput(ext?: string): Promise<string | null> {
 }
 
 export async function pickOutput(defaultPath: string): Promise<string | null> {
+  if (!isTauri()) return mockPickOutput(defaultPath);
   const res = await save({ defaultPath });
+  return typeof res === "string" ? res : null;
+}
+
+/// Multi-select file picker (used by the converter dropzone).
+export async function pickInputFiles(
+  filters: { name: string; extensions: string[] }[],
+): Promise<string[]> {
+  if (!isTauri()) return mockPickInputFiles(filters);
+  const res = await open({ multiple: true, filters });
+  return Array.isArray(res) ? res : res ? [res] : [];
+}
+
+/// Directory picker ("Add whole folder" / output folder).
+export async function pickDirectory(): Promise<string | null> {
+  if (!isTauri()) return mockPickDirectory();
+  const res = await open({ directory: true, multiple: false });
   return typeof res === "string" ? res : null;
 }
 
@@ -66,6 +116,7 @@ export async function convertFile(
   options?: object,
   onProgress?: (p: BatchProgress) => void,
 ): Promise<ConvertOutput> {
+  if (!isTauri()) return mockConvertFile(slug, inputPath, outputPath, onProgress);
   let rid: string | undefined;
   let unlisten: UnlistenFn | undefined;
   // When a progress callback is supplied, correlate the emitted events via a
@@ -122,10 +173,11 @@ export interface BatchProgress {
   rid: string | null; // correlation id for single-file calls; null for batch
 }
 
-/// Convert many files in one call (P3 批量队列). Returns a per-item summary;
+/// Convert many files in one call (P3 batch queue). Returns a per-item summary;
 /// live progress is delivered via the `convert-progress` event — subscribe with
 /// `onConvertProgress`.
 export async function convertBatch(items: BatchItem[]): Promise<BatchResult[]> {
+  if (!isTauri()) return mockConvertBatch(items);
   return await invoke<BatchResult[]>("convert_batch", {
     items: items.map((it) => ({
       slug: it.slug,
@@ -140,56 +192,65 @@ export async function convertBatch(items: BatchItem[]): Promise<BatchResult[]> {
 export async function onConvertProgress(
   cb: (p: BatchProgress) => void,
 ): Promise<UnlistenFn> {
+  if (!isTauri()) return mockOnConvertProgress(cb);
   return await listen<BatchProgress>("convert-progress", (e) => cb(e.payload));
 }
 
 export async function listTools(): Promise<ToolMeta[]> {
+  if (!isTauri()) return mockListTools();
   return await invoke<ToolMeta[]>("list_tools");
 }
 
 export async function engineStatus(slug: string): Promise<EngineStatus> {
+  if (!isTauri()) return mockEngineStatus(slug);
   return await invoke<EngineStatus>("engine_status", { slug });
 }
 
-export async function getQuota(): Promise<QuotaInfo> {
-  return await invoke<QuotaInfo>("get_quota");
+/// Unlock state for one tool.
+export async function licenseStatus(slug: string): Promise<LicenseInfo> {
+  if (!isTauri()) return mockLicenseStatus(slug);
+  return await invoke<LicenseInfo>("license_status", { slug });
 }
 
-export async function requestToken(apiBase?: string): Promise<TokenResponse> {
-  return await invoke<TokenResponse>("request_token", { apiBase: apiBase ?? null });
+/// Unlock state for every tool in one round trip (sidebar lock indicators).
+export async function licenseStatusAll(slugs: string[]): Promise<LicenseInfo[]> {
+  if (!isTauri()) return mockLicenseStatusAll(slugs);
+  return await invoke<LicenseInfo[]>("license_status_all", { slugs });
 }
 
-export async function redeemKey(
-  token: string,
-  key: string,
-  apiBase?: string,
-): Promise<QuotaInfo> {
-  return await invoke<QuotaInfo>("redeem_key", { token, key, apiBase: apiBase ?? null });
+/// Verify a pasted code and unlock `slug` until the top of the hour.
+/// Rejects with error code `invalid_code` when the code does not match.
+export async function activateTool(slug: string, code: string): Promise<LicenseInfo> {
+  if (!isTauri()) return mockActivateTool(slug, code);
+  return await invoke<LicenseInfo>("activate_tool", { slug, code });
 }
 
 export async function openInBrowser(url: string): Promise<void> {
+  if (!isTauri()) return mockOpenInBrowser(url);
   await openUrl(url);
 }
 
 /// Open a converted file with the OS default application (play .wav, view .png…).
 export async function openFile(path: string): Promise<void> {
+  if (!isTauri()) return mockOpenFile(path);
   await invoke("open_file", { path });
 }
 
 /// Reveal a file (or its folder) in the system file manager, selecting it.
 export async function revealFile(path: string): Promise<void> {
+  if (!isTauri()) return mockRevealFile(path);
   await invoke("reveal_file", { path });
 }
 
 /// Pick an output folder (directory picker). Returns the chosen path or null.
 export async function pickOutputFolder(): Promise<string | null> {
-  const res = await open({ directory: true, multiple: false });
-  return typeof res === "string" ? res : null;
+  return pickDirectory();
 }
 
 /// Recursively collect files matching `exts` from a set of `roots` (mixed files
 /// and directories). Powers "Add folder" and drag-drop of whole directories.
 export async function collectFiles(roots: string[], exts: string[]): Promise<string[]> {
+  if (!isTauri()) return mockCollectFiles(roots);
   return await invoke<string[]>("collect_files", { roots, exts });
 }
 

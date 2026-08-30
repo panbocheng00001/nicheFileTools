@@ -9,7 +9,7 @@ use crate::errors::AppError;
 ///
 /// KFX is a proprietary DRIF/Snappy format with no reliable open decoder. The
 /// desktop strategy is to call Calibre's `ebook-convert`, which natively accepts
-/// KFX input (技术文档 §8.5). Calibre is GPL-3.0 but invoked as a separate
+/// KFX input (technical document §8.5). Calibre is GPL-3.0 but invoked as a separate
 /// process, so it does not infect the main binary. Self-rolled KFX parsing is a
 /// long-term fallback only.
 pub struct KfxToEpubConverter;

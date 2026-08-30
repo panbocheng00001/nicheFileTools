@@ -1,14 +1,22 @@
 import Link from "next/link";
 import { ShieldCheck, ArrowRight } from "lucide-react";
 import { TOOLS } from "@/lib/tools-data";
+import { BRAND, REPO_ISSUES_URL, REPO_URL } from "@/lib/site";
 
 /**
- * Footer — 全站规范 §2.16 关键合规要求：
- * Privacy / Terms / Cookie / Contact 必须出现在每一页 footer。
+* Footer — Sitewide Specification §2.16 Key Compliance Requirements:
+* Privacy / Terms / Cookie / Contact must appear in the footer of every page.
  */
 const TOOLS_PREVIEW = 6;
 
-const COLS = [
+interface FooterLink {
+  href: string;
+  label: string;
+  /** Set for off-site links so they open in a new tab with `rel="noopener"`. */
+  external?: boolean;
+}
+
+const COLS: { title: string; links: FooterLink[]; more?: FooterLink }[] = [
   {
     title: "Tools",
     links: TOOLS.slice(0, TOOLS_PREVIEW).map((t) => ({
@@ -23,7 +31,7 @@ const COLS = [
     title: "Desktop",
     links: [
       { href: "/download", label: "Download App" },
-      { href: "/free-trial", label: "Free Unlock Key" },
+      { href: "/free-trial", label: "Unlock Code" },
       { href: "/pricing", label: "Pricing" },
       { href: "/license", label: "License & Activation" },
     ],
@@ -35,6 +43,16 @@ const COLS = [
       { href: "/support", label: "Support Center" },
       { href: "/about", label: "About Us" },
       { href: "/contact", label: "Contact" },
+    ],
+  },
+  {
+    title: "Open Source",
+    links: [
+      // `external: true` links open in a new tab — see the render block below.
+      { href: REPO_URL, label: "Source Code on GitHub", external: true },
+      { href: `${REPO_URL}/releases`, label: "Releases & Changelog", external: true },
+      { href: REPO_ISSUES_URL, label: "Report a Bug", external: true },
+      { href: "/license", label: "License & Activation" },
     ],
   },
   {
@@ -51,9 +69,9 @@ const COLS = [
 export function Footer() {
   return (
     <footer className="relative mt-24 border-t border-white/5 bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-          {/* 列1：品牌 + 使命 + 版本徽章 */}
+            <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
+          {/*Column 1: Brand + Mission + Edition Badge*/}
           <div>
             <Link href="/" className="flex items-center gap-2">
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 font-mono text-sm font-bold text-primary">
@@ -72,7 +90,7 @@ export function Footer() {
             </span>
           </div>
 
-          {/* 列2-5：导航 */}
+          {/*Columns 2-6: Navigation*/}
           {COLS.map((col) => (
             <div key={col.title}>
               <h3 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
@@ -81,12 +99,26 @@ export function Footer() {
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l.href + l.label}>
-                    <Link
-                      href={l.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      {l.label}
-                    </Link>
+                    {l.external ? (
+                      // Off-site links keep real anchor text ("Source Code on
+                      // GitHub") rather than an icon — anchor text is what
+                      // carries the entity signal for crawlers.
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        {l.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={l.href}
+                        className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        {l.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
                 {col.more && (
@@ -105,7 +137,7 @@ export function Footer() {
           ))}
         </div>
 
-        {/* 免责声明 */}
+        {/*Disclaimer*/}
         <div className="mt-12 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 p-4 text-xs leading-relaxed text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <p>
@@ -115,18 +147,22 @@ export function Footer() {
           </p>
         </div>
 
-        {/* 底部版权 */}
+        {/*Bottom copyright*/}
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 sm:flex-row">
           <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             © {new Date().getFullYear()} nichefiletools
           </p>
           <a
-            href="https://github.com/nichefiletools"
+            href={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="GitHub"
-            className="text-muted-foreground transition-colors hover:text-primary"
+            aria-label="nichefiletools on GitHub"
+            title={`${BRAND} on GitHub — ${REPO_URL}`}
+            className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
           >
+            <span className="font-mono text-xs uppercase tracking-widest">
+              Open source
+            </span>
             <svg
               viewBox="0 0 24 24"
               fill="currentColor"

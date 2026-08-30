@@ -31,7 +31,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 从 URL ?q= 预填搜索（来自导航栏搜索框跳转）
+  //Search from URL ?q= prefill (jump from navigation bar search box)
   useEffect(() => {
     const q = searchParams.get("q");
     if (q !== null) {
@@ -76,7 +76,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
 
   const total = filtered.length;
 
-  // 浏览态：按分类筛选后的工具列表（默认最多 12 个 = 2 行 × 6 列）
+  //Browsing state: Tool list filtered by category (default maximum 12 = 2 rows × 6 columns)
   const browseTools = useMemo(() => {
     if (catFilter === "all") return filtered;
     return filtered.filter((t) => t.category === catFilter);
@@ -101,7 +101,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
 
   return (
     <>
-      {/* 搜索栏 + 视图切换 */}
+      {/*Search bar + view switch*/}
       <div className="mt-10">
         <div className="glass relative flex items-center gap-3 px-4 py-3">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
@@ -142,7 +142,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
         </p>
       </div>
 
-      {/* 空状态 */}
+      {/*Empty state*/}
       {total === 0 && (
         <div className="glass mt-10 p-10 text-center">
           <p className="text-lg font-semibold text-foreground">No tools found</p>
@@ -153,7 +153,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
         </div>
       )}
 
-      {/* 搜索态：扁平结果列表 */}
+      {/*Search state: Flat result list*/}
       {isSearching && total > 0 && (
         <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {flatRanked.map((t) => (
@@ -170,10 +170,10 @@ export function ToolsExplorer({ tools, categories }: Props) {
         </ul>
       )}
 
-      {/* 浏览态：分类筛选 chips + 6 列紧凑网格（默认 2 行 12 个） */}
+      {/*Browsing state: Classification filter chips + 6 columns compact grid (default 12 in 2 rows)*/}
       {!isSearching && total > 0 && (
         <div className="mt-10">
-          {/* 分类筛选 */}
+          {/*Classification filter*/}
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -209,7 +209,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
             ))}
           </div>
 
-          {/* 工具网格 */}
+          {/*tool grid*/}
           {view === "cards" ? (
             <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {browseVisible.map((t) => (
@@ -251,7 +251,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
             </ul>
           )}
 
-          {/* 展开更多 / 分类 hub 入口 */}
+          {/*Expand more / Category hub entrance*/}
           {browseHidden > 0 ? (
             <button
               type="button"

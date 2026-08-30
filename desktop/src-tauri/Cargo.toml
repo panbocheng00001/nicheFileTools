@@ -26,9 +26,7 @@ image = { version = "0.25", features = ["exr"] }   # PNG/EXR encoding (PVR/EXR -
 zip = "2"                     # OPF -> EPUB packaging
 quick-xml = "0.36"            # OPF manifest parsing
 flate2 = "1"                  # WAD (Quake) lump inflation
-sha2 = "0.10"             # device hash
-uuid = { version = "1", features = ["v4"] }   # persistent device id
-ureq = { version = "2", features = ["json"] } # blocking HTTP for token/redeem
+sha2 = "0.10"             # desktop unlock code (public, deterministic, offline)
 log = "0.4"
 
 [features]

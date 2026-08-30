@@ -1,7 +1,7 @@
-// PFM + PFB (Adobe Type 1) → TTF：把 Type 1 三次 Bezier 轮廓转为 TrueType 二次轮廓并打包。
-// - 二进制 PFB 只是 Type 1 程序的封装：先解包为 ASCII PFA（type1 段原样、type2 加密段转 <hex>），再交 fontkit 解析。
-// - 轮廓（cubic）转 quadratic（误差 ≤ 1 设计单位），用 opentype.js 组装 TTF。
-// - 度量（advanceWidth）与编码取自 PFB（PFB 自带编码 + 字宽）；PFM 为可选增强。
+//PFM + PFB (Adobe Type 1) → TTF: Convert Type 1 cubic Bezier contour to TrueType quadratic contour and package it.
+//- Binary PFB is just a package of Type 1 program: first unpack it into ASCII PFA (the type1 segment is as it is, the type2 encrypted segment is converted to <hex>), and then it is submitted to fontkit for analysis.
+//- Convert contour (cubic) to quadratic (error ≤ 1 design unit), use opentype.js to assemble TTF.
+//- Measurement (advanceWidth) and encoding are taken from PFB (PFB comes with encoding + word width); PFM is an optional enhancement.
 import * as fontkit from "fontkit";
 import * as opentype from "opentype.js";
 import {
@@ -40,7 +40,7 @@ interface FkFont {
   subfamilyName?: string;
 }
 
-// 二进制 PFB → ASCII PFA（仅对真实 Adobe PFB 有效）
+// Binary PFB -> ASCII PFA (only valid for real Adobe PFB)
 function pfbToPfa(buffer: ArrayBuffer): string {
   const u8 = new Uint8Array(buffer);
   let out = "";
@@ -78,7 +78,7 @@ function latin1(u8: Uint8Array): string {
 
 type Pt = { x: number; y: number };
 
-// 三次 Bezier → 多段二次 Bezier（De Casteljau 自适应细分，控制点 = 0.75*(P1+P2) - 0.5*P0 - 0.25*P3）
+// Cubic Bezier -> multiple quadratic Beziers (adaptive De Casteljau subdivision, control points = 0.75*(P1+P2) - 0.5*P0 - 0.25*P3)
 function cubicToQuadratic(
   p0: Pt,
   p1: Pt,
@@ -203,7 +203,7 @@ export class PfmToTtfConverter implements IConverter {
       throw new Error("The Type 1 font has no glyphs.");
     }
 
-    // unicode → glyph index 映射（来自 PFB 自带编码）
+    //unicode → glyph index mapping (from PFB’s own encoding)
     const unicodesByGlyph: Record<number, number[]> = {};
     for (let code = 0; code <= 0xffff; code++) {
       let g: FkGlyph;

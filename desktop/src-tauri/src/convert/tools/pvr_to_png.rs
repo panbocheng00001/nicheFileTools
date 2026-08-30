@@ -21,7 +21,7 @@ const HEADER_LEN: usize = 52;
 ///
 /// 2-byte uncompressed layouts (RGB565 / RGBA4444 / RGBA5551 / LA88) and all
 /// compressed variants (PVRTC / ETC / ETC2 / ASTC / DXT) require the planned
-/// native block decoder and currently return a clear `NotImplemented` (技术文档
+/// native block decoder and currently return a clear `NotImplemented` (technical document
 /// §6.1). This avoids silently emitting corrupt images for ambiguous/compressed
 /// pixel formats.
 pub struct PvrToPngConverter;

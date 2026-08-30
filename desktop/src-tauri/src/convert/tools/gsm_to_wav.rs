@@ -8,7 +8,7 @@ use crate::errors::AppError;
 /// GSM (RPE-LTP speech codec) -> WAV.
 ///
 /// Decoding GSM requires FFmpeg (bundled, LGPL). We invoke it as a separate
-/// process (技术文档 §8.2) — never statically linked.
+/// process (technical document §8.2) — never statically linked.
 pub struct GsmToWavConverter;
 
 impl Converter for GsmToWavConverter {

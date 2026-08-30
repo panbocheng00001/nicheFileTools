@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Check, Download, Cpu, Layers, HardDrive } from "lucide-react";
+import { REPO_NAME, REPO_OWNER, REPO_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Download nichefiletools Desktop — Free File Converter",
@@ -75,7 +76,7 @@ export default function DownloadPage() {
         </a>
       </header>
 
-      {/* 特性网格 */}
+      {/*Property Grid*/}
       <section className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2">
         {features.map((f) => {
           const Icon = f.icon;
@@ -97,7 +98,7 @@ export default function DownloadPage() {
         })}
       </section>
 
-      {/* 快速清单 */}
+      {/*quick checklist*/}
       <section className="glass mt-6 p-6 sm:p-8">
         <h2 className="mb-4 font-mono text-sm font-bold uppercase tracking-widest text-foreground">
           What you get
@@ -119,7 +120,7 @@ export default function DownloadPage() {
         </ul>
       </section>
 
-      {/* Free vs Pro — 全站规范 §2.3 Edition Comparison（与 /pricing 一致） */}
+      {/*Free vs Pro — Site-wide specification §2.3 Edition Comparison (consistent with /pricing)*/}
       <section className="mt-6">
         <div className="glass p-6 sm:p-8">
           <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
@@ -140,7 +141,7 @@ export default function DownloadPage() {
                   ["Batch conversion", true, "Unlimited"],
                   ["Desktop-only formats", true, true],
                   ["Support", "Community (48h)", "Priority (12h)"],
-                  ["Price", "2 free conversions per device", "One-time license"],
+                  ["Price", "Free hourly codes (per tool)", "One-time license"],
                 ].map(([f, free, pro]) => (
                   <tr key={String(f)} className="border-b border-border/40">
                     <td className="py-3 pr-4 font-medium text-foreground">{f}</td>
@@ -168,8 +169,8 @@ export default function DownloadPage() {
             </table>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
-            Every device gets one free unlock of 2 conversions — request the key
-            right inside the app. Details on the{" "}
+            Every desktop tool unlocks with a free, hourly code copied from its
+            page on this site. Details on the{" "}
             <a href="/pricing" className="font-medium text-primary hover:opacity-80">
               pricing
             </a>{" "}
@@ -182,7 +183,7 @@ export default function DownloadPage() {
         </div>
       </section>
 
-      {/* 系统要求 — §2.3 */}
+      {/*System Requirements — §2.3*/}
       <section className="glass mt-6 p-6 sm:p-8">
         <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
           System Requirements
@@ -195,7 +196,7 @@ export default function DownloadPage() {
         </ul>
       </section>
 
-      {/* 安全与隐私 — §2.3 Security & Privacy（信任导向） */}
+      {/*Security & Privacy — §2.3 Security & Privacy (Trust Oriented)*/}
       <section className="glass mt-6 p-6 sm:p-8">
         <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
           Security You Can Trust
@@ -206,16 +207,22 @@ export default function DownloadPage() {
             the app converts offline and sends no telemetry.
           </li>
           <li className="flex gap-2">
-            <span className="text-primary">▹</span> The only network calls are
-            the optional free-key unlock and update checks.
+            <span className="text-primary">▹</span> Unlock codes are verified
+            <strong> on your machine</strong> — no network call, no account.
+            The only outbound request is the occasional update check.
           </li>
           <li className="flex gap-2">
-            <span className="text-primary">▹</span> Signed installers and a
-            published component list (see our{" "}
-            <a href="/about" className="text-primary hover:opacity-80">
-              technology page
+            <span className="text-primary">▹</span> Fully open source: read the
+            conversion kernels and the unlock algorithm yourself at{" "}
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:opacity-80"
+            >
+              github.com/{REPO_OWNER}/{REPO_NAME}
             </a>
-            ).
+            .
           </li>
         </ul>
       </section>

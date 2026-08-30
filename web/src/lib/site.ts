@@ -1,17 +1,31 @@
-/** 全站常量与分类元数据（跨文档一致性对照表 #1/#2：品牌 nichefiletools / 域名 nichefiletools.com） */
+/** Site-wide constants and category metadata (cross-document consistency comparison table #1/#2: brand nichefiletools / domain name nichefiletools.com)*/
 export const SITE = "https://nichefiletools.com";
 export const BRAND = "nichefiletools";
 export const SUPPORT_EMAIL = "support@nichefiletools.com";
 export const HELLO_EMAIL = "hello@nichefiletools.com";
+
+/**
+ * Open-source repository — single source of truth for every GitHub link on the
+ * site (footer, about, docs, Schema.org `sameAs`).
+ *
+ * Entity SEO: Google resolves `Organization.sameAs` against this profile to
+ * disambiguate "nichefiletools" from other entities, so the URL must appear in
+ * the structured data **and** as a crawlable `<a href>` with real anchor text —
+ * an icon-only link carries no anchor text and is worth far less.
+ */
+export const REPO_URL = "https://github.com/panbocheng00001/nicheFileTools";
+export const REPO_ISSUES_URL = `${REPO_URL}/issues`;
+export const REPO_OWNER = "panbocheng00001";
+export const REPO_NAME = "nicheFileTools";
 
 export interface CategoryMeta {
   slug: string;
   label: string;
   /** H1: Free [Category] Converters Online */
   headline: string;
-  /** 分类页原创综述（§2.13：禁止纯链接列表） */
+  /** Original review of category pages (§2.13: Pure link lists are prohibited)*/
   intro: string;
-  /** 一句话选型提示（Which ... do you need?） */
+  /** One sentence selection tip (Which ... do you need?)*/
   pickHint: string;
 }
 

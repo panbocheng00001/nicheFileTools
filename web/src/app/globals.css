@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 /* =========================================================================
-   nicheFileTools — 设计系统（基于 TuningCalc 设计语言复刻）
-   工程仪表盘 + 暗夜霓虹：中性灰底，暗色荧光绿主色 + 竞速红危险色，
-   等宽字体承载数据/标签/面包屑，玻璃拟态卡片浮在 24px 网格光晕上。
+nicheFileTools — design system (based on TuningCalc design language reprint)
+Engineering dashboard + dark night neon: neutral gray background, dark fluorescent green main color + racing red dangerous color,
+The monospaced font carries the data/labels/breadcrumbs, and the glass mimic card floats on a 24px grid glow.
    ========================================================================= */
 
 /*2.2 Tailwind theme mapping: all semantic colors point to CSS variables, and dark colors automatically switch*/
@@ -120,7 +120,7 @@
   @apply border-white/10 bg-zinc-950/60 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-white/20;
 }
 
-/* 次级玻璃面板（更淡，用于侧栏/分组） */
+/*Secondary glass panels (lighter, used for sidebars/groupings)*/
 .glass-panel {
   @apply border border-zinc-200/50 bg-zinc-50/50 backdrop-blur-md rounded-2xl transition-all duration-300;
 }

@@ -11,7 +11,7 @@ use super::run_command;
 /// when Python+fonttools is installed). The metrics file `.pfm` is optional;
 /// when supplied its character widths/names are used to enrich the output.
 /// FontForge is invoked as a separate process (MIT), so it does not infect the
-/// main binary (技术文档 §8.4).
+/// main binary (technical document §8.4).
 pub fn pfb_to_ttf(
     python: &Path,
     input_pfb: &Path,

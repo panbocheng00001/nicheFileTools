@@ -12,7 +12,7 @@ const NAV = [
   { href: "/tools", label: "Tools" },
   { href: "/convert", label: "Guides" },
   { href: "/download", label: "Desktop" },
-  { href: "/free-trial", label: "Free Key" },
+  { href: "/free-trial", label: "Unlock Code" },
   { href: "/about", label: "About" },
 ];
 
@@ -40,7 +40,7 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
     return TOOLS.filter((t) => matchTool(t, q)).slice(0, MAX_RESULTS);
   }, [q]);
 
-  // 点击外部关闭
+  //Click outside to close
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -51,7 +51,7 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  // 结果变化时重置高亮
+  //Reset highlighting when results change
   useEffect(() => {
     setActive(0);
   }, [value]);
@@ -104,7 +104,7 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
         <span className="text-[11px]">⌘</span>K
       </kbd>
 
-      {/* 下拉结果 */}
+      {/*drop down results*/}
       {open && (
         <div
           id="search-results"
@@ -182,7 +182,7 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
 export function Navbar() {
   const [open, setOpen] = useState(false);
 
-  // ⌘K / Ctrl+K 聚焦导航栏搜索框
+  //⌘K / Ctrl+K focuses the navigation bar search box
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -201,7 +201,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-2xl">
       <nav className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        {/* 左：Logo */}
+        {/*Left: Logo*/}
         <Link href="/" className="group flex shrink-0 items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 font-mono text-sm font-bold text-primary">
             n
@@ -211,12 +211,12 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* 中：搜索框（桌面） */}
+        {/*Center: Search box (desktop)*/}
         <div className="hidden flex-1 justify-center md:flex">
           <SearchBox />
         </div>
 
-        {/* 桌面导航 */}
+        {/*Desktop navigation*/}
         <ul className="hidden items-center gap-1 md:flex">
           {NAV.map((n) => (
             <li key={n.href}>
@@ -230,7 +230,7 @@ export function Navbar() {
           ))}
         </ul>
 
-        {/* 右：CTA + 主题切换 + 汉堡 */}
+        {/*Right: CTA + theme switch + burger*/}
         <div className="flex items-center gap-2">
           <Link
             href="/download"
@@ -251,7 +251,7 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* 移动端抽屉 */}
+      {/*Mobile drawer*/}
       <div
         className={cn(
           "overflow-hidden border-t border-white/5 md:hidden",

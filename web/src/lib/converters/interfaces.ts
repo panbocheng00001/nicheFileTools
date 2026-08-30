@@ -1,4 +1,4 @@
-// Unified converter interface (aligned with 技术需求文档 §2.5 IConverter).
+//Unified converter interface (aligned with Technical Requirements Document §2.5 IConverter).
 // Web converters run 100% client-side; files never leave the device.
 
 export type ToolCategory =
@@ -18,9 +18,9 @@ export interface ConversionOptions {
   outputFormat: string;
   quality?: number;
   compressionLevel?: number;
-  /** 工具页选项面板传回的用户参数（如采样率/位深/声道） */
+  /** User parameters returned by the tool page options panel (such as sampling rate/bit depth/channel)*/
   params?: Record<string, string>;
-  /** PFM→TTF 等需要配套文件（如 .pfb）的工具，由 UI 第二上传区传入 */
+  /** PFM→TTF and other tools that require supporting files (such as .pfb) are imported from the second upload area of ​​the UI*/
   pfbCompanion?: File;
   // desktop-only passthrough (unused on web)
   batchSize?: number;

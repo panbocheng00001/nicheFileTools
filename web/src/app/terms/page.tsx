@@ -49,13 +49,14 @@ export default function TermsPage() {
 
       <h2>3. Free tier &amp; licenses</h2>
       <p>
-        Online tools are free. The desktop application includes a one-time
-        free unlock of <strong>2 conversion attempts per device</strong>,
-        delivered through a single-use key that expires after 24 hours. After
-        the free attempts are consumed, continued desktop use requires a paid
-        license (see <a href="/pricing">Pricing</a>). One free unlock is
-        permitted per device; abusing this limit may result in refusal of
-        service.
+        Online tools are free. The desktop application is gated per tool by a
+        free, hourly unlock code shown on the matching page of this site (see
+        <a href="/free-trial">How the unlock code works</a>). Codes are
+        case-insensitive, rotate on the hour, and unlock only the tool whose
+        page they came from. Continued desktop use without re-grabbing a code
+        each hour is available with a paid license (see{" "}
+        <a href="/pricing">Pricing</a>); abusing the rate of unlock attempts
+        may result in refusal of service.
       </p>
 
       <h2>4. Paid licenses</h2>

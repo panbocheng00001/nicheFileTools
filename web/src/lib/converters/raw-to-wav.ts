@@ -1,4 +1,4 @@
-// RAW PCM → WAV：纯容器包装（技术需求文档 §4.4.1 原实现），零依赖、零质量损失。
+//RAW PCM → WAV: pure container packaging (technical requirements document §4.4.1 original implementation), zero dependence, zero quality loss.
 import { IConverter, ConverterInfo, ConversionOptions, ConversionResult, defaultValidate } from "./interfaces";
 
 export class RawToWavConverter implements IConverter {
@@ -35,7 +35,7 @@ export class RawToWavConverter implements IConverter {
     }
 
     const dataSize = raw.byteLength;
-    // data 区必须是块对齐整数倍，截掉尾部不完整样本
+    //The data area must be an integer multiple of the block alignment, and incomplete samples at the end are truncated.
     const blockAlign = channels * (bitsPerSample / 8);
     const usable = dataSize - (dataSize % blockAlign);
 

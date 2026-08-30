@@ -1,9 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import { listTools, getQuota, type QuotaInfo, type ToolMeta } from "./lib/tauri";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  listTools,
+  licenseStatus,
+  licenseStatusAll,
+  isTauri,
+  type LicenseInfo,
+  type ToolMeta,
+} from "./lib/tauri";
 import { toToolDef, type ToolDef } from "./lib/tools-data";
+import { formatRemaining, IS_DEV_SITE, siteOrigin } from "./lib/site";
 import { ToolConverter } from "./components/ToolConverter";
-import { KeyReflowModal } from "./components/KeyReflowModal";
-import { SearchIcon, ShieldIcon, SunIcon, MoonIcon } from "./components/icons";
+import {
+  SearchIcon,
+  ShieldIcon,
+  SunIcon,
+  MoonIcon,
+  AlertIcon,
+  CheckIcon,
+  LockIcon,
+} from "./components/icons";
 
 const CATEGORY_LABELS: Record<string, string> = {
   archive: "Archives",
@@ -26,35 +41,71 @@ type Theme = "light" | "dark";
 export default function App() {
   const [tools, setTools] = useState<ToolDef[]>([]);
   const [selected, setSelected] = useState<ToolDef | null>(null);
-  const [quota, setQuota] = useState<QuotaInfo | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  /// slug -> unlock state. Filled in one round trip after the manifest loads.
+  const [licenses, setLicenses] = useState<Record<string, LicenseInfo>>({});
+  const [now, setNow] = useState(() => Date.now());
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
+  // Browser preview: vite dev server without the Rust backend. The tool list and
+  // conversions are mocked so the UI can be laid out / styled.
+  const previewMode = !isTauri();
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem("niche_theme") as Theme) || "light",
   );
 
-  function refreshQuota() {
-    getQuota()
-      .then(setQuota)
+  const refreshLicenses = useCallback((slugs: string[]) => {
+    if (slugs.length === 0) return;
+    licenseStatusAll(slugs)
+      .then((list) =>
+        setLicenses((prev) => {
+          const next = { ...prev };
+          for (const l of list) next[l.slug] = l;
+          return next;
+        }),
+      )
       .catch(() => {});
-  }
+  }, []);
+
+  const refreshOne = useCallback((slug: string) => {
+    licenseStatus(slug)
+      .then((info) => setLicenses((prev) => ({ ...prev, [slug]: info })))
+      .catch(() => {});
+  }, []);
+
+  const onLicenseChange = useCallback((info: LicenseInfo) => {
+    setLicenses((prev) => ({ ...prev, [info.slug]: info }));
+  }, []);
 
   useEffect(() => {
-    refreshQuota();
     listTools()
       .then((metas: ToolMeta[]) => {
         const defs = metas.map(toToolDef);
         setTools(defs);
         setSelected(defs[0] ?? null);
+        refreshLicenses(defs.map((d) => d.slug));
       })
       .catch((e) => setLoadError(String(e)));
-  }, []);
+  }, [refreshLicenses]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("niche_theme", theme);
   }, [theme]);
+
+  /// Drive every countdown from one clock. Only tick while something is
+  /// unlocked, and re-read the backend the instant an unlock lapses.
+  useEffect(() => {
+    const unlocked = Object.values(licenses).filter((l) => l.unlocked);
+    if (unlocked.length === 0) return;
+    const id = window.setInterval(() => {
+      const t = Date.now();
+      setNow(t);
+      for (const l of unlocked) {
+        if (l.expires_at <= t) refreshOne(l.slug);
+      }
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [licenses, refreshOne]);
 
   // Filter by search query (name / slug / format), then group the matches.
   const filtered = useMemo(() => {
@@ -85,20 +136,12 @@ export default function App() {
     return order.map((k) => [k, map.get(k)!] as [string, ToolDef[]]);
   }, [filtered]);
 
-  const quotaClass = quota
-    ? quota.paid
-      ? "paid"
-      : quota.free_quota_remaining <= 0
-        ? "low"
-        : quota.free_quota_remaining <= 2
-          ? "low"
-          : ""
-    : "";
-  const quotaText = quota
-    ? quota.paid
-      ? "Paid license"
-      : `${quota.free_quota_remaining} free left`
-    : "—";
+  const unlockedCount = Object.values(licenses).filter((l) => l.unlocked).length;
+  const activeLicense = selected ? licenses[selected.slug] ?? null : null;
+  const activeRemaining = activeLicense?.unlocked
+    ? Math.max(0, activeLicense.expires_at - now)
+    : 0;
+  const activeLow = activeLicense?.unlocked && activeRemaining < 5 * 60_000;
 
   return (
     <div className="app">
@@ -115,13 +158,30 @@ export default function App() {
           </div>
         </div>
         <div className="topbar-actions">
-          <span className={`quota-pill ${quotaClass}`}>
+          <span
+            className={`license-pill${activeLicense?.unlocked ? " unlocked" : ""}${
+              activeLow ? " low" : ""
+            }`}
+            title={
+              activeLicense?.unlocked
+                ? "This tool is unlocked until the code rotates"
+                : "This tool is locked — copy the code from its page"
+            }
+          >
             <span className="dot" />
-            {quotaText}
+            {activeLicense?.unlocked ? (
+              <>
+                <CheckIcon size={12} /> Unlocked · {formatRemaining(activeRemaining)}
+              </>
+            ) : (
+              <>
+                <LockIcon size={12} /> Locked
+              </>
+            )}
           </span>
-          <button className="btn small" onClick={() => setShowModal(true)}>
-            Free unlock
-          </button>
+          <span className="license-pill total" title="Tools unlocked right now">
+            {unlockedCount}/{tools.length || "…"}
+          </span>
           <button
             className="icon-btn"
             title={theme === "dark" ? "Switch to light" : "Switch to dark"}
@@ -132,6 +192,26 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {previewMode && (
+        <div className="preview-banner" role="status">
+          <AlertIcon size={15} />
+          <span>
+            <strong>Browser preview mode.</strong> No Rust backend — the tool list
+            comes from a snapshot of <code>tools.json</code>, unlock codes accept
+            anything, and conversions are simulated. Run{" "}
+            <code>npm run tauri dev</code> for the real thing.
+            {IS_DEV_SITE && (
+              <>
+                {" "}
+                Unlock links point at <code>{siteOrigin()}</code> — start the web
+                app with <code>cd web &amp;&amp; npm run dev</code> to test the
+                full copy-a-code flow locally.
+              </>
+            )}
+          </span>
+        </div>
+      )}
 
       <div className="layout">
         <nav className="sidebar">
@@ -162,7 +242,22 @@ export default function App() {
                     onClick={() => setSelected(t)}
                   >
                     <span className="navitem-main">
-                      <span className="navitem-name">{t.name}</span>
+                      <span className="navitem-name">
+                        {licenses[t.slug]?.unlocked ? (
+                          <CheckIcon
+                            size={12}
+                            className="navitem-lock unlocked"
+                            aria-label="Unlocked"
+                          />
+                        ) : (
+                          <LockIcon
+                            size={12}
+                            className="navitem-lock"
+                            aria-label="Locked"
+                          />
+                        )}
+                        {t.name}
+                      </span>
                       <span className="navitem-fmt">
                         {t.sourceFormat} → {t.targetFormat}
                       </span>
@@ -184,7 +279,9 @@ export default function App() {
             {selected ? (
               <ToolConverter
                 tool={selected}
-                onQuotaExhausted={() => setShowModal(true)}
+                license={activeLicense}
+                now={now}
+                onLicenseChange={onLicenseChange}
               />
             ) : (
               <div className="empty-state">
@@ -194,19 +291,6 @@ export default function App() {
           </div>
         </main>
       </div>
-
-      {showModal && (
-        <KeyReflowModal
-          onClose={() => {
-            setShowModal(false);
-            refreshQuota();
-          }}
-          onUnlocked={() => {
-            setShowModal(false);
-            refreshQuota();
-          }}
-        />
-      )}
     </div>
   );
 }

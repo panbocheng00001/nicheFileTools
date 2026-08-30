@@ -28,11 +28,10 @@ export default function PrivacyPage() {
           the moment you close the tab.
         </li>
         <li>
-          <strong>Desktop unlock tokens.</strong> If you request a free desktop
-          unlock key, our server generates a one-time token and stores a{" "}
-          <em>hashed device identifier</em> (a random UUID created on your
-          machine) to enforce the one-free-key-per-device limit. The hash
-          contains no personal information and cannot be traced back to you.
+          <strong>Nothing for desktop unlock codes.</strong> Each tool page
+          shows a code that rotates on the hour. It is computed in your own
+          browser and verified inside the desktop app on your machine — there is
+          no account, no device identifier, and nothing is sent to us.
         </li>
         <li>
           <strong>Basic server logs.</strong> Like most websites, our hosting

@@ -9,9 +9,9 @@ import {
 
 // KFX is Amazon's proprietary format (DRIF metadata + Snappy-compressed content).
 // A correct, license-clean KFX parser is a substantial reverse-engineering effort and
-// is NOT bundled in this web build. Per 务实可跑, we implement the IConverter contract
+//is NOT bundled in this web build. Per pragmatic runnable, we implement the IConverter contract
 // and degrade gracefully to the desktop app, which ships the full parser.
-// See 技术需求文档 §4.1.1.
+//See Technical Requirements Document §4.1.1.
 export class KfxToEpubConverter implements IConverter {
   readonly info: ConverterInfo = {
     id: "kfx-to-epub",

@@ -1,5 +1,5 @@
-// GSM 06.10 → WAV：使用 ffmpeg.wasm 的内置 GSM 解码器（libgsm 同级实现，正确可靠）。
-// 输出标准 16-bit PCM mono @ 8000 Hz 的 WAV，与原始 GSM 承载内容逐样本一致（无损解码）。
+//GSM 06.10 → WAV: Use the built-in GSM decoder of ffmpeg.wasm (libgsm sibling implementation, correct and reliable).
+//Outputs WAV in standard 16-bit PCM mono @ 8000 Hz, consistent sample-by-sample with the original GSM bearer content (lossless decoding).
 import { fetchFile } from "@ffmpeg/util";
 import {
   IConverter,

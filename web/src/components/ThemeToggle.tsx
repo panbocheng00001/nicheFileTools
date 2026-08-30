@@ -19,7 +19,7 @@ export function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="relative grid h-9 w-9 place-items-center rounded-lg border border-border/60 bg-background/60 text-foreground transition-colors hover:border-primary/50 hover:text-primary"
     >
-      {/* 避免水合闪烁：挂载前渲染占位 */}
+      {/*Avoid hydration flicker: render placeholder before mounting*/}
       {!mounted ? (
         <span className="h-4 w-4" />
       ) : isDark ? (

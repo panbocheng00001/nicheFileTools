@@ -18,7 +18,7 @@
       "source": [".raw"],
       "target": ".wav",
       "category": "audio",
-      "guide": "无头 PCM：可选参数 sample_rate / bits / channels（默认 44100/16/1）"
+      "guide": "Headerless PCM: optional params sample_rate / bits / channels (default 44100/16/1)"
     },
     {
       "slug": "eot-to-ttf",
@@ -48,7 +48,7 @@
       "source": [".exr"],
       "target": ".png",
       "category": "image",
-      "guide": "HDR 浮点映射到 8-bit（预览用）"
+      "guide": "HDR float mapped to 8-bit (preview only)"
     },
     {
       "slug": "opf-to-epub",
@@ -68,7 +68,7 @@
       "source": [".sav"],
       "target": ".csv",
       "category": "data",
-      "guide": "需 Python + pandas：pip install pandas"
+      "guide": "Requires Python + pandas: pip install pandas"
     },
     {
       "slug": "wad-extractor",
@@ -79,7 +79,7 @@
       "target": ".wad",
       "output_kind": "dir",
       "category": "game",
-      "guide": "解包全部 lump 到输出目录（支持 IWAD/PWAD/WAD2/WAD3）"
+      "guide": "Unpack all lumps to output dir (supports IWAD/PWAD/WAD2/WAD3)"
     },
     {
       "slug": "pvr-to-png",
@@ -89,7 +89,7 @@
       "source": [".pvr"],
       "target": ".png",
       "category": "image",
-      "guide": "已支持未压缩 RGBA8888/RGB888/L8；压缩/2字节布局待原生解码器"
+      "guide": "Uncompressed RGBA8888/RGB888/L8 supported; compressed/2-byte layouts await a native decoder"
     },
     {
       "slug": "gsm-to-wav",
@@ -99,7 +99,7 @@
       "source": [".gsm"],
       "target": ".wav",
       "category": "audio",
-      "guide": "需安装 FFmpeg"
+      "guide": "Requires FFmpeg"
     },
     {
       "slug": "mts-to-mp4",
@@ -109,7 +109,7 @@
       "source": [".mts", ".m2ts"],
       "target": ".mp4",
       "category": "video",
-      "guide": "需安装 FFmpeg"
+      "guide": "Requires FFmpeg"
     },
     {
       "slug": "blend-to-glb",
@@ -119,7 +119,7 @@
       "source": [".blend"],
       "target": ".glb",
       "category": "3d",
-      "guide": "需安装 Blender"
+      "guide": "Requires Blender"
     },
     {
       "slug": "kfx-to-epub",
@@ -129,17 +129,18 @@
       "source": [".kfx"],
       "target": ".epub",
       "category": "ebook",
-      "guide": "需安装 Calibre（ebook-convert）"
+      "guide": "Requires Calibre (ebook-convert)"
     },
     {
       "slug": "step-to-stl",
       "name": "STEP/IGES/BREP to STL",
+      "web_slug": "prt-to-stl",
       "class": "B",
       "engines": ["occt"],
       "source": [".step", ".stp", ".iges", ".igs", ".brep"],
       "target": ".stl",
       "category": "3d",
-      "guide": "PRT 请先在 Creo 导出 STEP；需 FreeCAD/OCCT"
+      "guide": "For PRT, export STEP from Creo first; requires FreeCAD/OCCT"
     },
     {
       "slug": "pfm-to-ttf",
@@ -149,7 +150,7 @@
       "source": [".pfb", ".pfa"],
       "target": ".ttf",
       "category": "font",
-      "guide": "需 Python + fontforge；.pfm 与之同名同目录"
+      "guide": "Requires Python + fontforge; the .pfm must share the same name and directory"
     }
   ]
 }

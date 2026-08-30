@@ -83,7 +83,7 @@ with sync_playwright() as p:
     # 8) free-trial
     page.goto(BASE + "/free-trial", wait_until="networkidle")
     page.wait_for_timeout(800)
-    check("[free-trial] 无token显示invalid", page.locator("text=Invalid link").count() >= 1)
+    check("[free-trial] 说明页无兑换表单", page.locator("input").count() == 0)
     page.goto(BASE + "/free-trial?token=FAKE123", wait_until="networkidle")
     can = page.locator('link[rel="canonical"]').get_attribute("href")
     check("[free-trial] 带参 canonical 归一", can == f"{SITE}/free-trial", can)
@@ -109,31 +109,23 @@ with sync_playwright() as p:
     check("[sitemap] 含合规页", "/privacy" in sm)
     check("[sitemap] 无token参数URL", "token=" not in sm)
 
-    # 11) 密钥回流 API 全流程（device 终身一次 + 一次性 + 限流）
+    # 11) 授权去服务化：站点不应存在任何授权 API
+    # 解锁码在浏览器本地生成、桌面端本地校验，全链路无服务端参与。
     api = page.request
-    r1 = api.post(BASE + "/api/desktop-token", data={"device_id": "test-device-alpha"})
-    check("[api] 发token 200", r1.status == 200, r1.status)
-    tok = r1.json().get("token")
-    rv = api.get(BASE + f"/api/desktop-validate?token={tok}")
-    key = rv.json().get("key")
-    check("[api] validate 返回 key", bool(key), rv.json())
-    rr = api.post(BASE + "/api/desktop-redeem", data={"token": tok, "key": key, "device_id": "test-device-alpha"})
-    check("[api] 核销成功", rr.status == 200, rr.status)
-    rr2 = api.post(BASE + "/api/desktop-redeem", data={"token": tok, "key": key, "device_id": "test-device-alpha"})
-    check("[api] token一次性(重复核销拒绝)", rr2.status == 400, rr2.status)
-    r3 = api.post(BASE + "/api/desktop-token", data={"device_id": "test-device-alpha"})
-    check("[api] 设备终身一次(核销后再取403)", r3.status == 403, r3.status)
-    rv2 = api.get(BASE + f"/api/desktop-validate?token={tok}")
-    check("[api] 已核销token不可再用", rv2.json().get("valid") is False, rv2.json())
-    limited = False
-    for i in range(10):
-        if api.post(BASE + "/api/desktop-token", data={"device_id": f"dev-ratelimit-{i}"}).status == 429:
-            limited = True
-            break
-    check("[api] IP限流 429", limited)
-    check("[api] 缺 device_id 400", api.post(BASE + "/api/desktop-token", data={}).status == 400)
+    for path in ["/api/desktop-token", "/api/desktop-validate", "/api/desktop-redeem"]:
+        resp = api.post(BASE + path, data={"device_id": "test-device-alpha"})
+        check(f"[api] {path} 不存在(404)", resp.status == 404, resp.status)
 
-    # 12) 资源/控制台错误（排除外网字体）
+    # 12) 工具页应展示当前解锁码（跨端对账的前提）
+    page.goto(BASE + "/tools/kfx-to-epub", wait_until="networkidle")
+    page.wait_for_timeout(500)
+    has_unlock = any(
+        page.locator(f"text={w}").count() >= 1
+        for w in ["Unlock code", "Desktop unlock", "Copy code"]
+    )
+    check("[unlock] 工具页存在取码入口", has_unlock)
+
+    # 13) 资源/控制台错误（排除外网字体）
     real_404 = [u for u in failed_urls if "localhost" in u
                 and "does-not-exist" not in u and "FAKE" not in u
                 and ".hot-update." not in u]  # dev HMR 残留，生产构建不存在

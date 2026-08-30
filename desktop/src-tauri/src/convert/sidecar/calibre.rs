@@ -9,7 +9,7 @@ use super::run_command;
 ///
 /// `calibre` may be the full `ebook-convert` binary path, or the directory
 /// containing it. Calibre is GPL-3.0 but, like Blender, is invoked as a
-/// separate process (技术文档 §8.5).
+/// separate process (technical document §8.5).
 pub fn ebook_convert(calibre: &Path, input: &Path, output: &Path) -> Result<u64, AppError> {
     // `calibre` resolves to the ebook-convert executable path (see EngineResolver).
     let bin = if calibre.file_name().map(|n| n.to_string_lossy().eq_ignore_ascii_case("calibre"))

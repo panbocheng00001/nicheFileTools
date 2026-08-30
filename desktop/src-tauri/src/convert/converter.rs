@@ -59,7 +59,7 @@ pub trait Converter: Send + Sync {
     /// Stable tool slug, e.g. `raw-to-iso`. Must match `tools.json`.
     fn slug(&self) -> &'static str;
 
-    /// A / B / C classification (see 技术需求文档 §5).
+    /// A / B / C classification (see technical requirements document §5).
     #[allow(dead_code)]
     fn class_type(&self) -> &'static str;
 

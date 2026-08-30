@@ -9,9 +9,10 @@ const meta = (over: Partial<ToolMeta> = {}): ToolMeta => ({
   engines: ["rust-native"],
   source: [".raw", ".img"],
   target: ".iso",
-  outputKind: "file",
+  output_kind: "file",
   guide: null,
   category: "archive",
+  web_slug: null,
   ...over,
 });
 
@@ -46,11 +47,15 @@ describe("toToolDef", () => {
   });
 
   it("defaults outputKind to file", () => {
-    expect(toToolDef(meta({ outputKind: "" })).outputKind).toBe("file");
+    expect(toToolDef(meta({ output_kind: "" })).outputKind).toBe("file");
+  });
+
+  it("keeps the snake_case output_kind sent by Rust (dir => WAD style output)", () => {
+    expect(toToolDef(meta({ output_kind: "dir" })).outputKind).toBe("dir");
   });
 
   it("prefers the manifest guide as the description", () => {
-    expect(toToolDef(meta({ guide: "需安装 FFmpeg" })).description).toBe("需安装 FFmpeg");
+    expect(toToolDef(meta({ guide: "Requires FFmpeg" })).description).toBe("Requires FFmpeg");
   });
 
   it("generates a description when there is no guide", () => {
@@ -63,6 +68,17 @@ describe("toToolDef", () => {
     );
     expect(d.sourceExts).toHaveLength(5);
     expect(d.sourceExts).toContain(".stp");
+  });
+
+  it("falls back to the desktop slug when the web page matches", () => {
+    expect(toToolDef(meta()).webSlug).toBe("raw-to-iso");
+  });
+
+  it("uses web_slug when the web catalogue names the tool differently", () => {
+    // Desktop `step-to-stl` lives at /tools/prt-to-stl on the web; the "get the
+    // code" link must follow the override or it 404s.
+    const d = toToolDef(meta({ slug: "step-to-stl", web_slug: "prt-to-stl" }));
+    expect(d.webSlug).toBe("prt-to-stl");
   });
 
   it("survives a tool with no source extensions", () => {

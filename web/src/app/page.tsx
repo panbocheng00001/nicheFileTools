@@ -113,7 +113,7 @@ export default function Home() {
         </ul>
       </section>
 
-      {/* ===== 分类导航（首页 → Category Hub → 工具页，内链矩阵 §3.2.4） ===== */}
+      {/*===== Category Navigation (Home Page → Category Hub → Tool Page, Internal Link Matrix §3.2.4) =====*/}
       <section aria-label="Browse by category" className="mt-10">
         <ul className="flex flex-wrap gap-2.5">
           {CATEGORIES.map((c) => {
@@ -135,7 +135,7 @@ export default function Home() {
         </ul>
       </section>
 
-      {/* ===== 桌面端 CTA ===== */}
+      {/*===== Desktop CTA =====*/}
       <section className="mt-12">
         <div className="glass p-6 sm:p-8">
           <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">

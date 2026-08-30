@@ -10,7 +10,7 @@ use crate::errors::AppError;
 /// PTC Creo `.prt` is proprietary and **not** supported by FreeCAD/OCCT, so this
 /// tool is explicitly scoped to open CAD formats; callers export `.prt` to STEP
 /// in Creo first. OCCT/FreeCAD is LGPL and invoked as a separate `freecadcmd`
-/// process (技术文档 §8.6).
+/// process (technical document §8.6).
 pub struct StepToStlConverter;
 
 impl Converter for StepToStlConverter {

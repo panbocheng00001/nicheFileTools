@@ -33,7 +33,7 @@ use tools::wad_extractor::WadExtractor;
 ///
 /// Adding a tool is now: drop a module in `tools/`, add one line here, add one
 /// record to `tools.json`. The UI and engine resolver read the manifest — the
-/// main program does not need to know about individual tools (技术文档 §3.3).
+/// main program does not need to know about individual tools (technical document §3.3).
 pub fn all() -> &'static [&'static dyn Converter] {
     &[
         &RawToIsoConverter,

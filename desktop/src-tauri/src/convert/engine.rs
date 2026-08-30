@@ -6,7 +6,7 @@ use std::path::PathBuf;
 /// Every variant besides `RustNative` maps to a sidecar binary that the
 /// `EngineResolver` detects at runtime. GPL/LGPL engines (Blender, Calibre,
 /// OCCT) are only ever invoked as **separate processes** — never statically
-/// linked — so they do not infect the main binary (技术文档 §8.1).
+/// linked — so they do not infect the main binary (technical document §8.1).
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum Engine {
     /// Pure Rust, runs directly on the desktop. Always available.

@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { ShieldCheck, Cpu, HeartHandshake, Lock } from "lucide-react";
-import { SUPPORT_EMAIL, HELLO_EMAIL } from "@/lib/site";
+import {
+  HELLO_EMAIL,
+  REPO_ISSUES_URL,
+  REPO_NAME,
+  REPO_OWNER,
+  REPO_URL,
+  SUPPORT_EMAIL,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About nichefiletools — Our Mission & Values",
@@ -99,6 +106,36 @@ export default function AboutPage() {
           all. The desktop app is built with Rust and performs the same
           parsing natively, which removes browser memory limits and enables
           batch processing and multi-gigabyte disc images.
+        </p>
+
+        <h2>Open source</h2>
+        <p>
+          The entire project — the Next.js web app, the Tauri 2 desktop shell,
+          and every Rust conversion kernel — is public at{" "}
+          <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
+            github.com/{REPO_OWNER}/{REPO_NAME}
+          </a>
+          . &ldquo;Runs on your device&rdquo; is a claim you should be able to
+          verify, not take on faith, so the code that makes that promise is
+          readable by anyone.
+        </p>
+        <p>
+          That includes the desktop unlock system. Each desktop tool is gated
+          by a code that sits on that tool&rsquo;s page and rotates every hour.
+          The code is derived from a deliberately public, deterministic
+          algorithm — because in an open-source project there is no server
+          secret to keep. It is a way to point people back at the page that
+          explains a format, not a security boundary. The full reasoning and
+          the 30-second version of the algorithm are written up on the{" "}
+          <a href="/free-trial">how the unlock code works</a> page.
+        </p>
+        <p>
+          Found a bug or want a format supported?{" "}
+          <a href={REPO_ISSUES_URL} target="_blank" rel="noopener noreferrer">
+            Open an issue
+          </a>{" "}
+          — a small sample file attached to an issue is the single most useful
+          thing you can send.
         </p>
 
         <h2>Get in touch</h2>

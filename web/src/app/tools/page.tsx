@@ -45,7 +45,7 @@ export default function ToolsIndexPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-      {/* 面包屑 */}
+      {/*bread crumbs*/}
       <nav aria-label="Breadcrumb" className="mb-8">
         <ol className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           <li>
@@ -79,12 +79,12 @@ export default function ToolsIndexPage() {
         </p>
       </header>
 
-      {/* 搜索 + 分组浏览（客户端交互） */}
+      {/*Search + group browsing (client interaction)*/}
       <Suspense fallback={null}>
         <ToolsExplorer tools={TOOLS} categories={CATEGORIES} />
       </Suspense>
 
-      {/* 桌面端 CTA */}
+      {/*Desktop CTA*/}
       <section className="mt-16">
         <div className="glass p-6 sm:p-8">
           <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">

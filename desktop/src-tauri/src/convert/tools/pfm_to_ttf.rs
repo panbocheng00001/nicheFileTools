@@ -10,7 +10,7 @@ use crate::errors::AppError;
 /// A Type1 font ships as an outline file (`.pfb` / `.pfa`) plus an optional
 /// metrics file (`.pfm`). We run the conversion in a Python + `fontforge` sidecar
 /// (MIT, separate process). Convention: keep the `.pfm` next to the `.pfb` with
-/// the same stem; it is picked up automatically when present (技术文档 §8.4).
+/// the same stem; it is picked up automatically when present (technical document §8.4).
 pub struct PfmToTtfConverter;
 
 impl Converter for PfmToTtfConverter {

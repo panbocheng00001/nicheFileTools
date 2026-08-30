@@ -1,6 +1,6 @@
-// OPF (+资源 ZIP) → EPUB 3.0：按 EPUB ZIP 规范重新打包（mimetype 首位 stored）。
-// 零依赖：ZIP 读/写用 lib/zip.ts，OPF XML 解析用浏览器原生 DOMParser。
-// 输入两种形态：① .zip（内含 OPF + 资源，推荐）② 单个 .opf（打包为最小可开 EPUB）。
+//OPF (+resource ZIP) → EPUB 3.0: Repackaged according to EPUB ZIP specification (mimetype first stored).
+//Zero dependencies: ZIP reading/writing uses lib/zip.ts, and OPF XML parsing uses the browser’s native DOMParser.
+//Enter two forms: ① .zip (contains OPF + resources, recommended) ② Single .opf (packaged into the smallest openable EPUB).
 import { IConverter, ConverterInfo, ConversionOptions, ConversionResult, defaultValidate } from "./interfaces";
 import { readZip, buildZip, type ZipEntry } from "../zip";
 
@@ -46,7 +46,7 @@ function joinPath(dir: string, href: string): string {
   return href.startsWith("/") ? href.slice(1) : dir + href;
 }
 
-/** 从 OPF XML 提取：dc:title、manifest items、spine 顺序。 */
+/** Extracted from OPF XML: dc:title, manifest items, spine order.*/
 function parseOpf(xmlText: string, opfPath: string) {
   const doc = new DOMParser().parseFromString(xmlText, "text/xml");
   if (doc.querySelector("parsererror")) {
@@ -94,11 +94,11 @@ export class OpfToEpubConverter implements IConverter {
       if (!opfs.length) {
         throw new Error("No .opf file found inside the ZIP. Include the OPF alongside its resources.");
       }
-      // 优先 content.opf，其次路径最短的
+      //Prioritize content.opf, followed by the shortest path
       opfPath = (opfs.find((e) => /content\.opf$/i.test(e.name)) ??
         opfs.sort((a, b) => a.name.length - b.name.length)[0]).name;
     } else {
-      // 单个 OPF：以其原路径打包（资源缺失由阅读器按缺失处理）
+      //Single OPF: packaged with its original path (resource missing will be handled by the reader as missing)
       opfPath = name;
       entries = [{ name, data: new Uint8Array(await options.inputFile.arrayBuffer()) }];
     }
@@ -106,7 +106,7 @@ export class OpfToEpubConverter implements IConverter {
     const opfEntry = entries.find((e) => e.name === opfPath)!;
     const opf = parseOpf(new TextDecoder().decode(opfEntry.data), opfPath);
 
-    // manifest 与 ZIP 实际内容对账（区分大小写）
+    //Reconciliation of manifest and actual contents of ZIP (case sensitive)
     const zipNames = new Set(entries.map((e) => e.name));
     const missing = opf.manifest
       .filter((m) => m.href && !/^[a-z]+:\/\//i.test(m.href))
@@ -118,7 +118,7 @@ export class OpfToEpubConverter implements IConverter {
       );
     }
 
-    // 生成 EPUB 3 导航（若 OPF 未自带 nav）
+    //Generate EPUB 3 navigation (if OPF does not come with nav)
     const hasNav = opf.manifest.some((m) => m.properties.includes("nav"));
     const navEntries: ZipEntry[] = [];
     let opfXml = new TextDecoder().decode(opfEntry.data);
@@ -133,7 +133,7 @@ export class OpfToEpubConverter implements IConverter {
           label: prettyName(m.href),
         }));
       navEntries.push({ name: navName, data: new TextEncoder().encode(navXhtml(opf.title, navItems)) });
-      // 注入 manifest/spine，保证 EPUB 3 一致性（幂等：仅当无 nav 时）
+      //Inject manifest/spine to ensure EPUB 3 consistency (idempotent: only when there is no nav)
       const inject =
         `<item id="generated-nav" href="${relativeTo(opfPath, navName)}" media-type="application/xhtml+xml" properties="nav"/>`;
       opfXml = opfXml.replace(/<\/manifest>/i, `  ${inject}\n</manifest>`);
@@ -143,7 +143,7 @@ export class OpfToEpubConverter implements IConverter {
     }
 
     const outEntries: ZipEntry[] = [
-      { name: "mimetype", data: new TextEncoder().encode(MIMETYPE) }, // 必须首位且 stored
+      { name: "mimetype", data: new TextEncoder().encode(MIMETYPE) }, //Must come first and stored
       { name: "META-INF/container.xml", data: new TextEncoder().encode(containerXml(opfPath)) },
       ...(hasNav
         ? [{ name: opfPath, data: new Uint8Array(await options.inputFile.arrayBuffer()) }]
@@ -167,7 +167,7 @@ function prettyName(href: string): string {
   return base.replace(/\.[a-z]+$/i, "").replace(/[_-]+/g, " ");
 }
 
-/** nav 与内容文件同目录时的相对 href。 */
+/** Relative href when nav is in the same directory as the content file.*/
 function relativeTo(fromPath: string, toPath: string): string {
   const fromDir = dirOf(fromPath);
   if (toPath.startsWith(fromDir)) return toPath.slice(fromDir.length);

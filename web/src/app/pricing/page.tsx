@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// 全站规范 §2.16 示例价：$29 一次性买断（上线前与业务确认最终定价）
+//Full site specifications §2.16 Sample price: $29 one-time buyout (confirm the final price with the business before going online)
 const LICENSE_PRICE = "29.00";
 
 const productJsonLd = {
@@ -29,13 +29,13 @@ const productJsonLd = {
     availability: "https://schema.org/InStock",
     url: `${SITE}/pricing`,
   },
-  // 红线：无真实用户评价前禁止 AggregateRating（对照表 #13）
+  //Red line: Disable AggregateRating without real user reviews (Checklist #13)
 };
 
 const ROWS: { feature: string; free: boolean | string; pro: boolean | string }[] =
   [
     { feature: "Online web tools", free: "Free, unlimited", pro: "Free, unlimited" },
-    { feature: "Desktop conversions", free: "2 free attempts per device", pro: "Unlimited" },
+    { feature: "Desktop conversions", free: "Hourly free code, unlimited while valid", pro: "Unlocked — no code needed" },
     { feature: "File size (desktop)", free: "Unlimited", pro: "Unlimited" },
     { feature: "Batch conversion", free: true, pro: true },
     { feature: "Desktop-only formats (RAW→ISO)", free: true, pro: true },
@@ -66,9 +66,9 @@ export default function PricingPage() {
       <DocPage eyebrow="Pricing" title="Free vs Pro">
         <p>
           Everything in the browser is free, forever. The desktop app is free
-          to try with a{" "}
-          <Link href="/free-trial">one-time unlock of 2 conversions</Link>; a
-          single one-time license unlocks unlimited desktop use. No
+          to try with{" "}
+          <Link href="/free-trial">an hourly, per-tool unlock code</Link>;
+          a single one-time license unlocks unlimited desktop use. No
           subscription, no per-file fees.
         </p>
 

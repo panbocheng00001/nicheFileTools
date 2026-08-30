@@ -1,6 +1,6 @@
-// GLB → glTF（自包含 .gltf，buffer 以 base64 data URI 内嵌）。
-// 零依赖实现（文档 §4.2.3 的拆分思路，输出改为单文件 embedded glTF——浏览器单次下载
-// 最实用，且对 Three.js/Babylon/Blender 等加载器语义完全等价）。
+//GLB → glTF (self-contained .gltf, buffer embedded with base64 data URI).
+//Zero dependency implementation (splitting idea in document §4.2.3, the output is changed to a single file embedded glTF - single download by the browser
+//The most practical, and the semantics are completely equivalent to loaders such as Three.js/Babylon/Blender).
 import { IConverter, ConverterInfo, ConversionOptions, ConversionResult, defaultValidate } from "./interfaces";
 
 const GLB_MAGIC = 0x46546c67;
@@ -9,7 +9,7 @@ const CHUNK_BIN = 0x004e4942;
 
 function bytesToBase64(bytes: Uint8Array): string {
   let bin = "";
-  const CHUNK = 0x8000; // 分块避免 String.fromCharCode 栈溢出
+  const CHUNK = 0x8000; //Blocking to avoid String.fromCharCode stack overflow
   for (let i = 0; i < bytes.length; i += CHUNK) {
     bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
   }
@@ -54,7 +54,7 @@ export class GlbToGltfConverter implements IConverter {
       const data = new Uint8Array(buffer, offset + 8, chunkLength);
       if (chunkType === CHUNK_JSON && !jsonChunk) jsonChunk = data;
       else if (chunkType === CHUNK_BIN && !binChunk) binChunk = data;
-      offset += 8 + chunkLength + ((8 + chunkLength) % 4); // chunk 尾部 4 字节对齐 padding
+      offset += 8 + chunkLength + ((8 + chunkLength) % 4); //4-byte alignment padding at the end of the chunk
     }
 
     if (!jsonChunk) throw new Error("No JSON chunk found in GLB — the file may be corrupted.");

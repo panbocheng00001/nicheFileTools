@@ -5,8 +5,9 @@
   "type": "module",
   "description": "nichefiletools desktop — Tauri 2 + Rust file converter",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "sync:tools": "node scripts/gen-mock-tools.mjs",
+    "dev": "npm run sync:tools && vite",
+    "build": "npm run sync:tools && tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

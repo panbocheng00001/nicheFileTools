@@ -8,7 +8,7 @@ use super::run_command;
 /// Export a Blender project to GLB via `blender -b -P <script>`.
 ///
 /// Blender is GPL-3.0 but invoked as a **separate process**, so it does not
-/// infect the main binary (技术文档 §8.3). The export script is written to a
+/// infect the main binary (technical document §8.3). The export script is written to a
 /// temp file and removed afterwards.
 pub fn export_glb(blender: &Path, input: &Path, output: &Path) -> Result<u64, AppError> {
     let script = format!(

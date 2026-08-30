@@ -8,7 +8,7 @@ import {
 } from "./interfaces";
 
 // PVR (PowerVR Texture) v3 decoder.
-// (技术规范 §4.3.1 names pvr-texture-decoder-wasm; here we ship a self-contained
+//(Technical specification §4.3.1 names pvr-texture-decoder-wasm; here we ship a self-contained
 // decoder that handles uncompressed 32-bit RGBA PVR v3 files with no external
 // dependency, and degrades gracefully for compressed variants.)
 const PVR3_MAGIC = 0x03525650;

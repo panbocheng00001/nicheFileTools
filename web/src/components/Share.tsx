@@ -5,7 +5,7 @@ import { Share2, Link2, Check, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  /** 相对路径，如 /tools/kfx-to-epub */
+  /** Relative path, such as /tools/kfx-to-epub*/
   path: string;
   title: string;
   className?: string;
@@ -14,7 +14,7 @@ interface Props {
 export function Share({ path, title, className }: Props) {
   const [copied, setCopied] = useState(false);
 
-  // 用 origin 拼绝对 URL（SSR 安全：window 在 effect/事件里才访问）
+  //Use origin to spell the absolute URL (SSR security: window is only accessed in effect/event)
   const url = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
   const encUrl = encodeURIComponent(url);
   const encTitle = encodeURIComponent(title);
@@ -54,7 +54,7 @@ export function Share({ path, title, className }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      // 降级：选中 prompt
+      //Downgrade: check prompt
       window.prompt("Copy link:", url);
     }
   }
@@ -95,7 +95,7 @@ export function Share({ path, title, className }: Props) {
   );
 }
 
-/* —— 内联品牌图标（lucide 无品牌图标） —— */
+/*—— Inline brand icon (lucide unbranded icon) ——*/
 function XIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">

@@ -1,5 +1,5 @@
-// MTS / M2TS (AVCHD) → MP4：使用 ffmpeg.wasm 重新封装（remux）或转码（transcode）。
-// 默认 remux（copy 视频流，音频重编码为 AAC），失败时回退到完整转码。
+//MTS / M2TS (AVCHD) → MP4: Use ffmpeg.wasm to remux or transcode.
+// Default remux (copy video stream, re-encode audio to AAC); fall back to full transcode on failure.
 import { fetchFile } from "@ffmpeg/util";
 import {
   IConverter,

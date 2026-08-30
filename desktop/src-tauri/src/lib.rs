@@ -1,12 +1,13 @@
 mod convert;
+mod desktop_code;
 mod errors;
-mod key_reflow;
+mod licensing;
 
 #[cfg(test)]
 mod e2e;
 
 use errors::{AppError, AppErrorPayload};
-use key_reflow::{QuotaInfo, TokenResponse};
+use licensing::LicenseInfo;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -22,10 +23,8 @@ struct ConvertOutput {
     size: u64,
 }
 
-/// Convert a file using the registered desktop converter for `slug`.
-/// Gated behind the free-unlock quota (密钥回流 doc §3.1).
 /// Convert a single file using the registered desktop converter for `slug`.
-/// Gated behind the free-unlock quota (密钥回流 doc §3.1). Streams real-time
+/// Gated behind that tool's unlock (see `licensing`). Streams real-time
 /// byte-level progress through `EmitSink` (the single-file path previously used
 /// `NoopSink` and reported nothing), keyed by an optional `rid` so a caller can
 /// correlate events from `onConvertProgress`.
@@ -38,7 +37,7 @@ fn convert(
     options: Option<String>,
     rid: Option<String>,
 ) -> Result<ConvertOutput, AppErrorPayload> {
-    key_reflow::consume_quota(&app)?;
+    licensing::ensure_unlocked(&app, &slug)?;
 
     let opts: Option<serde_json::Value> = match options {
         Some(s) => serde_json::from_str(&s).ok(),
@@ -84,7 +83,7 @@ fn convert(
     Ok(ConvertOutput { output_path, size })
 }
 
-/// A single item in a batch conversion (P3 批量队列).
+/// A single item in a batch conversion (P3 batch queue).
 #[derive(Deserialize)]
 struct BatchItem {
     slug: String,
@@ -193,10 +192,10 @@ fn cancel_batch(ctrl: tauri::State<BatchControl>) {
     ctrl.paused.store(false, Ordering::SeqCst);
 }
 
-/// Convert many files in one call (P3 批量队列). Emits a `convert-progress`
+/// Convert many files in one call (P3 batch queue). Emits a `convert-progress`
 /// event before/after each item (with byte-level progress during conversion via
-/// [`EmitSink`]); returns a per-item summary. The whole batch is gated by the free
-/// quota up front (see `consume_quota_batch`).
+/// [`EmitSink`]); returns a per-item summary. Every distinct tool in the batch
+/// must be unlocked before any work starts (see `licensing::ensure_unlocked`).
 ///
 /// Honors [`BatchControl`]: cancel stops before the next item; pause holds between
 /// items (the current item always finishes). Unstarted items are reported as
@@ -207,7 +206,17 @@ fn convert_batch(
     ctrl: tauri::State<BatchControl>,
     items: Vec<BatchItem>,
 ) -> Result<Vec<BatchResult>, AppErrorPayload> {
-    key_reflow::consume_quota_batch(&app, items.len() as u32)?;
+    // Gate every tool in the batch up front — a locked tool must fail before
+    // the first byte is touched, not halfway through.
+    let mut gated: Vec<&str> = Vec::new();
+    for it in &items {
+        if !gated.contains(&it.slug.as_str()) {
+            gated.push(it.slug.as_str());
+        }
+    }
+    for slug in gated {
+        licensing::ensure_unlocked(&app, slug)?;
+    }
 
     // Fresh flags so a previous cancel/pause can't leak into this run.
     ctrl.cancel.store(false, Ordering::SeqCst);
@@ -367,27 +376,27 @@ fn engine_status(slug: String) -> convert::EngineStatus {
     convert::engine_status(&slug)
 }
 
+/// Current unlock state for one tool (locked / unlocked + time left).
 #[tauri::command]
-fn get_quota(app: tauri::AppHandle) -> QuotaInfo {
-    key_reflow::get_quota(&app)
+fn license_status(app: tauri::AppHandle, slug: String) -> LicenseInfo {
+    licensing::license_status(&app, &slug)
 }
 
+/// Unlock state for every tool in one round trip, so the sidebar can show a
+/// lock indicator per tool without 15 separate calls.
 #[tauri::command]
-fn request_token(
-    app: tauri::AppHandle,
-    api_base: Option<String>,
-) -> Result<TokenResponse, AppErrorPayload> {
-    key_reflow::request_token(&app, api_base.as_deref())
+fn license_status_all(app: tauri::AppHandle, slugs: Vec<String>) -> Vec<LicenseInfo> {
+    licensing::license_status_all(&app, &slugs)
 }
 
+/// Verify a pasted code and unlock `slug` until the top of the hour.
 #[tauri::command]
-fn redeem_key(
+fn activate_tool(
     app: tauri::AppHandle,
-    token: String,
-    key: String,
-    api_base: Option<String>,
-) -> Result<QuotaInfo, AppErrorPayload> {
-    key_reflow::redeem_key(&app, &token, &key, api_base.as_deref())
+    slug: String,
+    code: String,
+) -> Result<LicenseInfo, AppErrorPayload> {
+    licensing::activate_tool(&app, &slug, &code)
 }
 
 /// Open a converted file with the OS default application (e.g. play the .wav,
@@ -457,12 +466,12 @@ fn run_os_open(path: &str, reveal: bool) -> Result<(), String> {
             .status()
     };
     status
-        .map_err(|e| format!("无法打开文件: {e}"))
+        .map_err(|e| format!("Unable to open file: {e}"))
         .and_then(|s| {
             if s.success() {
                 Ok(())
             } else {
-                Err(format!("打开失败 (exit {})", s.code().unwrap_or(-1)))
+                Err(format!("Open failed (exit {})", s.code().unwrap_or(-1)))
             }
         })
 }
@@ -475,12 +484,12 @@ fn run_os_open(path: &str, reveal: bool) -> Result<(), String> {
     }
     cmd.arg(path);
     cmd.status()
-        .map_err(|e| format!("无法打开文件: {e}"))
+        .map_err(|e| format!("Unable to open file: {e}"))
         .and_then(|s| {
             if s.success() {
                 Ok(())
             } else {
-                Err(format!("打开失败 (exit {})", s.code().unwrap_or(-1)))
+                Err(format!("Open failed (exit {})", s.code().unwrap_or(-1)))
             }
         })
 }
@@ -498,12 +507,12 @@ fn run_os_open(path: &str, reveal: bool) -> Result<(), String> {
     std::process::Command::new("xdg-open")
         .arg(target)
         .status()
-        .map_err(|e| format!("无法打开文件: {e}"))
+        .map_err(|e| format!("Unable to open file: {e}"))
         .and_then(|s| {
             if s.success() {
                 Ok(())
             } else {
-                Err(format!("打开失败 (exit {})", s.code().unwrap_or(-1)))
+                Err(format!("Open failed (exit {})", s.code().unwrap_or(-1)))
             }
         })
 }
@@ -522,9 +531,9 @@ pub fn run() {
             cancel_batch,
             list_tools,
             engine_status,
-            get_quota,
-            request_token,
-            redeem_key,
+            license_status,
+            license_status_all,
+            activate_tool,
             open_file,
             reveal_file,
             collect_files

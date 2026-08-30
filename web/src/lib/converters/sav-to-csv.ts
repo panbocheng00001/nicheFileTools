@@ -1,13 +1,13 @@
-// SAV (SPSS) → CSV：纯 TS 解析（文档 §4.8.1，不依赖 sav-parser-wasm）。
-// 支持：$FL2 未压缩 / $FL2 字节压缩 / $FL3 zlib(.zsav)；数值/字符串变量、
-// sysmis 缺失值、>8 字节字符串宽度。局限：>255 字节长字符串分段记录输出为多列。
+//SAV (SPSS) → CSV: Pure TS parsing (docs §4.8.1, no dependencies on sav-parser-wasm).
+//Support: $FL2 uncompressed / $FL2 byte compressed / $FL3 zlib(.zsav); numerical/string variables,
+//sysmis missing value, >8 byte string width. Limitations: >255 byte long string segmented records are output to multiple columns.
 import { IConverter, ConverterInfo, ConversionOptions, ConversionResult, defaultValidate } from "./interfaces";
 
 const SYSMIS = -1.7976931348623157e308;
 
 interface SavVar {
   name: string;
-  /** 0 = numeric；>0 = 字符串宽度（字节） */
+  /** 0 = numeric; >0 = string width (bytes)*/
   width: number;
 }
 
@@ -33,10 +33,10 @@ function readDictionary(view: DataView, u8: Uint8Array): { vars: SavVar[]; dataO
       const type = view.getInt32(o + 4, true);
       const hasLabel = view.getInt32(o + 8, true);
       const nMissing = view.getInt32(o + 12, true);
-      let p = o + 12 + 4 + 8 + 8; // 跳过 print/write 格式（各 8 字节，大端结构，无需解析）
+      let p = o + 12 + 4 + 8 + 8; //Skip print/write format (8 bytes each, big-endian structure, no parsing required)
       const nameLen = Math.min(u8[p], 64);
       const name = dec.decode(u8.subarray(p + 1, p + 1 + nameLen)).trim();
-      p += 1 + 8; // nameLen(1) + 固定 8 字节 name 域（不足补空格）
+      p += 1 + 8; //nameLen(1) + fixed 8-byte name field (insufficient padding of spaces)
       if (hasLabel) {
         const labelLen = view.getInt32(p, true);
         p += 4 + Math.ceil(labelLen / 4) * 4;
@@ -45,7 +45,7 @@ function readDictionary(view: DataView, u8: Uint8Array): { vars: SavVar[]; dataO
       vars.push({ name: name || `V${vars.length + 1}`, width: type });
       o = p;
     } else if (recType === 3) {
-      // Value labels：n(4) + n×8 字节值（关联变量在随后的 type 4 记录）
+      //Value labels: n(4) + n×8 byte value (associated variables are recorded later in type 4)
       const n = view.getInt32(o + 4, true);
       o += 8 + n * 8;
     } else if (recType === 4) {
@@ -61,7 +61,7 @@ function readDictionary(view: DataView, u8: Uint8Array): { vars: SavVar[]; dataO
     } else if (recType === 999) {
       return { vars, dataOffset: o + 4 };
     } else if (recType === 0) {
-      o += 4; // 对齐填充（罕见）
+      o += 4; //Align padding (rare)
     } else {
       throw new Error(`Corrupt SAV dictionary: unknown record type ${recType} at byte ${o}.`);
     }
@@ -118,7 +118,7 @@ export class SavToCsvConverter implements IConverter {
     };
 
     if (compressed === 1) {
-      // 字节压缩流：opcode 控制
+      //Byte compression stream: opcode control
       let p = 0;
       for (let c = 0; c < ncases && p < data.length; c++) {
         const row: string[] = [];
@@ -144,7 +144,7 @@ export class SavToCsvConverter implements IConverter {
         if (row.length === vars.length) rows.push(row);
       }
     } else {
-      // 未压缩布局：数值 8 字节 double，字符串 ceil(w/8)*8 字节
+      //Uncompressed layout: numeric 8-byte double, string ceil(w/8)*8 bytes
       for (let c = 0; c < ncases; c++) {
         const base = c * bytesPerCase;
         if (base + bytesPerCase > data.length) break;
@@ -175,7 +175,7 @@ export class SavToCsvConverter implements IConverter {
 }
 
 function num(v: number): string {
-  if (v <= SYSMIS * 0.99) return ""; // sysmis（缺失）→ 空单元格
+  if (v <= SYSMIS * 0.99) return ""; // sysmis (missing) -> empty cell
   return Number.isInteger(v) ? String(v) : String(v);
 }
 

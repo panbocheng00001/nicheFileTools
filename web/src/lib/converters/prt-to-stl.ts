@@ -9,7 +9,7 @@ import {
 
 // PRT -> STL requires tessellating a CAD B-Rep via the OCCT kernel. The OCCT WASM
 // build is large and not bundled in this web build, so we degrade gracefully to the
-// desktop app (which calls FreeCAD/OCCT). See 技术需求文档 §4.2.1.
+// desktop app (which calls FreeCAD/OCCT). See technical requirements doc §4.2.1.
 export class PrtToStlConverter implements IConverter {
   readonly info: ConverterInfo = {
     id: "prt-to-stl",

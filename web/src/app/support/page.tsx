@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, BookOpen, Wrench, Download } from "lucide-react";
 import { DocPage } from "@/components/DocPage";
-import { SUPPORT_EMAIL } from "@/lib/site";
+import { REPO_ISSUES_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Support Center",
@@ -19,7 +19,19 @@ const contactJsonLd = {
   url: "https://nichefiletools.com/support",
 };
 
-const options = [
+interface SupportOption {
+  icon: typeof Mail;
+  title: string;
+  body: string;
+  /** Small print under the body (e.g. response times). */
+  note?: string;
+  href?: string;
+  cta?: string;
+  /** Off-site links (GitHub) open in a new tab. */
+  external?: boolean;
+}
+
+const options: SupportOption[] = [
   {
     icon: Mail,
     title: "Email support",
@@ -36,7 +48,7 @@ const options = [
   {
     icon: Wrench,
     title: "Desktop unlock issues",
-    body: "Key invalid or expired? Keys are single-use and valid for 24 hours — request a new one from the app.",
+    body: "Code not accepted? Each code is per tool and rotates on the hour — copy the current one from that tool's page.",
     href: "/license",
     cta: "License help",
   },
@@ -46,6 +58,14 @@ const options = [
     body: "Larger files, batch conversion, and desktop-only formats.",
     href: "/download",
     cta: "Download app",
+  },
+  {
+    icon: Wrench,
+    title: "Report a bug",
+    body: "The project is open source — file an issue with a small sample file and we'll look at the format directly.",
+    href: REPO_ISSUES_URL,
+    cta: "Open a GitHub issue",
+    external: true,
   },
 ];
 
@@ -84,12 +104,21 @@ export default function SupportPage() {
                 </div>
               </div>
             );
-            return o.href ? (
+            if (!o.href) return <div key={o.title}>{inner}</div>;
+            return o.external ? (
+              <a
+                key={o.title}
+                href={o.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="no-prose block"
+              >
+                {inner}
+              </a>
+            ) : (
               <Link key={o.title} href={o.href} className="no-prose block">
                 {inner}
               </Link>
-            ) : (
-              <div key={o.title}>{inner}</div>
             );
           })}
         </div>

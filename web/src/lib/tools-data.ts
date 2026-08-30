@@ -1,4 +1,5 @@
 import type { ClassType, ToolCategory } from "./converters/interfaces";
+import { REPO_ISSUES_URL } from "./site";
 
 export interface FaqItem {
   question: string;
@@ -16,7 +17,7 @@ export interface ToolContent {
   targetFormat: string;
   sourceExt: string;
   targetExt: string;
-  /** 额外可接受的扩展名（如 SAV 的 .zsav），用于文件选择器 accept */
+  /** Additional acceptable extensions (e.g. .zsav for SAV) for file picker accept*/
   extraSourceExts?: string[];
   title: string;
   metaDescription: string;
@@ -31,7 +32,7 @@ export interface ToolContent {
   vs?: string;
   faqs: FaqItem[];
   relatedTools: string[];
-  /** 工具页选项面板（如 RAW→WAV 的采样率/位深/声道） */
+  /** Tool page option panel (such as RAW→WAV sample rate/bit depth/channel)*/
   webOptions?: {
     key: string;
     label: string;
@@ -42,6 +43,12 @@ export interface ToolContent {
   desktopOnlyIntro?: string;
   whyDesktopOnly?: string;
   desktopSteps?: string;
+  /**
+   * Web converter availability. "desktop" = no working in-browser converter yet
+   * (claim-consistency red line, SEO spec v1.3 §1.2): the page renders as an
+   * honest desktop landing instead of an online tool.
+   */
+  webStatus?: "desktop";
 }
 
 const MB = 1024 * 1024;
@@ -53,25 +60,26 @@ export const TOOLS: ToolContent[] = [
     id: "kfx-to-epub",
     name: "KFX to EPUB",
     className: "A",
+    webStatus: "desktop",
     category: "ebook",
     categoryLabel: "eBook",
     sourceFormat: "KFX",
     targetFormat: "EPUB",
     sourceExt: ".kfx",
     targetExt: ".epub",
-    title: "KFX to EPUB Converter – Free Online Kindle KFX to EPUB",
+    title: "KFX to EPUB Converter – Desktop Tool",
     metaDescription:
-      "Convert Amazon Kindle KFX files to EPUB format free online. No upload, 100% browser-based. Supports DRM-free KFX books from Kindle 8+. Works on PC & mobile.",
+      "Convert Kindle KFX to EPUB with the free nichefiletools desktop app. DRM-free books only, batch mode, no file-size limit. Windows & macOS.",
     h1: "KFX to EPUB Converter",
-    webMaxFilePc: 50 * MB,
-    webMaxFileMobile: 20 * MB,
+    webMaxFilePc: 0,
+    webMaxFileMobile: 0,
     desktopUnlimited: true,
     whatIs:
       "Amazon Kindle Format 8+ (KFX) is Amazon's proprietary ebook format used in Kindle devices and the Kindle App since 2017. It replaced the older AZW3/KF8 format, and is based on a fragmented HTML/CSS architecture that supports the Enhanced Typesetting engine, custom fonts, and floating text/graphics. Internally a KFX file uses a DRIF metadata structure plus a Snappy-compressed content segment, which is fundamentally different from the standard EPUB OPF/SPINE/XHTML architecture — that is why ordinary ebook managers (such as older Calibre) cannot open KFX perfectly.",
     whyConvert:
       "EPUB is the open standard from the International Digital Publishing Forum (IDPF), natively supported by almost every non-Kindle reader including Apple Books, Google Play Books, Kobo, and Sony Reader. Converting KFX to EPUB matters for: (1) cross-device migration — KFX cannot be used directly when switching away from the Kindle ecosystem; (2) backing up books you own — DRM-free ebooks you purchased can be archived in EPUB across devices; (3) editing layout — EPUB is based on XHTML/CSS, so fonts/spacing/styles can be edited with standard tools; (4) Calibre management — Calibre's metadata management, format conversion, and sync features are far stronger for EPUB than for its limited KFX support.",
     howTo:
-      "Step 1: Prepare a DRM-free KFX file (export from your Kindle device's /documents directory, or download from Amazon My Content). Step 2: Drag the .kfx file into the conversion area above (supports up to 50 MB on PC, 20 MB on mobile). Step 3: Click Convert — the conversion runs locally in your browser, and the file is never uploaded to a server. Step 4: Download the generated .epub file and open it in any EPUB reader to verify.",
+      "Step 1: Download the free nichefiletools desktop app (Windows/macOS). Step 2: Open KFX to EPUB from the tool list. Step 3: Drag in your DRM-free .kfx files — a single book or a whole library folder (batch supported). Step 4: Click Convert; the app rebuilds the fragmented KFX structure into a standard EPUB package with chapter order and table of contents intact, entirely on your machine. Step 5: Open the .epub in any reader to verify.",
     vs: "All three are Amazon Kindle ecosystem formats, but their architecture and compatibility differ significantly: KFX (2017+) uses DRIF metadata plus Snappy-compressed fragments and is only supported by Kindle 8+; AZW3 (KF8) is a variant based on EPUB 3 with broader compatibility but is being phased out; EPUB is the open standard and works cross-platform. This tool rebuilds KFX's fragmented structure into a standard EPUB OPF package, preserving the original chapter order, table of contents, and basic styling.",
     faqs: [
       {
@@ -90,39 +98,44 @@ export const TOOLS: ToolContent[] = [
           "No. Highlights and annotations are stored in a separate database on the Kindle device (the my.clippings file), not inside the KFX file. Export your annotations via Kindle's export feature before converting.",
       },
       {
-        question: "What is the maximum file size?",
+        question: "Is there a maximum file size?",
         answer:
-          "The web version supports up to 50 MB in PC browsers and 20 MB on mobile. Most KFX ebooks are 2–20 MB, well within range. For larger files, use the desktop application.",
+          "No practical limit — the desktop app processes KFX files natively rather than inside a browser tab. Most KFX ebooks are 2–20 MB, so even whole-library batch runs finish quickly.",
       },
     ],
     relatedTools: ["prt-to-stl", "pvr-to-png", "blend-to-glb", "raw-to-iso"],
+    desktopOnlyIntro:
+      "KFX to EPUB runs in the free nichefiletools desktop app — an in-browser converter is not available.",
+    whyDesktopOnly:
+      "KFX files use Amazon's proprietary DRIF metadata plus Snappy-compressed fragments. A complete, license-clean parser only ships in the nichefiletools desktop app (powered by Calibre) — there is no in-browser converter on this page, and DRM-protected KFX files cannot be converted by any legitimate tool.",
   },
 
-  // 2) PRT to STL — B class
+  // 2) PRT to STL — desktop landing via STEP bridge (no direct PRT parser anywhere; SEO spec v1.3 §1.2)
   {
     slug: "prt-to-stl",
     id: "prt-to-stl",
     name: "PRT to STL",
     className: "B",
+    webStatus: "desktop",
     category: "3d",
     categoryLabel: "3D / CAD",
     sourceFormat: "PRT",
     targetFormat: "STL",
     sourceExt: ".prt",
     targetExt: ".stl",
-    title: "PRT to STL Converter – Free Online",
+    title: "PRT to STL Converter – Desktop Tool",
     metaDescription:
-      "Convert PTC Creo/Pro-E PRT files to STL for 3D printing free online. Browser-based, no upload. Binary & ASCII output. Files >20MB: use desktop app.",
+      "Convert Creo PRT parts to STL for 3D printing. PRT is proprietary — export STEP from Creo, then use the free desktop app. Settings and fixes.",
     h1: "PRT to STL Converter",
-    webMaxFilePc: 20 * MB,
-    webMaxFileMobile: 5 * MB,
+    webMaxFilePc: 0,
+    webMaxFileMobile: 0,
     desktopUnlimited: true,
     whatIs:
       "PRT is the native part file format of PTC (Parametric Technology Corporation) Pro/ENGINEER, now called Creo. It stores the complete design history of a parametric 3D model — sketch constraints, feature operations (extrude/revolve/chamfer/shell), B-Rep boundary representation geometry, relational parameters, and family-table information. PRT is binary-encoded and is one of the most complex proprietary formats in the CAD industry; its internal structure is fundamentally different from exchange formats like STEP/IGES. PRT files are widely used in aerospace, automotive, and mold manufacturing product design.",
     whyConvert:
       "STL (Stereolithography) is the de-facto standard for 3D printing and CAM machining — virtually all slicers (Cura/PrusaSlicer/Simplify3D), 3D printers, and CNC systems read STL natively. Converting PRT to STL is used for: (1) prototype validation — generate an STL from a finished PRT model to send to FDM/SLA/DLP printers; (2) multi-software collaboration — import Creo models into Blender/Maya/ZBrush for rendering or sculpting; (3) pre-processing for FEA — some CAE tools accept STL meshes as input; (4) archival delivery — STL is the most broadly compatible 3D geometry archive format.",
     howTo:
-      "Step 1: Export or obtain your .prt file from Creo. Step 2: Drag it into the conversion area above (PC web up to 20 MB, mobile up to 5 MB). Step 3: Choose output options — Binary STL (recommended, smaller) or ASCII STL. Step 4: Click Convert and wait for tessellation (complex models may take 10–30 seconds). Step 5: Download the .stl file and import it into your slicer to preview and check mesh quality.",
+      "Creo's PRT format is proprietary — no third-party tool parses it directly, in a browser or on the desktop. The reliable route is a two-step STEP bridge: Step 1: In Creo, File → Save a Copy → STEP AP214 (.stp) — this preserves the exact B-Rep geometry. Step 2: Download the free nichefiletools desktop app and open the STEP to STL tool. Step 3: Drag in the .stp file and set chordal tolerance (the 0.1 mm default suits FDM printing). Step 4: Click Convert — the OCCT kernel tessellates the exact geometry — then import the .stl into your slicer and check the mesh.",
     vs: "PRT to STL is fundamentally a tessellation operation: PRT's precise NURBS surfaces/faces are discretized into a triangle mesh. Key parameters control the result — chordal tolerance controls mesh accuracy (smaller = more accurate but more faces); angular control decides mesh density at curved edges; output can be Binary STL (small, fast) or ASCII STL (readable, ~6x larger). This tool defaults to 0.1 mm chordal tolerance, suitable for most FDM printing.",
     faqs: [
       {
@@ -147,6 +160,10 @@ export const TOOLS: ToolContent[] = [
       },
     ],
     relatedTools: ["kfx-to-epub", "pvr-to-png", "blend-to-glb", "raw-to-iso"],
+    desktopOnlyIntro:
+      "PRT files need Creo's STEP export first — the free nichefiletools desktop app finishes the job.",
+    whyDesktopOnly:
+      "PRT is PTC's closed native format: the OCCT kernel that powers our desktop STEP to STL tool reads STEP/IGES/BREP, not PRT. In Creo, export STEP first (File → Save a Copy), then tessellate it on the desktop with full chordal-tolerance control — there is no in-browser converter for PRT.",
   },
 
   // 3) PVR to PNG — A class
@@ -173,13 +190,18 @@ export const TOOLS: ToolContent[] = [
     whyConvert:
       "PNG is a lossless universal image format openable in any image viewer/editor. The main uses of PVR to PNG are: (1) texture review — artists need to inspect the actual result of a compressed texture (color shift/artifacts/blocking); (2) asset reuse — PVR textures extracted from a game can be converted to PNG for modding, secondary creation, or asset library building; (3) debugging — developers confirm whether the texture packaging pipeline is correct and mipmaps are complete; (4) cross-platform migration — converting mobile-specific PVR textures to a universal format for PC/console projects.",
     howTo:
-      "Step 1: Prepare your .pvr file (usually obtained by unpacking a Unity Asset Bundle, APK/ipa, or Unreal Pak). Step 2: Drag it into the conversion area above (PC up to 100 MB, mobile up to 30 MB). Step 3: Click Convert — the tool auto-detects the compression format and decodes it. Step 4: Download the generated .png file. For PVR files that contain a mipmap chain, the largest-resolution image is output by default.",
-    vs: "PVR supports several compression schemes, each with different compression ratio and visual-quality trade-offs: PVRTC 4bpp/2bpp (PowerVR's patented algorithm, 4bpp gives ~8:1 compression, good for diffuse textures; 2bpp reaches 16:1 but with noticeable quality loss); ETC1/ETC2 (Ericsson texture compression, widely supported on Android, ETC2 adds EAC normal/alpha support); ASTC (adaptive variable-rate compression, 4x4 to 12x12 block sizes, best quality but most expensive to encode/decode). This tool auto-detects the pixelFormat field in the PVR header and calls the corresponding decoder.",
+      "Step 1: Prepare your .pvr file (usually obtained by unpacking a Unity Asset Bundle, APK/ipa, or Unreal Pak). Step 2: Drag it into the conversion area above (PC up to 100 MB, mobile up to 30 MB). Step 3: Click Convert — uncompressed PVR v3 textures (RGBA8888, RGB888, L8) decode instantly in your browser; compressed variants (PVRTC/ETC/ASTC) are outside the current decoder's scope (see below). Step 4: Download the generated .png file. For PVR files that contain a mipmap chain, the largest-resolution image is output by default.",
+    vs: "PVR supports several compression schemes, each with different compression ratio and visual-quality trade-offs: PVRTC 4bpp/2bpp (PowerVR's patented algorithm, 4bpp gives ~8:1 compression, good for diffuse textures; 2bpp reaches 16:1 but with noticeable quality loss); ETC1/ETC2 (Ericsson texture compression, widely supported on Android, ETC2 adds EAC normal/alpha support); ASTC (adaptive variable-rate compression, 4x4 to 12x12 block sizes, best quality but most expensive to encode/decode). The web tool reads the header's pixelFormat field and decodes uncompressed layouts (RGBA8888, RGB888, L8). Compressed PVRTC/ETC/ASTC data is not decodable in this build — re-export the texture uncompressed from your engine, or decode compressed variants with PVRTexTool.",
     faqs: [
       {
         question: "My PVR file is not being recognized. Why?",
         answer:
           "Common reasons: (1) the file is actually the old PVR v2 format (different magic number); (2) the file was renamed to .pvr but is actually another format (DDS/KTX); (3) the file was corrupted in transit. Use a hex editor to confirm the header starts with 'PVR!' (0x50565221).",
+      },
+      {
+        question: "My compressed PVR file is rejected. Why?",
+        answer:
+          "The current decoder handles uncompressed layouts only (RGBA8888, RGB888, L8). Compressed variants (PVRTC, ETC, ASTC) report a data-size mismatch and are refused rather than mis-decoded. Re-export the texture uncompressed from your engine, or decode compressed files with Imagination's PVRTexTool.",
       },
       {
         question: "Can I batch-convert multiple PVR files?",
@@ -189,7 +211,7 @@ export const TOOLS: ToolContent[] = [
       {
         question: "What happens to the alpha channel?",
         answer:
-          "It depends on the source PVR's compression format: PVRTC 4bpp and ASTC support alpha and restore it correctly as a transparent channel in PNG; ETC1 does not support alpha, so transparent areas are filled with a specified color (usually black or white).",
+          "In uncompressed RGBA8888 data the alpha channel is preserved exactly as a transparent channel in PNG. Note that ETC1 has no alpha at all by design, and compressed variants are outside the current decoder's scope (see the question above).",
       },
       {
         question: "Is there any quality loss in the conversion?",
@@ -212,7 +234,7 @@ export const TOOLS: ToolContent[] = [
     targetFormat: "ISO",
     sourceExt: ".raw",
     targetExt: ".iso",
-    title: "RAW to ISO Converter – Desktop Tool for Optical Disc Images",
+    title: "RAW to ISO Converter – Desktop Tool",
     metaDescription:
       "Convert RAW optical disc images (2352-byte sectors) to standard ISO 9660 format. Desktop application only — free download. Handles Mode 1/Mode 2 RAW images.",
     h1: "RAW to ISO Converter",
@@ -263,25 +285,26 @@ export const TOOLS: ToolContent[] = [
     id: "blend-to-glb",
     name: "BLEND to GLB",
     className: "B",
+    webStatus: "desktop",
     category: "3d",
     categoryLabel: "3D",
     sourceFormat: "BLEND",
     targetFormat: "GLB",
     sourceExt: ".blend",
     targetExt: ".glb",
-    title: "BLEND to GLB Converter – Free Online",
+    title: "BLEND to GLB Converter – Desktop Tool",
     metaDescription:
-      "Convert Blender .blend files to GLB (glTF Binary) free online. Browser-based, no upload. Preserves meshes, materials, UVs. Large files? Download desktop app.",
+      "Convert Blender .blend files to GLB (glTF 2.0) with the free desktop app. Meshes, materials, UVs, animations. No file-size limit.",
     h1: "BLEND to GLB Converter",
-    webMaxFilePc: 30 * MB,
-    webMaxFileMobile: 10 * MB,
+    webMaxFilePc: 0,
+    webMaxFileMobile: 0,
     desktopUnlimited: true,
     whatIs:
       "BLEND is the native project-file format of the Blender open-source 3D creation suite. It is a self-contained 'database-style' file — internally it stores all data in the scene: mesh geometry (vertices/edges/faces/normals/UV), material nodes (Principled BSDF/procedural textures), armature rigging and shape-key animations, particle systems, physics-simulation caches, even window layout and UI preferences. The BLEND file uses a custom DNA (Data Name Architecture) structure encoding — the file header contains a version number and a list of memory pointers, followed by a sequence of compressed data blocks. This design makes BLEND files extremely compact but also highly dependent on Blender's internal API to parse.",
     whyConvert:
       "glTF (GL Transmission Format) is the 3D scene-transmission standard defined by the Khronos Group, called the 'JPEG of 3D'. GLB is its single-file binary form. The value of BLEND to GLB: (1) Web 3D publishing — Three.js/Babylon.js/A-Frame and other WebGL frameworks load glTF/GLB natively and can embed 3D models directly in web pages; (2) AR/VR content — Meta Quest/Apple Vision Pro/HoloLens all prioritize glTF; (3) cross-software collaboration — Unity/Unreal/Maya/3ds Max all import glTF via plugins; (4) e-commerce 3D preview — Shopify/Amazon 3D model viewers use glTF as input.",
     howTo:
-      "Step 1: Save your .blend file in Blender (use File → Clean Up to remove unused data and reduce size). Step 2: Drag it into the conversion area above (PC up to 30 MB, mobile up to 10 MB). Step 3: Click Convert and wait for parsing and serialization (simple models 5–15 s, complex scenes 30–60 s). Step 4: Download the .glb file and preview it in the glTF Viewer or Three.js Editor.",
+      "Step 1: Download the free nichefiletools desktop app. Step 2: Open BLEND to GLB from the tool list. Step 3: Drag in your .blend file (or a whole folder for batch export) and choose the output path. Step 4: Click Convert — the app drives Blender's own Python API, so meshes, Principled BSDF materials, UVs, and NLA animations are exported exactly as Blender's reference glTF 2.0 exporter writes them.",
     vs: "Conversion involves multiple layers of mapping: BLEND's Mesh data (MVert/MEdge/MPoly) → glTF's accessors/buffers/mesh primitives; Blender's Principled BSDF material node → glTF's PBR metallic-roughness model (baseColorFactor/metallicFactor/roughnessFactor); BLEND's UV layers → glTF's TEXCOORD attribute; Armature → glTF's skins/joints; animation data (NLA strips) → glTF's animations/channels/samplers. Each layer has accuracy trade-offs — for example Blender's unique procedural nodes (Noise/Voronoi) must be baked into static texture maps to be expressed in glTF.",
     faqs: [
       {
@@ -306,6 +329,10 @@ export const TOOLS: ToolContent[] = [
       },
     ],
     relatedTools: ["kfx-to-epub", "prt-to-stl", "pvr-to-png", "raw-to-iso"],
+    desktopOnlyIntro:
+      "BLEND to GLB runs in the free nichefiletools desktop app — no in-browser converter.",
+    whyDesktopOnly:
+      "BLEND files use Blender's DNA block architecture, which only Blender's own API parses reliably. The desktop app bundles that runtime (via Blender's Python API); a browser tab cannot. There is no online converter on this page.",
   },
 
   // 6) RAW to WAV — A class
@@ -611,7 +638,7 @@ export const TOOLS: ToolContent[] = [
     targetFormat: "TTF",
     sourceExt: ".pfm",
     targetExt: ".ttf",
-    title: "PFM to TTF Converter – Free Printer Font Metrics to TrueType",
+    title: "PFM to TTF Converter – Free Online",
     metaDescription:
       "Convert PFM font metrics files to TTF (TrueType Font) free online. Requires companion PFB file. Browser-based, no upload. Output works in all OS.",
     h1: "PFM to TTF Converter",
@@ -663,9 +690,9 @@ export const TOOLS: ToolContent[] = [
     sourceExt: ".exr",
     targetExt: ".png",
     extraSourceExts: [".sxr", ".mxr"],
-    title: "EXR to PNG Converter – Free OpenEXR HDR to PNG Online",
+    title: "EXR to PNG Converter – Free Online",
     metaDescription:
-      "Convert OpenEXR HDR images to PNG (8-bit sRGB) free online. Browser-based tone mapping (Reinhard/ACES). No upload. Handles multi-layer EXR files.",
+      "Convert OpenEXR HDR images to PNG (8-bit sRGB) free online. Tone mapping (Reinhard/ACES), no upload. Scanline EXR (ZIP/RLE/none) up to 200MB.",
     h1: "EXR to PNG Converter",
     webMaxFilePc: 200 * MB,
     webMaxFileMobile: 50 * MB,
@@ -695,7 +722,7 @@ export const TOOLS: ToolContent[] = [
       },
     ],
     whatIs:
-      "EXR (OpenEXR) is a High Dynamic Range (HDR) image format created by Industrial Light & Magic (ILM, Lucasfilm's VFX division) in 2003. It is the industry standard for film and high-end visual effects — over 90% of Hollywood feature VFX pipelines use EXR as the intermediate exchange format. Core traits: (1) 32-bit float per channel — each color channel is an IEEE 754 single-precision float, with a dynamic range far beyond human perception (can represent 10^38:1 luminance ratios); (2) multi-layer support — a single EXR can hold RGBA, depth (Z-buffer), motion vectors, normals, and more channel layers; (3) compression — common schemes are ZIP/ZIPS (deflate), RLE, and uncompressed, which this in-browser decoder handles directly; (4) tiled storage — supports reading局部 regions without decoding the whole image.",
+      "EXR (OpenEXR) is a High Dynamic Range (HDR) image format created by Industrial Light & Magic (ILM, Lucasfilm's VFX division) in 2003. It is the industry standard for film and high-end visual effects — over 90% of Hollywood feature VFX pipelines use EXR as the intermediate exchange format. Core traits: (1) 32-bit float per channel — each color channel is an IEEE 754 single-precision float, with a dynamic range far beyond human perception (can represent 10^38:1 luminance ratios); (2) multi-layer support — a single EXR can hold RGBA, depth (Z-buffer), motion vectors, normals, and more channel layers; (3) compression — common schemes are ZIP/ZIPS (deflate), RLE, and uncompressed, which this in-browser decoder handles directly; (4) tiled storage — supports reading partial regions without decoding the whole image.",
     whyConvert:
       "EXR is a pro format; PNG is universal. The need comes from: (1) preview & sharing — EXR needs pro software (Nuke/DaVinci Resolve/Photoshop CC) to view correctly; PNG displays on any device/browser; (2) web publishing — no browser natively shows EXR; HDR must be downgraded to LDR to appear online; (3) document embedding — Word/PPT/Markdown accept PNG but not EXR; (4) print — most print services and photo printers accept sRGB PNG/JPG, not linear-float EXR.",
     howTo:
@@ -739,7 +766,7 @@ export const TOOLS: ToolContent[] = [
     sourceExt: ".gsm",
     targetExt: ".wav",
     extraSourceExts: [".gsmcodec"],
-    title: "GSM to WAV Converter – Free GSM 06.10 Audio to WAV Online",
+    title: "GSM to WAV Converter – Free Online",
     metaDescription:
       "Decode GSM 06.10 compressed audio to WAV (PCM) free online. Browser-based, no upload. Converts voicemail, telephony recordings instantly.",
     h1: "GSM to WAV Converter",
@@ -791,9 +818,9 @@ export const TOOLS: ToolContent[] = [
     sourceExt: ".mts",
     targetExt: ".mp4",
     extraSourceExts: [".m2ts", ".avchd"],
-    title: "MTS to MP4 Converter – Free AVCHD MTS to MP4 Online",
+    title: "MTS to MP4 Converter – Free Online",
     metaDescription:
-      "Convert AVCHD MTS/M2TS video files to MP4 (H.264/AAC) free online. Browser-based FFmpeg conversion. PC only (mobile users: download desktop app). Files up to 100MB.",
+      "Convert AVCHD MTS/M2TS to MP4 (H.264/AAC) free online. FFmpeg runs in your browser — no upload. Up to 100MB; bigger files: desktop app.",
     h1: "MTS to MP4 Converter",
     webMaxFilePc: 100 * MB,
     webMaxFileMobile: 50 * MB,
@@ -804,7 +831,7 @@ export const TOOLS: ToolContent[] = [
       "MP4 (ISO Base Media File Format / MPEG-4 Part 14) is today's most universal video container. MTS→MP4 matters because: (1) playback compatibility — Windows Media Player/macOS QuickTime/iOS/Android play MP4 natively, while MTS needs a special player or codec pack; (2) easy sharing — YouTube/Facebook/Instagram/TikTok accept MP4 uploads, not MTS; (3) editing friendly — Premiere Pro/Final Cut Pro/DaVinci Resolve seek MP4 far better than MTS (MP4 supports faststart by moving the moov box to the front); (4) file size — remux (re-container only) usually shrinks 5–15% by dropping MPEG-TS padding and sync overhead.",
     howTo:
       "Note: video conversion loads FFmpeg WASM (~31MB); first use waits for it to load. Step 1: Prepare the .mts/.m2ts/.avchd file (copy from the camera SD card or the AVCHD directory). Step 2: Drag it into the conversion area above (PC web ≤100MB). Step 3: Click Convert and wait (remux usually 5–30s; transcode depends on duration/resolution). Step 4: Download the .mp4 and verify picture and sound in a player.",
-    vs: "MTS→MP4 has two paths. Remux (re-container): pull the H.264 stream out of MPEG-TS and into MP4, video data unchanged. Pros: fast (<10s), zero quality loss. Cons: if the source used an MP4-incompatible encoding (some AC3 variants), compatibility may suffer. Transcode: re-encode video/audio to the target. Pros: max compatibility. Cons: slow (minutes), possible generational quality loss. This tool defaults to remux (copy video + re-encode audio to AAC), falling back to transcode only when needed. Mobile note: mobile browsers are unsuited to video conversion — FFmpeg WASM (~31MB) is slow to download on cellular, video transcode needs GBs of RAM (iOS Safari cap ~1.5GB, easy OOM), phone WASM is 1/5–1/3 of desktop speed, and sustained high CPU drains battery fast. Mobile users see a desktop-app download prompt.",
+    vs: "MTS→MP4 has two paths. Remux (re-container): pull the H.264 stream out of MPEG-TS and into MP4, video data unchanged. Pros: fast (<10s), zero quality loss. Cons: if the source used an MP4-incompatible encoding (some AC3 variants), compatibility may suffer. Transcode: re-encode video/audio to the target. Pros: max compatibility. Cons: slow (minutes), possible generational quality loss. This tool defaults to remux (copy video + re-encode audio to AAC), falling back to transcode only when needed. Mobile note: mobile browsers can load the tool, but the ~31MB FFmpeg WASM download and the multi-hundred-MB memory footprint of video work make phones impractical beyond short clips — desktop browsers or the desktop app are the realistic choices.",
     faqs: [
       {
         question: "Will the conversion reduce video quality?",
@@ -842,7 +869,7 @@ export const TOOLS: ToolContent[] = [
     targetFormat: "extracted files",
     sourceExt: ".wad",
     targetExt: ".wad",
-    title: "WAD File Extractor – Extract DOOM/Quake/Game Archive Files",
+    title: "WAD File Extractor – Desktop Tool",
     metaDescription:
       "Extract game archive files from DOOM WAD, Quake WAD2/WAD3, and other WAD formats. Desktop application only — free download. Selective extraction supported.",
     h1: "WAD File Extractor",
@@ -850,7 +877,7 @@ export const TOOLS: ToolContent[] = [
     webMaxFileMobile: 0,
     desktopUnlimited: true,
     whatIs:
-      "WAD (Where's All the Data?) is the game resource archive format id Software invented for DOOM in 1993. It packs a game's resources (textures, sounds, music, level data, scripts, fonts) into one binary file, located via a directory index in the header. This let DOOM run on machines with only 4MB RAM — mmap just the needed resource instead of loading everything. The format was later borrowed or衍生 by the Quake engine (WAD2/WAD3), Half-Life (pak/wad), and Fallout/Skyrim (BA2), becoming one of the most influential archive formats in game history.",
+      "WAD (Where's All the Data?) is the game resource archive format id Software invented for DOOM in 1993. It packs a game's resources (textures, sounds, music, level data, scripts, fonts) into one binary file, located via a directory index in the header. This let DOOM run on machines with only 4MB RAM — mmap just the needed resource instead of loading everything. The format was later borrowed or derived by the Quake engine (WAD2/WAD3), Half-Life (pak/wad), and Fallout/Skyrim (BA2), becoming one of the most influential archive formats in game history.",
     whyConvert:
       "WAD extraction underpins game modding, preservation research, and game-dev education: (1) modding — extract sprites/textures from a DOOM WAD, edit them, repack into a new WAD; the core DOOM modding workflow; (2) asset reuse — indie devs pull free sounds/textures from classic games for prototypes (mind copyright); (3) preservation — game historians and digital-preservation experts extract WAD contents to archive disappearing retro assets; (4) learning — students analyze WAD level geometry and texture design to study 90s game design.",
     howTo:
@@ -870,7 +897,7 @@ export const TOOLS: ToolContent[] = [
       {
         question: "The tool says 'Unknown WAD format'. What now?",
         answer:
-          "Our detector covers DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2. If yours isn't recognized it may be: (1) a more obscure variant (Build engine .grp, Source engine .vpk); (2) renamed but not actually a WAD; (3) encrypted or custom. You can submit a sample (if small) via GitHub Issue and we'll try to add support.",
+          `Our detector covers DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2. If yours isn't recognized it may be: (1) a more obscure variant (Build engine .grp, Source engine .vpk); (2) renamed but not actually a WAD; (3) encrypted or custom. Open an issue at ${REPO_ISSUES_URL} with a small sample and we'll try to add support.`,
       },
       {
         question: "Are extracted files ready to use in my own project?",
