@@ -58,6 +58,15 @@ export const CATEGORIES: CategoryMeta[] = [
       "Need to inspect or reuse a compressed game texture? Convert PVR to PNG.",
   },
   {
+    slug: "video",
+    label: "Video",
+    headline: "Free Video Converters Online",
+    intro:
+      "AVCHD camcorders and Blu-ray recorders write MTS/M2TS streams that most editors and sharing sites won't accept. Remuxing to MP4 (H.264/AAC) in your browser keeps quality intact while making the file playable everywhere — nothing is uploaded, and FFmpeg runs entirely on your device.",
+    pickHint:
+      "Need to edit or share camcorder footage? Convert MTS to MP4.",
+  },
+  {
     slug: "archive",
     label: "Disc Image",
     headline: "Disc Image Converters",

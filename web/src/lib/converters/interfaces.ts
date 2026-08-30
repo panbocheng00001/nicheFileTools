@@ -22,6 +22,13 @@ export interface ConversionOptions {
   params?: Record<string, string>;
   /** PFM→TTF and other tools that require supporting files (such as .pfb) are imported from the second upload area of ​​the UI*/
   pfbCompanion?: File;
+  /**
+   * Files chosen alongside the main one via a multi-select input.
+   * Needed by tools whose input is a set rather than a single file: an .opf
+   * always references sibling resources (XHTML/NCX), so uploading the .opf
+   * alone can never produce a valid EPUB.
+   */
+  siblingFiles?: File[];
   // desktop-only passthrough (unused on web)
   batchSize?: number;
   outputDir?: string;

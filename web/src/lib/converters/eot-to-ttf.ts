@@ -2,11 +2,18 @@
 //Zero dependencies (Documentation §4.6.2). V1/V2 uncompressed paths are fully supported; MTX/LZMAT compressed variants report errors truthfully.
 import { IConverter, ConverterInfo, ConversionOptions, ConversionResult, defaultValidate } from "./interfaces";
 
-/** MagicNumber ('PL' little-endian = 0x504C) in the EOT header fixed header (78 bytes) is located at offset 40.*/
-const EOT_MAGIC_OFFSET = 40;
+/**
+ * EOT fixed prefix layout (Microsoft EOT spec):
+ *   EOTSize(4) FontDataSize(4) Version(4) Flags(4) FontPANOSE(10)
+ *   Charset(1) Italic(1) Weight(4) fsType(2) MagicNumber(2)
+ * => MagicNumber is at offset 34 ('PL' little-endian = 0x504C),
+ *    and the fixed prefix ends at offset 80 (UnicodeRange 16 + CodePageRange 8
+ *    + CheckSumAdjustment 4 + Reserved4 4).
+ */
+const EOT_MAGIC_OFFSET = 34;
 const EOT_MAGIC = 0x504c;
-/** The starting point of the string area (after FamilyNameSize), where sfnt data starts to be scanned.*/
-const EOT_HEADER_LEN = 78;
+/** End of the fixed EOT prefix (80 bytes) — where sfnt data starts to be scanned.*/
+const EOT_HEADER_LEN = 80;
 /** TTEMBED_TTCOMPRESSED - Font data is MicroType compressed (rare, a product of IE WEFT).*/
 const FLAG_COMPRESSED = 0x00000004;
 

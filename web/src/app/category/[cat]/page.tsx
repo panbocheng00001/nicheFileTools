@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { CATEGORIES, getCategory, SITE } from "@/lib/site";
-import { TOOLS } from "@/lib/tools-data";
+import { TOOLS, isDesktopLanding } from "@/lib/tools-data";
 
 type Params = { params: Promise<{ cat: string }> };
 
@@ -120,7 +120,7 @@ export default async function CategoryPage({ params }: Params) {
                     Class {t.className}
                   </span>
                   <span className="mono-label">
-                    {t.className === "C" || t.webStatus === "desktop"
+                    {isDesktopLanding(t)
                       ? "Desktop only"
                       : `≤ ${Math.round(t.webMaxFilePc / 1024 / 1024)} MB web`}
                   </span>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { TOOLS, getTool } from "@/lib/tools-data";
+import { TOOLS, getTool, isDesktopLanding, hasWebConverter } from "@/lib/tools-data";
 const allSlugs = () => TOOLS.map((t) => t.slug);
 const getToolContent = (slug: string) => getTool(slug);
 import { softwareAppSchema, breadcrumbSchema, faqSchema } from "@/lib/schema";
@@ -42,13 +42,13 @@ export default async function ToolPage({ params }: Params) {
   const tool = getToolContent(slug);
   if (!tool) notFound();
 
-  const isDesktopOnly = tool.className === "C";
+  const desktopLanding = isDesktopLanding(tool);
 
   const jsonLd: Record<string, unknown>[] = [
     breadcrumbSchema(tool),
     faqSchema(tool),
   ];
-  if (!isDesktopOnly) jsonLd.unshift(softwareAppSchema(tool));
+  if (hasWebConverter(tool)) jsonLd.unshift(softwareAppSchema(tool));
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -58,7 +58,7 @@ export default async function ToolPage({ params }: Params) {
           <Breadcrumbs tool={tool} />
           <ToolHero tool={tool} />
           <Share path={`/tools/${tool.slug}`} title={tool.h1} className="mt-5" />
-          {isDesktopOnly ? (
+          {desktopLanding ? (
             <DesktopOnlyCta tool={tool} />
           ) : (
             <ToolConverter tool={tool} />
@@ -73,7 +73,7 @@ export default async function ToolPage({ params }: Params) {
             <GuideCard slug={tool.slug} />
             {/* Privacy card claims in-browser conversion — only show it for
                 tools that actually convert in the browser (spec v1.3 §1.2). */}
-            {!isDesktopOnly && <TrustCard />}
+            {hasWebConverter(tool) && <TrustCard />}
             <RelatedTools tool={tool} />
           </div>
         </aside>

@@ -61,6 +61,7 @@ const COLS: { title: string; links: FooterLink[]; more?: FooterLink }[] = [
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/terms", label: "Terms of Service" },
       { href: "/cookie", label: "Cookie Policy" },
+      { href: "/copyright", label: "Copyright & DMCA" },
       { href: "/sitemap.xml", label: "Sitemap" },
     ],
   },

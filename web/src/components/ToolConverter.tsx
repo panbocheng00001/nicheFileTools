@@ -18,6 +18,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
   const converter = getConverter(tool.slug);
   const [file, setFile] = useState<File | null>(null);
   const [companionFile, setCompanionFile] = useState<File | null>(null);
+  const [siblingFiles, setSiblingFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [desktopMessage, setDesktopMessage] = useState<string | null>(null);
   const [converting, setConverting] = useState(false);
@@ -29,6 +30,11 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
   const inputRef2 = useRef<HTMLInputElement>(null);
   const accept = [tool.sourceExt, ...(tool.extraSourceExts ?? [])].join(",");
   const needsCompanion = tool.slug === "pfm-to-ttf";
+  /**
+   * An .opf is only a manifest — it always points at sibling resources
+   * (XHTML/NCX), so it must be picked together with them, never alone.
+   */
+  const needsSiblings = tool.slug === "opf-to-epub";
 
   useEffect(() => {
     return () => {
@@ -43,6 +49,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
     setDesktopMessage(null);
     setFile(null);
     setCompanionFile(null);
+    setSiblingFiles([]);
   }
 
   function handleFile(f: File | undefined) {
@@ -82,6 +89,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         outputFormat: tool.targetExt,
         params,
         pfbCompanion: companionFile ?? undefined,
+        siblingFiles: siblingFiles.length ? siblingFiles : undefined,
       });
       const url = URL.createObjectURL(res.data);
       setResult({ url, filename: res.filename, size: res.size });
@@ -113,7 +121,9 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          handleFile(e.dataTransfer.files?.[0]);
+          const picked = Array.from(e.dataTransfer.files ?? []);
+          handleFile(picked[0]);
+          if (needsSiblings) setSiblingFiles(picked.slice(1));
         }}
         className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/70 px-6 py-10 text-center transition-colors hover:border-primary/50"
       >
@@ -132,19 +142,37 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
           onClick={() => inputRef.current?.click()}
           className="mt-4 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_18px_rgba(74,222,128,0.3)]"
         >
-          Select File
+          Select File{needsSiblings ? "s" : ""}
         </button>
         <input
           ref={inputRef}
           type="file"
           accept={accept}
+          multiple={needsSiblings}
           className="hidden"
-          onChange={(e) => handleFile(e.target.files?.[0])}
+          onChange={(e) => {
+            const picked = Array.from(e.target.files ?? []);
+            handleFile(picked[0]);
+            if (needsSiblings) setSiblingFiles(picked.slice(1));
+          }}
         />
         <p className="mono-label mt-4">
-          Supports {[tool.sourceExt, ...(tool.extraSourceExts ?? [])].join(" /")} · up to {overLimitMb} MB on web
-          {tool.className === "B" && " · larger files use the desktop app"}
+          Supports {[tool.sourceExt, ...(tool.extraSourceExts ?? [])].join(" /")}
+          {/* webMaxFilePc === 0 means this converter cannot run on the web at all;
+              "up to 0 MB on web" read as a broken limit, so state it outright. */}
+          {overLimitMb > 0
+            ? ` · up to ${overLimitMb} MB on web${
+                tool.className === "B" ? " · larger files use the desktop app" : ""
+              }`
+            : " · not supported on the web — use the free desktop app"}
         </p>
+        {needsSiblings && (
+          <p className="mt-3 max-w-md text-xs leading-relaxed text-muted-foreground">
+            Uploading a bare <span className="font-semibold text-foreground">.opf</span>?
+            Select it together with every file it references (hold Ctrl/Cmd to pick several) —
+            an OPF is only a manifest and has no content by itself. Zipping them first also works.
+          </p>
+        )}
       </div>
 
       {/*The second upload area of ​​PFM→TTF: supporting .pfb (including glyph outline)*/}
@@ -218,6 +246,13 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
             <span className="text-muted-foreground">
               ({(file.size / 1024 / 1024).toFixed(2)} MB)
             </span>
+            {siblingFiles.length > 0 && (
+              <span className="text-muted-foreground">
+                {" "}
+                + {siblingFiles.length} resource file
+                {siblingFiles.length === 1 ? "" : "s"}
+              </span>
+            )}
           </span>
           <button
             type="button"

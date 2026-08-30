@@ -1,9 +1,11 @@
 //PFM + PFB (Adobe Type 1) → TTF: Convert Type 1 cubic Bezier contour to TrueType quadratic contour and package it.
-//- Binary PFB is just a package of Type 1 program: first unpack it into ASCII PFA (the type1 segment is as it is, the type2 encrypted segment is converted to <hex>), and then it is submitted to fontkit for analysis.
-//- Convert contour (cubic) to quadratic (error ≤ 1 design unit), use opentype.js to assemble TTF.
+//- The .pfb is parsed by our own Type 1 parser (./type1/parse.ts): fontkit cannot
+//  read Type 1/PFA, which made every real font fail with "Could not parse...".
+//- Contours are cubic, so they are flattened to quadratics and packed by our own
+//  TTF writer (./type1/ttf.ts): opentype.js only ever emits CFF outlines.
 //- Measurement (advanceWidth) and encoding are taken from PFB (PFB comes with encoding + word width); PFM is an optional enhancement.
-import * as fontkit from "fontkit";
-import * as opentype from "opentype.js";
+import { parseType1, glyphNameToUnicode } from "./type1/parse";
+import { buildTtf, type TtfGlyphInput } from "./type1/ttf";
 import {
   IConverter,
   ConverterInfo,
@@ -11,146 +13,6 @@ import {
   ConversionResult,
   defaultValidate,
 } from "./interfaces";
-
-interface PathCommand {
-  type: "M" | "L" | "C" | "Q" | "Z";
-  x?: number;
-  y?: number;
-  x1?: number;
-  y1?: number;
-  x2?: number;
-  y2?: number;
-}
-interface FkGlyph {
-  id: number;
-  name: string;
-  advanceWidth: number;
-  path?: { commands: PathCommand[] };
-}
-interface FkFont {
-  unitsPerEm: number;
-  ascender: number;
-  descender: number;
-  fontBBox?: [number, number, number, number];
-  postscriptName: string;
-  numGlyphs: number;
-  glyphForCode(code: number): FkGlyph;
-  getGlyph(index: number): FkGlyph;
-  familyName?: string;
-  subfamilyName?: string;
-}
-
-// Binary PFB -> ASCII PFA (only valid for real Adobe PFB)
-function pfbToPfa(buffer: ArrayBuffer): string {
-  const u8 = new Uint8Array(buffer);
-  let out = "";
-  let i = 0;
-  while (i + 6 <= u8.length) {
-    if (u8[i] !== 0x80) {
-      i++;
-      continue;
-    }
-    const type = u8[i + 1];
-    if (type === 3) break; // EOF
-    const len =
-      (u8[i + 2] | (u8[i + 3] << 8) | (u8[i + 4] << 16) | (u8[i + 5] << 24)) >>>
-      0;
-    if (i + 6 + len > u8.length) break;
-    const data = u8.subarray(i + 6, i + 6 + len);
-    i += 6 + len;
-    if (type === 1) {
-      out += latin1(data);
-    } else if (type === 2) {
-      let hex = "";
-      for (let k = 0; k < data.length; k++)
-        hex += data[k].toString(16).padStart(2, "0");
-      out += "<" + hex + ">";
-    }
-  }
-  return out;
-}
-
-function latin1(u8: Uint8Array): string {
-  let s = "";
-  for (let k = 0; k < u8.length; k++) s += String.fromCharCode(u8[k]);
-  return s;
-}
-
-type Pt = { x: number; y: number };
-
-// Cubic Bezier -> multiple quadratic Beziers (adaptive De Casteljau subdivision, control points = 0.75*(P1+P2) - 0.5*P0 - 0.25*P3)
-function cubicToQuadratic(
-  p0: Pt,
-  p1: Pt,
-  p2: Pt,
-  p3: Pt,
-  path: opentype.Path,
-  tol = 1,
-) {
-  const mid = (a: Pt, b: Pt): Pt => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
-  const flatEnough = (a: Pt, b: Pt, c: Pt, d: Pt) => {
-    const dx = b.x - a.x,
-      dy = b.y - a.y;
-    const ex = c.x - d.x,
-      ey = c.y - d.y;
-    const fx = d.x - a.x,
-      fy = d.y - a.y;
-    const dev = Math.sqrt(dx * dx + dy * dy) + Math.sqrt(ex * ex + ey * ey) - Math.sqrt(fx * fx + fy * fy);
-    return dev * dev <= tol * tol;
-  };
-  const rec = (a: Pt, b: Pt, c: Pt, d: Pt) => {
-    if (flatEnough(a, b, c, d)) {
-      const qx = 0.75 * (b.x + c.x) - 0.5 * a.x - 0.25 * d.x;
-      const qy = 0.75 * (b.y + c.y) - 0.5 * a.y - 0.25 * d.y;
-      path.qCurveTo(qx, qy, d.x, d.y);
-      return;
-    }
-    const ab = mid(a, b),
-      bc = mid(b, c),
-      cd = mid(c, d);
-    const abc = mid(ab, bc),
-      bcd = mid(bc, cd);
-    const abcd = mid(abc, bcd);
-    rec(a, ab, abc, abcd);
-    rec(abcd, bcd, cd, d);
-  };
-  rec(p0, p1, p2, p3);
-}
-
-function buildPath(commands: PathCommand[]): opentype.Path {
-  const path = new opentype.Path();
-  let cur: Pt = { x: 0, y: 0 };
-  for (const c of commands) {
-    switch (c.type) {
-      case "M":
-        cur = { x: c.x!, y: c.y! };
-        path.moveTo(cur.x, cur.y);
-        break;
-      case "L":
-        cur = { x: c.x!, y: c.y! };
-        path.lineTo(cur.x, cur.y);
-        break;
-      case "C":
-        cubicToQuadratic(
-          cur,
-          { x: c.x1!, y: c.y1! },
-          { x: c.x2!, y: c.y2! },
-          { x: c.x!, y: c.y! },
-          path,
-        );
-        cur = { x: c.x!, y: c.y! };
-        break;
-      case "Q":
-        path.qCurveTo(c.x1!, c.y1!, c.x!, c.y!);
-        cur = { x: c.x!, y: c.y! };
-        break;
-      case "Z":
-        path.close();
-        break;
-    }
-  }
-  return path;
-}
 
 export class PfmToTtfConverter implements IConverter {
   readonly info: ConverterInfo = {
@@ -176,91 +38,87 @@ export class PfmToTtfConverter implements IConverter {
       );
     }
 
-    const pfbBuf = await options.pfbCompanion.arrayBuffer();
-    const pfa = pfbToPfa(pfbBuf);
+    const pfbBuf = new Uint8Array(await options.pfbCompanion.arrayBuffer());
 
-    let font: FkFont;
+    let t1: ReturnType<typeof parseType1>;
     try {
-      font = fontkit.create(new TextEncoder().encode(pfa).buffer) as FkFont;
-    } catch {
+      t1 = parseType1(pfbBuf);
+    } catch (e) {
       throw new Error(
-        "Could not parse the .pfb file as a Type 1 font. Make sure it is a valid Adobe PFB (binary) file.",
+        `Could not parse the .pfb file as a Type 1 font: ${
+          e instanceof Error ? e.message : "unknown error"
+        }. Make sure it is a valid Adobe PFB (binary) file.`,
       );
     }
 
-    const unitsPerEm = font.unitsPerEm || 1000;
-    const ascender = isFinite(font.ascender)
-      ? font.ascender
-      : (font.fontBBox ? font.fontBBox[3] : Math.round(unitsPerEm * 0.8));
-    const descender = isFinite(font.descender)
-      ? font.descender
-      : (font.fontBBox ? font.fontBBox[1] : -Math.round(unitsPerEm * 0.2));
-    const familyName = font.familyName || font.postscriptName || "ConvertedFont";
-    const styleName = font.subfamilyName || "Regular";
+    const unitsPerEm = t1.unitsPerEm || 1000;
+    const ascender = isFinite(t1.ascender)
+      ? t1.ascender
+      : Math.round(unitsPerEm * 0.8);
+    const descender = isFinite(t1.descender)
+      ? t1.descender
+      : -Math.round(unitsPerEm * 0.2);
+    const familyName = t1.familyName || t1.fontName || "ConvertedFont";
+    const styleName = /bold/i.test(t1.weight)
+      ? "Bold"
+      : /italic|oblique/i.test(t1.weight) || t1.italicAngle !== 0
+        ? "Italic"
+        : "Regular";
 
-    const numGlyphs = font.numGlyphs || 0;
-    if (!numGlyphs) {
+    if (!t1.glyphs.length) {
       throw new Error("The Type 1 font has no glyphs.");
     }
 
-    //unicode → glyph index mapping (from PFB’s own encoding)
+    //Unicode → glyph id, resolved through the font's own /Encoding (Type 1
+    //fonts are 8-bit: there is at most one glyph per code 0–255).
+    const indexByName = new Map<string, number>();
+    t1.glyphs.forEach((g, i) => indexByName.set(g.name, i));
+
     const unicodesByGlyph: Record<number, number[]> = {};
-    for (let code = 0; code <= 0xffff; code++) {
-      let g: FkGlyph;
-      try {
-        g = font.glyphForCode(code);
-      } catch {
-        continue;
-      }
-      if (g && g.id >= 0 && g.id < numGlyphs) {
-        (unicodesByGlyph[g.id] ||= []).push(code);
-      }
+    for (let code = 0; code < 256; code++) {
+      const name = t1.encoding[code];
+      if (!name) continue;
+      const gid = indexByName.get(name);
+      if (gid === undefined) continue;
+      const u = glyphNameToUnicode(name);
+      if (u == null) continue;
+      (unicodesByGlyph[gid] ||= []).push(u);
     }
 
-    const glyphs: opentype.Glyph[] = [];
-    for (let index = 0; index < numGlyphs; index++) {
-      let g: FkGlyph;
-      try {
-        g = font.getGlyph(index);
-      } catch {
-        g = font.getGlyph(0);
-      }
-      const path = buildPath(g.path ? g.path.commands : []);
-      glyphs.push(
-        new opentype.Glyph({
-          name: g.name || `glyph${index}`,
-          index,
-          advanceWidth: isFinite(g.advanceWidth) ? g.advanceWidth : 0,
-          unicodes: unicodesByGlyph[index] || [],
-          path,
-        }),
-      );
-    }
+    const glyphs: TtfGlyphInput[] = t1.glyphs.map((g, index) => ({
+      name: g.name || `glyph${index}`,
+      advanceWidth: isFinite(g.advanceWidth) ? g.advanceWidth : 0,
+      commands: g.commands,
+      unicodes: unicodesByGlyph[index] || [],
+    }));
 
-    const ttf = new opentype.Font({
-      familyName,
-      styleName,
-      unitsPerEm,
-      ascender,
-      descender,
-      glyphs,
-    });
-
-    let buf: ArrayBuffer;
+    let bytes: Uint8Array;
     try {
-      buf = ttf.toArrayBuffer();
-    } catch {
+      bytes = buildTtf({
+        familyName,
+        styleName,
+        unitsPerEm,
+        ascender,
+        descender,
+        glyphs,
+      });
+    } catch (e) {
       throw new Error(
-        "Failed to assemble the TTF. The font may use unsupported hinting structures.",
+        `Failed to assemble the TTF: ${
+          e instanceof Error ? e.message : "unknown error"
+        }.`,
       );
     }
-
-    const bytes = new Uint8Array(buf);
     const okTag =
       (bytes[0] === 0x00 && bytes[1] === 0x01) ||
       (bytes[0] === 0x74 && bytes[1] === 0x72); // 'true'
     if (!okTag) {
-      throw new Error("Generated an invalid TTF container.");
+      const lead = Array.from(bytes.subarray(0, 8))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join(" ");
+      throw new Error(
+        `Generated an invalid TTF container (first bytes: ${lead}).`,
+      );
     }
 
     return {

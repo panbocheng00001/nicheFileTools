@@ -33,10 +33,14 @@ function readDictionary(view: DataView, u8: Uint8Array): { vars: SavVar[]; dataO
       const type = view.getInt32(o + 4, true);
       const hasLabel = view.getInt32(o + 8, true);
       const nMissing = view.getInt32(o + 12, true);
-      let p = o + 12 + 4 + 8 + 8; //Skip print/write format (8 bytes each, big-endian structure, no parsing required)
-      const nameLen = Math.min(u8[p], 64);
-      const name = dec.decode(u8.subarray(p + 1, p + 1 + nameLen)).trim();
-      p += 1 + 8; //nameLen(1) + fixed 8-byte name field (insufficient padding of spaces)
+      // Variable record layout: rec_type(4) type(4) has_label(4) n_missing(4)
+      // print_format(4) write_format(4) name(8, fixed width, space padded).
+      // The name is a FIXED 8-byte field with NO length prefix: assuming a
+      // 1-byte length prefix desynchronised the cursor, so the next record's
+      // header was read as a record type (e.g. 1281) and the parse failed.
+      let p = o + 24;
+      const name = dec.decode(u8.subarray(p, p + 8)).trim();
+      p += 8;
       if (hasLabel) {
         const labelLen = view.getInt32(p, true);
         p += 4 + Math.ceil(labelLen / 4) * 4;
@@ -45,9 +49,19 @@ function readDictionary(view: DataView, u8: Uint8Array): { vars: SavVar[]; dataO
       vars.push({ name: name || `V${vars.length + 1}`, width: type });
       o = p;
     } else if (recType === 3) {
-      //Value labels: n(4) + n×8 byte value (associated variables are recorded later in type 4)
+      // Value label record: count(4), then per entry:
+      //   value(8, double) + label_len(1) + label, where the (len byte + label)
+      //   block is padded to an 8-byte boundary.
+      // Skipping a flat 8 bytes per entry ignored the labels and desynchronised
+      // the cursor, so the following record header was misread as a record type.
       const n = view.getInt32(o + 4, true);
-      o += 8 + n * 8;
+      let p = o + 8;
+      for (let i = 0; i < n; i++) {
+        p += 8; // double value
+        const len = u8[p];
+        p += Math.ceil((len + 1) / 8) * 8;
+      }
+      o = p;
     } else if (recType === 4) {
       const n = view.getInt32(o + 4, true);
       o += 8 + n * 4;

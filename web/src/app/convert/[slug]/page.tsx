@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookOpen, MonitorSmartphone, ArrowRight, Wrench } from "lucide-react";
 import { CONVERT_GUIDES, getGuide } from "@/lib/convert-content";
-import { getTool } from "@/lib/tools-data";
+import { getTool, hasWebConverter } from "@/lib/tools-data";
 import { SITE } from "@/lib/site";
 import { Share } from "@/components/Share";
 import { DesktopCodeCard } from "@/components/DesktopCodeCard";
@@ -33,7 +33,7 @@ export default async function ConvertGuidePage({ params }: Params) {
   const tool = getTool(slug);
   if (!guide || !tool) notFound();
   // Claim-consistency (SEO spec v1.3 §1.2): degraded tools have no web page CTA.
-  const hasWebTool = tool.className !== "C" && tool.webStatus !== "desktop";
+  const hasWebTool = hasWebConverter(tool);
 
   //Schema: HowTo (real steps) + Article (author=Organization, not fictional real people) + BreadcrumbList
   const jsonLd = [
@@ -178,7 +178,7 @@ export default async function ConvertGuidePage({ params }: Params) {
             ))}
 
             {/*Online tool CTA (only category A/B has web tool)*/}
-            {tool.className !== "C" && (
+            {hasWebTool && (
               <div className="glass my-8 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="!mt-0 border-none !p-0 text-xl font-bold tracking-tight text-foreground">
@@ -272,10 +272,10 @@ export default async function ConvertGuidePage({ params }: Params) {
                 </li>
               </ul>
               <Link
-                href={tool.desktopUnlimited ? "/download" : "/tools/" + tool.slug}
+                href={hasWebTool ? `/tools/${tool.slug}` : "/download"}
                 className="mono-label mt-4 inline-flex items-center gap-1.5 !text-primary"
               >
-                {tool.desktopUnlimited ? "Get the desktop app" : "Open the free web tool"}
+                {hasWebTool ? "Open the free web tool" : "Get the desktop app"}
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </section>

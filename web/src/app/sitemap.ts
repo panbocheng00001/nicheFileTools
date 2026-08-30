@@ -42,5 +42,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/privacy", 0.3),
     entry("/terms", 0.3),
     entry("/cookie", 0.3),
+    entry("/copyright", 0.3),
   ];
 }

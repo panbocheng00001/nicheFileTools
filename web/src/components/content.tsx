@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ShieldCheck, FileQuestion, ArrowRight, MonitorSmartphone } from "lucide-react";
 import type { ToolContent } from "@/lib/tools-data";
-import { getTool } from "@/lib/tools-data";
+import { getTool, isDesktopLanding } from "@/lib/tools-data";
 import { getGuide } from "@/lib/convert-content";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,13 @@ export function Breadcrumbs({ tool }: { tool: ToolContent }) {
 
 /*===== Tools Hero: gradient subject + mono badge =====*/
 function ClassBadge({ tool }: { tool: ToolContent }) {
+  if (isDesktopLanding(tool)) {
+    return (
+      <span className="inline-flex items-center rounded bg-destructive/20 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-destructive">
+        Desktop app
+      </span>
+    );
+  }
   const map: Record<string, { label: string; cls: string }> = {
     A: { label: "Online only", cls: "bg-primary/20 text-primary" },
     B: { label: "Online + Desktop", cls: "bg-cyan-500/20 text-cyan-400" },
@@ -53,7 +60,7 @@ function ClassBadge({ tool }: { tool: ToolContent }) {
 }
 
 export function ToolHero({ tool }: { tool: ToolContent }) {
-  const desktopOnly = tool.className === "C";
+  const desktopLanding = isDesktopLanding(tool);
   const parts = tool.h1.split(" ");
   const last = parts.pop() ?? "";
   const head = parts.join(" ");
@@ -71,12 +78,12 @@ export function ToolHero({ tool }: { tool: ToolContent }) {
         </span>
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-        {desktopOnly
+        {desktopLanding
           ? (tool.desktopOnlyIntro ??
             "Free desktop application — this conversion is not available in the browser.")
           : "Free online tool. No upload — your files never leave your device."}
       </p>
-      {!desktopOnly && (
+      {!desktopLanding && (
         <p className="mono-label mt-2">
           {tool.className === "B"
             ? "Online & desktop available"
@@ -111,9 +118,7 @@ export function SeoContent({ tool }: { tool: ToolContent }) {
         />
         <Section
           title={`How to Convert ${tool.sourceFormat} to ${tool.targetFormat}${
-            tool.className === "C" || tool.webStatus === "desktop"
-              ? " (Desktop)"
-              : " Online Free"
+            isDesktopLanding(tool) ? " (Desktop)" : " Online Free"
           }`}
           body={tool.howTo}
         />
@@ -173,7 +178,7 @@ export function GuideCard({ slug }: { slug: string }) {
         How to convert {tool.sourceFormat} to {tool.targetFormat}
       </p>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-        Methods compared, {tool.className === "C" ? "desktop steps" : "step-by-step"},
+        Methods compared, {isDesktopLanding(tool) ? "desktop steps" : "step-by-step"},
         and fixes for common errors.
       </p>
       <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-primary">
@@ -184,7 +189,16 @@ export function GuideCard({ slug }: { slug: string }) {
   );
 }
 
-/*===== Related Tools (Sidebar) =====*/
+/*===== Related Tools (Sidebar) — varied anchor text (SEO spec §2.11) =====*/
+function relatedAnchor(r: ToolContent, index: number): string {
+  const variants = [
+    r.h1,
+    `${r.sourceFormat} to ${r.targetFormat}`,
+    `Convert ${r.sourceExt} to ${r.targetExt}`,
+  ];
+  return variants[index % variants.length];
+}
+
 export function RelatedTools({ tool }: { tool: ToolContent }) {
   const related = tool.relatedTools
     .map((s) => getTool(s))
@@ -198,7 +212,7 @@ export function RelatedTools({ tool }: { tool: ToolContent }) {
         Related Tools
       </h2>
       <ul className="space-y-3">
-        {related.map((r) => (
+        {related.map((r, i) => (
           <li key={r.slug}>
             <Link
               href={`/tools/${r.slug}`}
@@ -206,7 +220,7 @@ export function RelatedTools({ tool }: { tool: ToolContent }) {
             >
               <span>
                 <span className="block font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                  {r.h1}
+                  {relatedAnchor(r, i)}
                 </span>
                 <span className="mono-label mt-1 block">
                   {r.sourceExt} → {r.targetExt}

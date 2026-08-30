@@ -53,6 +53,16 @@ export interface ToolContent {
 
 const MB = 1024 * 1024;
 
+/** C-class or honest desktop landing (SEO spec v1.3 §1.2). */
+export function isDesktopLanding(tool: ToolContent): boolean {
+  return tool.className === "C" || tool.webStatus === "desktop";
+}
+
+/** Tool has a working in-browser converter on /tools/[slug]. */
+export function hasWebConverter(tool: ToolContent): boolean {
+  return !isDesktopLanding(tool);
+}
+
 export const TOOLS: ToolContent[] = [
   // 1) KFX to EPUB — A class
   {
@@ -149,9 +159,9 @@ export const TOOLS: ToolContent[] = [
           "The STL format itself only stores the geometry mesh (triangle normals) and does not support color/material/textures. If you need to keep that information, export OBJ or GLB instead (supported by the desktop app).",
       },
       {
-        question: "Why is there a 20MB limit on the web version?",
+        question: "Why can't I upload a PRT file directly?",
         answer:
-          "PRT tessellation is CPU-intensive — the OCCT kernel must build the full B-Rep data structure in memory before meshing. Tessellating a large PRT can consume several GB of memory, risking an out-of-memory crash in the browser tab. The 20 MB limit balances safety and usability.",
+          "PRT is PTC Creo's closed native format — no third-party kernel parses it directly. Export STEP from Creo first (File → Save a Copy → STEP AP214), then tessellate the .stp with the desktop app's STEP to STL tool. That two-step route preserves exact geometry.",
       },
       {
         question: "Can I convert assembly files (.asm) to STL?",
@@ -178,9 +188,9 @@ export const TOOLS: ToolContent[] = [
     targetFormat: "PNG",
     sourceExt: ".pvr",
     targetExt: ".png",
-    title: "PVR to PNG Converter – Free PowerVR Texture to PNG Online",
+    title: "PVR to PNG Converter – Free Online",
     metaDescription:
-      "Convert PVR/PVRTC compressed textures to PNG images free online. Browser-based, supports PVRTC 1/2, ETC, ASTC variants. No upload, instant conversion.",
+      "Decode uncompressed PVR v3 (RGBA8888/RGB888/L8) to PNG free online. PVRTC/ETC/ASTC need re-export or desktop. No upload.",
     h1: "PVR to PNG Converter",
     webMaxFilePc: 100 * MB,
     webMaxFileMobile: 30 * MB,
@@ -318,9 +328,9 @@ export const TOOLS: ToolContent[] = [
           "Yes. If the BLEND file contains Action NLA strips (object transform animations: position/rotation/scale), this tool exports them as glTF animations. Full support for shape keys and skeletal animation depends on the WASM parser's coverage; the desktop app via Blender's Python API guarantees complete animation export.",
       },
       {
-        question: "Why 30MB limit for the web version?",
+        question: "Why is there no browser converter for BLEND?",
         answer:
-          "Parsing BLEND's DNA requires rebuilding the complete pointer-reference graph in memory. A 30 MB .blend file can expand to 200–500 MB in memory (all decompressed copies of data blocks). The browser tab's memory budget is limited and the OS will force-terminate it beyond that.",
+          "BLEND files use Blender's DNA block architecture, which only Blender's own API parses reliably. The desktop app bundles that runtime via Blender's Python API; a browser tab cannot load it. Export from Blender directly (File → Export → glTF 2.0) if you already have it installed.",
       },
       {
         question: "Which glTF version does the converter output?",
@@ -534,6 +544,9 @@ export const TOOLS: ToolContent[] = [
     sourceFormat: "OPF",
     targetFormat: "EPUB",
     sourceExt: ".zip",
+    // A bare .opf is accepted too, but it must be picked together with the
+    // resources it references (the input is a set, not a single file).
+    extraSourceExts: [".opf"],
     targetExt: ".epub",
     title: "OPF to EPUB Converter – Free Online",
     metaDescription:

@@ -98,9 +98,21 @@ export class OpfToEpubConverter implements IConverter {
       opfPath = (opfs.find((e) => /content\.opf$/i.test(e.name)) ??
         opfs.sort((a, b) => a.name.length - b.name.length)[0]).name;
     } else {
-      //Single OPF: packaged with its original path (resource missing will be handled by the reader as missing)
+      // Single .opf: it is only a manifest, so it is meaningless on its own —
+      // the referenced siblings must be selected together with it.
+      const siblings = options.siblingFiles ?? [];
       opfPath = name;
-      entries = [{ name, data: new Uint8Array(await options.inputFile.arrayBuffer()) }];
+      entries = [
+        { name, data: new Uint8Array(await options.inputFile.arrayBuffer()) },
+        ...(await Promise.all(
+          siblings
+            .filter((f) => f.name !== name)
+            .map(async (f) => ({
+              name: f.name,
+              data: new Uint8Array(await f.arrayBuffer()),
+            })),
+        )),
+      ];
     }
 
     const opfEntry = entries.find((e) => e.name === opfPath)!;
@@ -113,8 +125,14 @@ export class OpfToEpubConverter implements IConverter {
       .filter((m) => !zipNames.has(joinPath(opf.dir, m.href)))
       .map((m) => m.href);
     if (missing.length) {
+      // Tell the user what to do for the input form they actually used — the old
+      // message always said "Include them in the ZIP", which is nonsense when a
+      // bare .opf was uploaded.
+      const how = /\.zip$/i.test(name)
+        ? "Include them in the ZIP and upload it again."
+        : "Select the .opf together with all of its referenced files (hold Ctrl/Cmd to pick several), or zip them and upload the .zip.";
       throw new Error(
-        `The OPF references ${missing.length} file(s) missing from the upload: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? " …" : ""}. Include them in the ZIP.`,
+        `The OPF references ${missing.length} file(s) that were not uploaded: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? " …" : ""}. ${how}`,
       );
     }
 

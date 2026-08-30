@@ -43,27 +43,20 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     slug: "kfx-to-epub",
     title: "How to Convert KFX to EPUB — Free 2026 Guide",
     metaDescription:
-      "Three ways to convert KFX to EPUB: free online tool, desktop app for batches, or Calibre. DRM-free files only. Steps, limits, and fixes.",
+      "Convert KFX to EPUB with the free desktop app or Calibre. DRM-free files only. Batch mode, no size limit, and fixes for common errors.",
     quickAnswer:
-      "Yes — you can convert KFX to EPUB in about a minute, provided the book is DRM-free. For a single book up to 50 MB, the free online tool is the fastest route; the desktop app handles whole libraries and batches. DRM-protected KFX files cannot be converted by any legitimate tool, ours included.",
+      "Yes — you can convert DRM-free KFX to EPUB in about a minute with the free nichefiletools desktop app (hourly unlock code on the tool page). Calibre with the KFX Input plugin is another free route. DRM-protected KFX files cannot be converted by any legitimate tool, ours included.",
     formatDeep:
       "KFX is what Amazon delivers to modern Kindles (2017+): an Enhanced Typesetting container that splits a book into positionally-addressed fragments so each device can reflow typography its own way. EPUB is the IDPF/W3C open standard every non-Kindle reader uses — Apple Books, Kobo, Google Play Books. The trade-off when moving between them is typographic, not textual: Amazon's dynamic hyphenation and floating elements rebuild as standard EPUB CSS, while text, chapter order, and the table of contents carry over intact. Teams that archive or re-edit purchased DRM-free books standardize on EPUB because every downstream tool — editors, validators, repositories — reads it.",
     batchLarge:
-      "Whole-library jobs are where the desktop app earns its keep: point it at a folder of DRM-free KFX files and the batch queue rebuilds each book with chapter order and table of contents intact — no 50 MB per-file cap, nothing uploaded. The hourly unlock code covers the entire batch, so a shelf of fifty books is one paste, one click, one wait.",
+      "Whole-library jobs are where the desktop app earns its keep: point it at a folder of DRM-free KFX files and the batch queue rebuilds each book with chapter order and table of contents intact — no per-file cap, nothing uploaded. The hourly unlock code covers the entire batch, so a shelf of fifty books is one paste, one click, one wait.",
     methods: [
       {
-        name: "nichefiletools online converter",
-        bestFor: "Single books, instant results",
-        price: "Free",
-        limit: "50 MB per file (PC) / 20 MB (mobile)",
-        notes: "Runs in your browser — the book is never uploaded. Rebuilds the KFX fragment structure into a standard EPUB package with chapter order and table of contents intact.",
-      },
-      {
         name: "nichefiletools desktop app",
-        bestFor: "Batch conversion, large libraries",
+        bestFor: "Single books, batches, and large libraries",
         price: "Free (hourly unlock code)",
         limit: "No file-size limit",
-        notes: "Native processing for entire book folders. Open the desktop app, pick a tool, and paste the current hourly code from its page here — no payment, no account, and a fresh code is always free on the same page.",
+        notes: "Native processing on your machine — the book is never uploaded. Rebuilds the KFX fragment structure into a standard EPUB package with chapter order and table of contents intact.",
       },
       {
         name: "Calibre + KFX Input plugin",
@@ -96,7 +89,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "For one DRM-free book, the desktop app's free hourly code is all you need — copy it, paste it, convert. For a shelf of them, batch mode saves an evening of dragging files — and Calibre users get the same result with the KFX Input plugin.",
+      "For one DRM-free book, copy the free hourly code from the KFX to EPUB tool page, paste it in the desktop app, and convert. For a whole shelf, batch mode saves an evening of dragging files — and Calibre users get the same result with the KFX Input plugin.",
   },
   {
     slug: "prt-to-stl",

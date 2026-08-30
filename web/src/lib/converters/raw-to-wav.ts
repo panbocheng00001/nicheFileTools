@@ -35,9 +35,36 @@ export class RawToWavConverter implements IConverter {
     }
 
     const dataSize = raw.byteLength;
-    //The data area must be an integer multiple of the block alignment, and incomplete samples at the end are truncated.
-    const blockAlign = channels * (bitsPerSample / 8);
-    const usable = dataSize - (dataSize % blockAlign);
+    const bytesPerSample = bitsPerSample / 8;
+    const blockAlign = channels * bytesPerSample;
+
+    // Raw PCM has no header, so the parameters above are the *only* thing that
+    // tells us how to interpret the bytes. If the data length is not a multiple
+    // of the block size, the stream is being mis-framed: silently truncating it
+    // (or wrapping it) yields audio at the wrong speed with interleaved
+    // channels shuffled. Detect it and tell the user which settings fit.
+    const remainder = dataSize % blockAlign;
+    if (remainder !== 0) {
+      const fits: string[] = [];
+      for (const ch of [1, 2]) {
+        for (const bits of [8, 16, 24, 32]) {
+          if (ch === channels && bits === bitsPerSample) continue;
+          if (dataSize % (ch * (bits / 8)) === 0) {
+            fits.push(`${ch === 1 ? "Mono" : "Stereo"} at ${bits}-bit`);
+          }
+        }
+      }
+      const hint = fits.length
+        ? ` These settings fit the file exactly: ${fits.slice(0, 3).join(", ")}.`
+        : " Check the sample rate / bit depth / channels — one of them does not match the source.";
+      throw new Error(
+        `The file is ${dataSize} bytes, which is not a multiple of the block size ${blockAlign} bytes ` +
+          `(Channels ${channels} × ${bitsPerSample}-bit) — ${remainder} trailing byte(s) would be misread, ` +
+          `producing audio at the wrong speed with garbled stereo.${hint}`,
+      );
+    }
+
+    const usable = dataSize;
 
     const header = new ArrayBuffer(44);
     const view = new DataView(header);
@@ -59,9 +86,8 @@ export class RawToWavConverter implements IConverter {
     writeStr(36, "data");
     view.setUint32(40, usable, true);
 
-    const wav = new Blob([header, usable === dataSize ? raw : raw.slice(0, usable)], {
-      type: "audio/wav",
-    });
+    // Length is validated above, so the whole payload is always usable.
+    const wav = new Blob([header, raw], { type: "audio/wav" });
 
     return {
       data: wav,
