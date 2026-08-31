@@ -17,6 +17,8 @@ export const REPO_URL = "https://github.com/panbocheng00001/nicheFileTools";
 export const REPO_ISSUES_URL = `${REPO_URL}/issues`;
 export const REPO_OWNER = "panbocheng00001";
 export const REPO_NAME = "nicheFileTools";
+/** Canonical license of the project's own source (MIT). Used by SoftwareSourceCode schema. */
+export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 
 export interface CategoryMeta {
   slug: string;

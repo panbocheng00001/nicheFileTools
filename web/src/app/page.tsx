@@ -102,7 +102,7 @@ export default function Home() {
                     <h3 className="mb-1 text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
                       {t.h1}
                     </h3>
-                    <p className="mt-auto pt-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <p className="mt-auto pt-4 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
                       {cat.label} · {t.sourceExt} → {t.targetExt} · class {t.className}
                     </p>
                   </div>

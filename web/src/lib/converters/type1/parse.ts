@@ -143,9 +143,13 @@ function findIndex(stream: Uint8Array, needle: string, from = 0): number {
 // ---------------------------------------------------------------- dictionaries
 
 function parseNumberArray(text: string, from: number): number[] {
-  const open = text.indexOf("[", from);
+  // PostScript arrays are written with either [..] or {..}; FontBBox in
+  // particular is very often braced, so both delimiters must be accepted or the
+  // parser silently reads a later array and reports bogus metrics.
+  const opens = ["[", "{"].map((d) => text.indexOf(d, from)).filter((i) => i >= 0);
+  const open = opens.length ? Math.min(...opens) : -1;
   if (open < 0) return [];
-  const close = text.indexOf("]", open);
+  const close = text.indexOf(text[open] === "[" ? "]" : "}", open);
   if (close < 0) return [];
   return text
     .slice(open + 1, close)
@@ -244,22 +248,170 @@ function parseSubrs(
   return subrs;
 }
 
-/** `dup <code> /<name> put` entries of the /Encoding array. */
-function parseEncoding(
-  stream: Uint8Array,
-  start: number,
-): (string | null)[] {
+/**
+ * `dup <code> /<name> put` entries of the /Encoding array.
+ *
+ * The entries never start at the key: the array prologue (`256 array`) and the
+ * `.notdef` fill loop (`0 1 255 {1 index exch /.notdef put} for`) come first, so
+ * the whole window is scanned and only the part before the closing `def` is used
+ * — after that we are back at dictionary level and later `put`s belong elsewhere.
+ */
+function parseEncoding(stream: Uint8Array, start: number): (string | null)[] {
   const enc: (string | null)[] = new Array(256).fill(null);
-  let i = start;
-  for (let guard = 0; guard < 2048; guard++) {
-    // stop at the next top-level dict key
-    const next = matchAt(stream, i, /^\s*dup\s+(\d+)\s+\/([^\s{}()<>\[\]\/]+)\s+put/);
-    if (!next) break;
-    const code = Number(next.groups[0]);
-    if (code >= 0 && code < 256) enc[code] = next.groups[1];
-    i = next.end;
+  const text = latin1(stream.subarray(start, Math.min(stream.length, start + 65536)));
+  const endIdx = text.search(/\bdef\b/);
+  const window = endIdx >= 0 ? text.slice(0, endIdx) : text;
+  const re = /dup\s+(\d+)\s+\/([^\s{}()<>\[\]\/]+)\s+put/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(window))) {
+    const code = Number(m[1]);
+    if (code >= 0 && code < 256) enc[code] = m[2];
   }
   return enc;
+}
+
+// ---------------------------------------------------------------- operator set
+//
+// Type 1 fonts come in two charstring flavours: `/CharstringType 1` uses the
+// original numbering (0 hstem, 1 vstem, 6 rrcurveto, 7 closepath, 9 hsbw,
+// 10 endchar) while `/CharstringType 2` uses the CFF numbering for the stem and
+// path operators (1 hstem, 3 vstem, 5 rlineto, 6 hlineto, 7 vlineto,
+// 8 rrcurveto, 9 closepath). The metrics operators (13 hsbw, 14 endchar) are
+// shared by both.
+//
+// Many fonts omit `/CharstringType` entirely (it then defaults to 1) yet still
+// emit type-2 charstrings, so the flavour has to be detected from the data.
+
+type OpName =
+  | "hstem"
+  | "vstem"
+  | "vmoveto"
+  | "rlineto"
+  | "hlineto"
+  | "vlineto"
+  | "rrcurveto"
+  | "closepath"
+  | "hsbw"
+  | "endchar"
+  | "callsubr"
+  | "return"
+  | "rmoveto"
+  | "hmoveto"
+  | "vhcurveto"
+  | "hvcurveto"
+  | "escape";
+
+interface OpDef {
+  name: OpName;
+  /** operand count the operator consumes (-1 = variadic, unused here) */
+  arity: number;
+}
+
+const op = (name: OpName, arity: number): OpDef => ({ name, arity });
+
+const OPS_TYPE1: Record<number, OpDef> = {
+  12: op("escape", 0),
+  0: op("hstem", 2),
+  1: op("vstem", 2),
+  2: op("vmoveto", 1),
+  3: op("rlineto", 2),
+  4: op("hlineto", 1),
+  5: op("vlineto", 1),
+  6: op("rrcurveto", 6),
+  7: op("closepath", 0),
+  9: op("hsbw", 2),
+  10: op("endchar", 0),
+  11: op("return", 0),
+  13: op("hsbw", 2),
+  14: op("endchar", 0),
+  21: op("rmoveto", 2),
+  22: op("hmoveto", 1),
+  23: op("vhcurveto", 4),
+  24: op("hvcurveto", 4),
+  30: op("vhcurveto", 4),
+  31: op("hvcurveto", 4),
+};
+
+const OPS_TYPE2: Record<number, OpDef> = {
+  12: op("escape", 0),
+  1: op("hstem", 2),
+  3: op("vstem", 2),
+  4: op("vmoveto", 2),
+  5: op("rlineto", 2),
+  6: op("hlineto", 1),
+  7: op("vlineto", 1),
+  8: op("rrcurveto", 6),
+  9: op("closepath", 0),
+  10: op("callsubr", 1),
+  11: op("return", 0),
+  13: op("hsbw", 2),
+  14: op("endchar", 0),
+  21: op("rmoveto", 2),
+  22: op("hmoveto", 1),
+  30: op("vhcurveto", 4),
+  31: op("hvcurveto", 4),
+};
+
+/** Operators that must see an exact operand count — leftovers mean wrong table. */
+const STRICT_OPS = new Set<OpName>(["endchar", "closepath", "return", "hsbw"]);
+
+/**
+ * Penalty score for interpreting every charstring with `table`. Underflow and
+ * strict leftovers are the tell-tale signs of a mismatched numbering: with the
+ * wrong table a glyph decodes as "hsbw, then endchar with junk operands" and
+ * ends up with no outline at all.
+ */
+function scoreOps(table: Record<number, OpDef>, glyphs: Uint8Array[], subrs: Uint8Array[]): number {
+  let score = 0;
+  for (const bytes of glyphs) {
+    const stack: number[] = [];
+    let i = 0;
+    let guard = 0;
+    while (i < bytes.length && guard++ < 20000) {
+      const b = bytes[i];
+      if (b >= 32) {
+        if (b >= 32 && b <= 246) i += 1;
+        else if (b <= 254) i += 2; // 247..250 and 251..254
+        else i += 5; // 255: 4-byte operand
+        stack.push(0);
+        continue;
+      }
+      i++;
+      if (b === 12) {
+        i++; // escape: operand use varies, ignore for scoring
+        stack.length = 0;
+        continue;
+      }
+      const def = table[b];
+      if (!def) {
+        score += 3;
+        stack.length = 0;
+        continue;
+      }
+      if (stack.length < def.arity) score += 5; // underflow
+      if (STRICT_OPS.has(def.name) && stack.length !== def.arity) score += 4;
+      if (def.name === "callsubr" && stack.length) {
+        const idx = stack[stack.length - 1];
+        if (!(idx >= 0 && idx < subrs.length && subrs[idx])) score += 3;
+      }
+      stack.length = 0;
+      if (def.name === "endchar") break;
+    }
+  }
+  return score;
+}
+
+/** Pick the charstring flavour: explicit /CharstringType wins, else score both. */
+function pickOps(
+  declared: number | null,
+  glyphs: Uint8Array[],
+  subrs: Uint8Array[],
+): Record<number, OpDef> {
+  if (declared === 1) return OPS_TYPE1;
+  if (declared === 2) return OPS_TYPE2;
+  const s1 = scoreOps(OPS_TYPE1, glyphs, subrs);
+  const s2 = scoreOps(OPS_TYPE2, glyphs, subrs);
+  return s2 < s1 ? OPS_TYPE2 : OPS_TYPE1;
 }
 
 // ---------------------------------------------------------------- interpreter
@@ -269,6 +421,8 @@ interface InterpCtx {
   /** standard-encoding char code -> charstring (for `seac`) */
   byStdCode: (code: number) => Uint8Array | undefined;
   lenIV: number;
+  /** charstring operator table (type 1 vs type 2 numbering) */
+  ops: Record<number, OpDef>;
 }
 
 interface InterpResult {
@@ -323,13 +477,14 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
     }
     i++; // consume the command byte
 
-    switch (b) {
-      case 0: // hstem
-      case 1: // vstem
+    // Dispatch on the operator *name* so both charstring flavours share one body.
+    switch (ctx.ops[b]?.name) {
+      case "hstem":
+      case "vstem":
         clear(); // hints: not needed for outlines
         break;
 
-      case 2: {
+      case "vmoveto": {
         // vmoveto
         const dy = pop();
         cur = { x: cur.x, y: cur.y + dy };
@@ -338,7 +493,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 21: {
+      case "rmoveto": {
         // rmoveto
         const dy = pop();
         const dx = pop();
@@ -348,7 +503,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 22: {
+      case "hmoveto": {
         // hmoveto
         const dx = pop();
         cur = { x: cur.x + dx, y: cur.y };
@@ -357,7 +512,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 3: {
+      case "rlineto": {
         // rlineto
         const dy = pop();
         const dx = pop();
@@ -366,7 +521,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 4: {
+      case "hlineto": {
         // hlineto
         const dx = pop();
         cur = { x: cur.x + dx, y: cur.y };
@@ -374,7 +529,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 5: {
+      case "vlineto": {
         // vlineto
         const dy = pop();
         cur = { x: cur.x, y: cur.y + dy };
@@ -382,7 +537,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 6: {
+      case "rrcurveto": {
         // rrcurveto
         const dy3 = pop();
         const dx3 = pop();
@@ -406,7 +561,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 30: {
+      case "vhcurveto": {
         // vhcurveto: dy1 dx2 dy2 dx3
         const dx3 = pop();
         const dy2 = pop();
@@ -425,7 +580,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 31: {
+      case "hvcurveto": {
         // hvcurveto: dx1 dx2 dy2 dy3
         const dy3 = pop();
         const dy2 = pop();
@@ -444,14 +599,13 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 7: // closepath
+      case "closepath":
         cmds.push({ type: "Z" });
         cur = { ...start };
         clear();
         break;
 
-      case 9: // hsbw (also 13)
-      case 13: {
+      case "hsbw": {
         const wx = pop();
         const sbx = pop();
         width = wx;
@@ -461,7 +615,7 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         break;
       }
 
-      case 8: {
+      case "callsubr": {
         // callsubr
         const idx = pop();
         const sub = ctx.subrs[idx];
@@ -476,14 +630,14 @@ function interpret(bytes: Uint8Array, ctx: InterpCtx, depth = 0): InterpResult {
         clear();
         break;
       }
-      case 11: // return
+      case "return":
         i = bytes.length;
         break;
-      case 10: // endchar
+      case "endchar":
         i = bytes.length;
         break;
 
-      case 12: {
+      case "escape": {
         const esc = bytes[i++];
         switch (esc) {
           case 0: // dotsection
@@ -698,7 +852,21 @@ export function parseType1(buf: Uint8Array): T1Font {
     return n2 ? cs.map.get(n2) : undefined;
   };
 
-  const ctx: InterpCtx = { subrs, byStdCode, lenIV };
+  // /CharstringType tells the numbering apart, but fonts routinely omit it, so
+  // fall back to scoring both tables against the actual charstrings.
+  const ctIdx = text.indexOf("/CharstringType");
+  let declared: number | null = null;
+  if (ctIdx >= 0) {
+    const m = /(-?\d+(?:\.\d+)?)/.exec(text.slice(ctIdx + 15, ctIdx + 60));
+    if (m) declared = Number(m[1]);
+  }
+  const ops = pickOps(
+    declared,
+    cs.order.map((n) => cs.map.get(n)!),
+    subrs,
+  );
+
+  const ctx: InterpCtx = { subrs, byStdCode, lenIV, ops };
 
   // --- build glyphs ---------------------------------------------------------
   const glyphs: T1Glyph[] = [];

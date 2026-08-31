@@ -11,8 +11,8 @@ import { TOOLS } from "@/lib/tools-data";
 const NAV = [
   { href: "/tools", label: "Tools" },
   { href: "/convert", label: "Guides" },
-  { href: "/download", label: "Desktop" },
   { href: "/free-trial", label: "Unlock Code" },
+  { href: "/help", label: "Help" },
   { href: "/about", label: "About" },
 ];
 
@@ -100,8 +100,8 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
         aria-controls="search-results"
         className="h-9 w-full rounded-lg border border-border/60 bg-background/40 pl-9 pr-12 text-sm shadow-none backdrop-blur transition-colors focus-visible:border-primary/50 focus-visible:ring-0"
       />
-      <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground sm:inline-flex">
-        <span className="text-[11px]">⌘</span>K
+      <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground sm:inline-flex">
+        <span className="text-xs">⌘</span>K
       </kbd>
 
       {/*drop down results*/}
@@ -140,7 +140,7 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
                         i === active ? "bg-primary/10" : "hover:bg-muted/60",
                       )}
                     >
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-border/50 bg-muted/40 font-mono text-[10px] font-bold uppercase text-primary">
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-border/50 bg-muted/40 font-mono text-[11px] font-bold uppercase text-primary">
                         {t.className}
                       </span>
                       <span className="min-w-0 flex-1">
@@ -156,7 +156,7 @@ function SearchBox({ onNavigate }: { onNavigate?: () => void }) {
                   </li>
                 ))}
               </ul>
-              <div className="flex items-center justify-between border-t border-border/50 px-3 py-2 text-[11px] text-muted-foreground">
+              <div className="flex items-center justify-between border-t border-border/50 px-3 py-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-2">
                   <span className="flex items-center gap-0.5">
                     <ArrowUp className="h-3 w-3" />
@@ -234,7 +234,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link
             href="/download"
-            className="hidden items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_18px_rgba(74,222,128,0.3)] sm:inline-flex"
+            className="hidden items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_18px_rgba(74,222,128,0.3)] md:inline-flex"
           >
             <Download className="h-4 w-4" />
             Download

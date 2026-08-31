@@ -40,6 +40,7 @@ const COLS: { title: string; links: FooterLink[]; more?: FooterLink }[] = [
     title: "Learn",
     links: [
       { href: "/convert", label: "Conversion Guides" },
+      { href: "/help", label: "Help Center" },
       { href: "/support", label: "Support Center" },
       { href: "/about", label: "About Us" },
       { href: "/contact", label: "Contact" },
@@ -86,7 +87,7 @@ export function Footer() {
               Free, browser-based file converters. Your files are processed
               locally and never uploaded to a server.
             </p>
-            <span className="mt-4 inline-flex rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 font-mono text-[10px] font-medium text-primary">
+            <span className="mt-4 inline-flex rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 font-mono text-[11px] font-medium text-primary">
               v1.0.0
             </span>
           </div>

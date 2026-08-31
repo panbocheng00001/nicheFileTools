@@ -129,7 +129,7 @@ export default function DownloadPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[480px] border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-border/60 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                <tr className="border-b border-border/60 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   <th className="py-3 pr-4">Feature</th>
                   <th className="px-3 py-3">Free</th>
                   <th className="px-3 py-3 text-primary">Pro</th>

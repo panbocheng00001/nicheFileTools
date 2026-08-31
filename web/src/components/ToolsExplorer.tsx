@@ -10,14 +10,22 @@ import {
   CornerDownLeft,
   LayoutGrid,
   List,
+  BookOpen,
 } from "lucide-react";
 import type { ToolContent } from "@/lib/tools-data";
+import { getGuide } from "@/lib/convert-content";
 import type { CategoryMeta } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 interface Props {
   tools: ToolContent[];
   categories: CategoryMeta[];
+}
+
+// Documentation link for a tool: prefer the illustrated guide page when one
+// exists, otherwise fall back to the tool page (which carries the FAQ).
+function docHref(slug: string): string {
+  return getGuide(slug) ? `/convert/${slug}` : `/tools/${slug}`;
 }
 
 type ViewMode = "cards" | "list";
@@ -122,8 +130,8 @@ export function ToolsExplorer({ tools, categories }: Props) {
               <X className="h-4 w-4" />
             </button>
           ) : (
-            <kbd className="hidden shrink-0 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-1 font-mono text-[10px] font-semibold text-muted-foreground sm:inline-flex">
-              <span className="text-[11px]">⌘</span>K
+            <kbd className="hidden shrink-0 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-1 font-mono text-[11px] font-semibold text-muted-foreground sm:inline-flex">
+              <span className="text-xs">⌘</span>K
             </kbd>
           )}
           {!isSearching && (
@@ -157,13 +165,21 @@ export function ToolsExplorer({ tools, categories }: Props) {
       {isSearching && total > 0 && (
         <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {flatRanked.map((t) => (
-            <li key={t.slug}>
-              <Link href={`/tools/${t.slug}`} className="group flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-background/40 px-4 py-3 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-background/60">
+            <li key={t.slug} className="relative">
+              <Link href={`/tools/${t.slug}`} className="group flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-background/40 px-4 py-3 pr-9 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-background/60">
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary">{t.h1}</span>
                   <span className="mono-label mt-0.5 block">{t.categoryLabel} · {t.sourceExt} → {t.targetExt}</span>
                 </span>
                 <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+              </Link>
+              <Link
+                href={docHref(t.slug)}
+                aria-label={`Guide for ${t.h1}`}
+                title="View guide"
+                className="absolute right-2 top-1/2 z-20 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md border border-border/50 bg-background/70 text-muted-foreground backdrop-blur transition-all hover:border-primary/50 hover:text-primary"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
               </Link>
             </li>
           ))}
@@ -189,7 +205,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
               )}
             >
               All
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">{total}</span>
+              <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/70">{total}</span>
             </button>
             {grouped.map(({ cat, items }) => (
               <button
@@ -204,7 +220,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
                 )}
               >
                 {cat.label}
-                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">{items.length}</span>
+                <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/70">{items.length}</span>
               </button>
             ))}
           </div>
@@ -213,14 +229,14 @@ export function ToolsExplorer({ tools, categories }: Props) {
           {view === "cards" ? (
             <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {browseVisible.map((t) => (
-                <li key={t.slug}>
+                <li key={t.slug} className="relative">
                   <Link
                     href={`/tools/${t.slug}`}
                     className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border/40 bg-background/40 p-4 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-background/60"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                     <div className="relative z-10 flex h-full flex-col">
-                      <h3 className="text-sm font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
+                      <h3 className="pr-7 text-sm font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
                         {t.h1}
                       </h3>
                       <p className="mono-label mt-2 block">{t.sourceExt} → {t.targetExt}</p>
@@ -231,20 +247,36 @@ export function ToolsExplorer({ tools, categories }: Props) {
                       </span>
                     </div>
                   </Link>
+                  <Link
+                    href={docHref(t.slug)}
+                    aria-label={`Guide for ${t.h1}`}
+                    title="View guide"
+                    className="absolute right-2 top-2 z-20 grid h-7 w-7 place-items-center rounded-md border border-border/50 bg-background/70 text-muted-foreground/70 opacity-100 backdrop-blur transition-all hover:border-primary/50 hover:text-primary hover:opacity-100 focus-visible:opacity-100 group-hover:border-primary/50 group-hover:text-primary"
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                  </Link>
                 </li>
               ))}
             </ul>
           ) : (
             <ul className="mt-6 overflow-hidden rounded-xl border border-border/40">
               {browseVisible.map((t, i) => (
-                <li key={t.slug} className={cn("border-b border-border/40 last:border-b-0", i % 2 === 1 && "bg-muted/20")}>
-                  <Link href={`/tools/${t.slug}`} className="group grid grid-cols-12 items-center gap-2 px-4 py-2.5 transition-colors hover:bg-primary/5">
+                <li key={t.slug} className={cn("relative border-b border-border/40 last:border-b-0", i % 2 === 1 && "bg-muted/20")}>
+                  <Link href={`/tools/${t.slug}`} className="group grid grid-cols-12 items-center gap-2 px-4 py-2.5 pr-9 transition-colors hover:bg-primary/5">
                     <span className="col-span-12 truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary sm:col-span-5">{t.h1}</span>
                     <span className="mono-label col-span-6 sm:col-span-3">{t.sourceExt} → {t.targetExt}</span>
                     <span className="mono-label col-span-4 hidden sm:col-span-2 sm:block">{t.categoryLabel}</span>
                     <span className="col-span-2 justify-self-end">
-                      <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-primary">{t.className}</span>
+                      <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-primary">{t.className}</span>
                     </span>
+                  </Link>
+                  <Link
+                    href={docHref(t.slug)}
+                    aria-label={`Guide for ${t.h1}`}
+                    title="View guide"
+                    className="absolute right-2 top-1/2 z-20 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md border border-border/50 bg-background/70 text-muted-foreground backdrop-blur transition-all hover:border-primary/50 hover:text-primary"
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
                   </Link>
                 </li>
               ))}

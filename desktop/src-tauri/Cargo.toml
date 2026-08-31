@@ -3,6 +3,7 @@ name = "nichefiletools-desktop"
 version = "0.1.0"
 description = "nichefiletools desktop — free file format converter"
 authors = ["nichefiletools"]
+license = "MIT"
 edition = "2021"
 rust-version = "1.77"
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Share2, Link2, Check, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,8 +14,13 @@ interface Props {
 export function Share({ path, title, className }: Props) {
   const [copied, setCopied] = useState(false);
 
-  //Use origin to spell the absolute URL (SSR security: window is only accessed in effect/event)
-  const url = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+  //The absolute URL is resolved on the client after mount. Reading
+  //`window` during render makes SSR (relative) and CSR (absolute) disagree,
+  //which throws a hydration mismatch on every page that renders <Share>.
+  const [url, setUrl] = useState(path);
+  useEffect(() => {
+    if (typeof window !== "undefined") setUrl(`${window.location.origin}${path}`);
+  }, [path]);
   const encUrl = encodeURIComponent(url);
   const encTitle = encodeURIComponent(title);
 

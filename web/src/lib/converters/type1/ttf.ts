@@ -212,7 +212,39 @@ function encodeGlyph(contours: Pt[][]): Uint8Array {
 
 // ---------------------------------------------------------------- cmap (format 4)
 
+/**
+ * The `cmap` *table* is a directory of encoding records pointing at subtables.
+ * The subtable alone is not a valid table, so wrap it: two records (Windows BMP
+ * and Unicode BMP) both resolving to the same format 4 subtable.
+ */
 function buildCmap(glyphs: TtfGlyphInput[]): Uint8Array {
+  const sub = buildCmapFormat4(glyphs);
+  const numTables = 2;
+  const headerLen = 4 + numTables * 8; // 20 -> keeps the subtable 4-byte aligned
+  const buf = new Uint8Array(headerLen + sub.length);
+  const dv = new DataView(buf.buffer);
+  let o = 0;
+  dv.setUint16(o, 0, false);
+  o += 2; // version
+  dv.setUint16(o, numTables, false);
+  o += 2;
+  dv.setUint16(o, 3, false);
+  o += 2; // platform Windows
+  dv.setUint16(o, 1, false);
+  o += 2; // encoding BMP
+  dv.setUint32(o, headerLen, false);
+  o += 4;
+  dv.setUint16(o, 0, false);
+  o += 2; // platform Unicode
+  dv.setUint16(o, 3, false);
+  o += 2; // encoding BMP
+  dv.setUint32(o, headerLen, false);
+  o += 4;
+  buf.set(sub, headerLen);
+  return buf;
+}
+
+function buildCmapFormat4(glyphs: TtfGlyphInput[]): Uint8Array {
   const pairs: { u: number; g: number }[] = [];
   glyphs.forEach((g, gi) => {
     for (const u of g.unicodes) {
@@ -225,10 +257,13 @@ function buildCmap(glyphs: TtfGlyphInput[]): Uint8Array {
   const segs: { start: number; end: number; delta: number }[] = [];
   for (const { u, g } of pairs) {
     const last = segs[segs.length - 1];
-    if (last && u === last.end + 1 && (g - u) % 65536 === last.delta) {
+    // Compare the masked delta: `(g - u) % 65536` keeps JS's negative sign,
+    // which never matches the stored unsigned value and silently defeats merging.
+    const delta = (g - u) & 0xffff;
+    if (last && u === last.end + 1 && delta === last.delta) {
       last.end = u;
     } else {
-      segs.push({ start: u, end: u, delta: (g - u) & 0xffff });
+      segs.push({ start: u, end: u, delta });
     }
   }
   segs.push({ start: 0xffff, end: 0xffff, delta: 1 });
@@ -238,7 +273,10 @@ function buildCmap(glyphs: TtfGlyphInput[]): Uint8Array {
   const searchRange = 2 ** entrySelector * 2;
   const rangeShift = segCount * 2 - searchRange;
 
-  const len = 14 + segCount * 8;
+  // format 4 layout: 14-byte header + endCode + reservedPad(2) + startCode +
+  // idDelta + idRangeOffset — hence 16, not 14 (the pad used to be omitted,
+  // which made the final idRangeOffset write run past the buffer).
+  const len = 16 + segCount * 8;
   const buf = new Uint8Array(len);
   const dv = new DataView(buf.buffer);
   let o = 0;
@@ -399,6 +437,7 @@ export function buildTtf(opts: TtfOptions): Uint8Array {
 
   // --- outlines ---
   const glyfData: Uint8Array[] = [];
+  const glyphXMins: number[] = [];
   let maxPoints = 0;
   let maxContours = 0;
   let xMinAll = 0,
@@ -413,13 +452,16 @@ export function buildTtf(opts: TtfOptions): Uint8Array {
     const pts = contours.flat();
     maxPoints = Math.max(maxPoints, pts.length);
     maxContours = Math.max(maxContours, contours.length);
+    let glyphXMin = 0;
     for (const p of pts) {
       if (p.x < xMinAll) xMinAll = p.x;
       if (p.y < yMinAll) yMinAll = p.y;
       if (p.x > xMaxAll) xMaxAll = p.x;
       if (p.y > yMaxAll) yMaxAll = p.y;
+      if (p.x < glyphXMin) glyphXMin = p.x;
     }
-    if (contours.length) minLsb = Math.min(minLsb, Math.min(...pts.map((p) => p.x)));
+    glyphXMins.push(contours.length ? glyphXMin : 0);
+    if (contours.length && glyphXMin < minLsb) minLsb = glyphXMin;
     glyfData.push(encodeGlyph(contours));
   }
   for (const g of glyphs) {
@@ -471,12 +513,13 @@ export function buildTtf(opts: TtfOptions): Uint8Array {
   // --- hmtx ---
   const hmtx = new Uint8Array(numGlyphs * 4);
   for (let i = 0; i < numGlyphs; i++) {
-    const aw = Math.round(glyphs[i]?.advanceWidth ?? 0) || 0;
+    const aw = Math.max(0, Math.round(glyphs[i]?.advanceWidth ?? 0)) || 0;
     hmtx[i * 4] = (aw >> 8) & 0xff;
     hmtx[i * 4 + 1] = aw & 0xff;
-    // lsb: left-most point of the outline (0 for empty glyphs)
-    hmtx[i * 4 + 2] = 0;
-    hmtx[i * 4 + 3] = 0;
+    // lsb = left-most outline point of this glyph (0 for empty glyphs)
+    const lsb = glyphXMins[i] ?? 0;
+    hmtx[i * 4 + 2] = (lsb >> 8) & 0xff;
+    hmtx[i * 4 + 3] = lsb & 0xff;
   }
 
   // --- head ---

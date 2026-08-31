@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
-import { SITE, BRAND, SUPPORT_EMAIL, REPO_URL } from "@/lib/site";
+import { SITE, BRAND, SUPPORT_EMAIL, REPO_URL, LICENSE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: {
@@ -64,8 +64,9 @@ const globalJsonLd = [
     codeRepository: REPO_URL,
     programmingLanguage: ["TypeScript", "Rust"],
     runtimePlatform: ["Web Browser", "Windows", "macOS", "Linux"],
-    // `license` intentionally omitted until a LICENSE file exists in the repo —
-    // claiming one that isn't there is worse for trust than leaving it out.
+    // MIT — LICENSE file landed 2026-08-30; also see THIRD_PARTY_NOTICES.md
+    // for the per-dependency license breakdown (FFmpeg WASM is LGPL-2.1+).
+    license: LICENSE_URL,
     author: { "@type": "Organization", name: BRAND, url: SITE },
   },
 ];
