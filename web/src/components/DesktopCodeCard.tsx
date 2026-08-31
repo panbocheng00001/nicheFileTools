@@ -117,7 +117,7 @@ export function DesktopCodeCard({ slug, toolName }: { slug: string; toolName: st
     <aside className="glass-panel border-primary/20 p-5 sm:p-6">
       <div className="mb-3 flex items-center gap-2">
         <KeyRound className="h-4 w-4 text-primary" />
-        <h2 className="font-mono text-xs font-bold uppercase tracking-widest text-foreground">
+        <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
           Desktop unlock code
         </h2>
       </div>
@@ -146,7 +146,7 @@ export function DesktopCodeCard({ slug, toolName }: { slug: string; toolName: st
         </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 font-mono text-sm uppercase tracking-widest text-muted-foreground">
         <span title="Codes rotate on the hour (UTC) and are per tool.">
           {remaining > 0 ? (
             <>
@@ -164,7 +164,7 @@ export function DesktopCodeCard({ slug, toolName }: { slug: string; toolName: st
       {/* Tip of the hour — rotates with the same UTC bucket as the code. */}
       {tip && (
         <div className="mt-4 rounded-lg border border-border/60 bg-muted/30 p-3.5">
-          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-primary">
+          <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-widest text-primary">
             <Lightbulb className="h-3.5 w-3.5" />
             Tip of the hour
           </div>
@@ -173,7 +173,7 @@ export function DesktopCodeCard({ slug, toolName }: { slug: string; toolName: st
           </p>
           <Link
             href={`/convert/${slug}`}
-            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary transition-opacity hover:opacity-80"
+            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary transition-opacity hover:opacity-80"
           >
             Read the full guide
             <ArrowRight className="h-3 w-3" />

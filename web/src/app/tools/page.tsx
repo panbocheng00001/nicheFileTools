@@ -47,7 +47,7 @@ export default function ToolsIndexPage() {
     <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
       {/*bread crumbs*/}
       <nav aria-label="Breadcrumb" className="mb-8">
-        <ol className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-2 font-mono text-sm uppercase tracking-widest text-muted-foreground">
           <li>
             <Link href="/" className="transition-colors hover:text-primary">
               Home

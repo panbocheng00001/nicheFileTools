@@ -87,7 +87,7 @@ export function Footer() {
               Free, browser-based file converters. Your files are processed
               locally and never uploaded to a server.
             </p>
-            <span className="mt-4 inline-flex rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 font-mono text-[11px] font-medium text-primary">
+            <span className="mt-4 inline-flex rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 font-mono text-xs font-medium text-primary">
               v1.0.0
             </span>
           </div>
@@ -140,7 +140,7 @@ export function Footer() {
         </div>
 
         {/*Disclaimer*/}
-        <div className="mt-12 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 p-4 text-xs leading-relaxed text-muted-foreground">
+        <div className="mt-12 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 p-4 text-sm leading-relaxed text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <p>
             nichefiletools is provided &ldquo;as is&rdquo; without warranty.
@@ -151,7 +151,7 @@ export function Footer() {
 
         {/*Bottom copyright*/}
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 sm:flex-row">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
             © {new Date().getFullYear()} nichefiletools
           </p>
           <a
@@ -162,7 +162,7 @@ export function Footer() {
             title={`${BRAND} on GitHub — ${REPO_URL}`}
             className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
           >
-            <span className="font-mono text-xs uppercase tracking-widest">
+            <span className="font-mono text-sm uppercase tracking-widest">
               Open source
             </span>
             <svg

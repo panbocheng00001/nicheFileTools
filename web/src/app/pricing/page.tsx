@@ -48,10 +48,10 @@ export default function PricingPage() {
         <table className="w-full min-w-[520px] border-collapse text-left">
           <thead>
             <tr className="border-b border-border/60">
-              <th className="py-3 pr-4 font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <th className="py-3 pr-4 font-mono text-sm font-bold uppercase tracking-widest text-muted-foreground">
                 What&rsquo;s included
               </th>
-              <th className="px-4 py-3 font-mono text-xs font-bold uppercase tracking-widest text-primary">
+              <th className="px-4 py-3 font-mono text-sm font-bold uppercase tracking-widest text-primary">
                 Free
               </th>
             </tr>

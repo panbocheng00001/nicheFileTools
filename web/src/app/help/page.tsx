@@ -233,11 +233,16 @@ export default function HelpPage() {
               title="What you'll see"
               lead="The tool grid groups every converter by category; each guide explains the format, compares methods, and lists the exact limits."
             >
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <BrowserFrame
                   src="/help/tools-grid.png"
                   alt="Tool grid showing converters grouped by category with A/B/C class badges and a guide icon on each card"
-                  caption="Tool grid: format, class badge (A/B/C), and a guide button on every card."
+                  caption="Tool grid: every card shows the format and a guide icon."
+                />
+                <BrowserFrame
+                  src="/help/converter.png"
+                  alt="In-browser converter with file selector, supported formats, and a Convert button"
+                  caption="Converter page: drag or select a file, then hit Convert."
                 />
                 <BrowserFrame
                   src="/help/guide.png"
@@ -260,13 +265,13 @@ export default function HelpPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-muted/60">
                     <tr>
-                      <th className="px-4 py-3 font-mono text-xs font-bold uppercase tracking-widest text-primary">
+                      <th className="px-4 py-3 font-mono text-sm font-bold uppercase tracking-widest text-primary">
                         Feature
                       </th>
-                      <th className="px-4 py-3 font-mono text-xs font-bold uppercase tracking-widest text-primary">
+                      <th className="px-4 py-3 font-mono text-sm font-bold uppercase tracking-widest text-primary">
                         Web tool
                       </th>
-                      <th className="px-4 py-3 font-mono text-xs font-bold uppercase tracking-widest text-primary">
+                      <th className="px-4 py-3 font-mono text-sm font-bold uppercase tracking-widest text-primary">
                         Desktop app
                       </th>
                     </tr>
@@ -321,7 +326,7 @@ export default function HelpPage() {
                   return (
                     <div key={c.slug}>
                       <div className="flex items-center gap-3">
-                        <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-primary">
+                        <h3 className="font-mono text-sm font-bold uppercase tracking-widest text-primary">
                           {c.label}
                         </h3>
                         <span className="h-px flex-1 bg-border" />
@@ -389,13 +394,13 @@ export default function HelpPage() {
               <div className="space-y-2">
                 <Accordion title="The file won't open or says &ldquo;unsupported format&rdquo;">
                   Check that the extension matches the tool. Several formats look
-                  alike: <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.pfb</code> vs{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.pfa</code>,{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.pfm</code> is a metrics
-                  file that needs its <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.pfb</code>{" "}
-                  companion, and <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.raw</code>{" "}
+                  alike: <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">.pfb</code> vs{" "}
+                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">.pfa</code>,{" "}
+                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">.pfm</code> is a metrics
+                  file that needs its <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">.pfb</code>{" "}
+                  companion, and <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">.raw</code>{" "}
                   audio is a completely different thing from a{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.raw</code> disc image. If a
+                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">.raw</code> disc image. If a
                   tool asks for a companion file, provide it.
                 </Accordion>
                 <Accordion title="Conversion fails or produces a blank result">
@@ -596,7 +601,7 @@ function ToolRow({ tool }: { tool: ToolContent }) {
         <span className="block truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
           {tool.h1}
         </span>
-        <span className="mono-label mt-0.5 block text-xs">
+        <span className="mono-label mt-0.5 block text-sm">
           {tool.sourceExt} → {tool.targetExt}
         </span>
       </Link>
@@ -632,7 +637,7 @@ function BrowserFrame({
         <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
         <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
         <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-        <span className="ml-2 rounded bg-background/70 px-2 py-0.5 font-mono text-xs text-muted-foreground">
+        <span className="ml-2 rounded bg-background/70 px-2 py-0.5 font-mono text-sm text-muted-foreground">
           nichefiletools.com
         </span>
       </div>
@@ -644,7 +649,7 @@ function BrowserFrame({
           className="w-full transition-transform duration-500 group-hover:scale-[1.015]"
         />
       </div>
-      <figcaption className="border-t border-border bg-muted/40 px-4 py-2.5 text-xs leading-relaxed text-muted-foreground">
+      <figcaption className="border-t border-border bg-muted/40 px-4 py-2.5 text-sm leading-relaxed text-muted-foreground">
         {caption}
       </figcaption>
     </figure>
@@ -906,7 +911,7 @@ function SizeDiagram() {
       <div className="space-y-4">
         <div>
           <div className="mb-1.5 flex items-baseline justify-between">
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-sm font-semibold text-foreground">
               Web tool
             </span>
             <span className="mono-label">Per-tool cap</span>
@@ -918,7 +923,7 @@ function SizeDiagram() {
 
         <div>
           <div className="mb-1.5 flex items-baseline justify-between">
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-sm font-semibold text-foreground">
               Desktop app
             </span>
             <span className="mono-label">Unlimited</span>
@@ -929,7 +934,7 @@ function SizeDiagram() {
         </div>
       </div>
 
-      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
         Both run locally. The cap exists because the browser holds the whole file
         in memory; the desktop app streams from disk instead.
       </p>

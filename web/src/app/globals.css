@@ -177,7 +177,7 @@ The monospaced font carries the data/labels/breadcrumbs, and the glass mimic car
 
 /*=== SEO long text formatting (handwritten prose, not dependent on typography plug-in) ===*/
 .seo-prose {
-  @apply text-base leading-relaxed text-muted-foreground;
+  @apply text-[17px] leading-relaxed text-muted-foreground;
 }
 .seo-prose h2 {
   @apply mt-10 mb-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
@@ -207,5 +207,5 @@ The monospaced font carries the data/labels/breadcrumbs, and the glass mimic car
 
 /*Tools: Small labels with equal width (breadcrumbs/badges/meta)*/
 .mono-label {
-  @apply font-mono text-[11px] uppercase tracking-widest text-muted-foreground;
+  @apply font-mono text-xs uppercase tracking-widest text-muted-foreground;
 }

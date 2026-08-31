@@ -11,7 +11,7 @@ const card = "glass p-6 sm:p-8";
 export function Breadcrumbs({ tool }: { tool: ToolContent }) {
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
-      <ol className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-2 font-mono text-sm uppercase tracking-widest text-muted-foreground">
         <li>
           <Link href="/" className="transition-colors hover:text-primary">
             Home
@@ -36,7 +36,7 @@ export function Breadcrumbs({ tool }: { tool: ToolContent }) {
 function ClassBadge({ tool }: { tool: ToolContent }) {
   if (isDesktopLanding(tool)) {
     return (
-      <span className="inline-flex items-center rounded bg-destructive/20 px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-destructive">
+      <span className="inline-flex items-center rounded bg-destructive/20 px-1.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-destructive">
         Desktop app
       </span>
     );
@@ -50,7 +50,7 @@ function ClassBadge({ tool }: { tool: ToolContent }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider",
+        "inline-flex items-center rounded px-1.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider",
         b.cls,
       )}
     >
@@ -147,7 +147,7 @@ export function FaqSection({ tool }: { tool: ToolContent }) {
       <dl className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/50">
         {tool.faqs.map((f, i) => (
           <div key={i} className="grid grid-cols-[auto_1fr] gap-3 p-5">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-primary/10 font-mono text-xs font-bold text-primary">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-primary/10 font-mono text-sm font-bold text-primary">
               Q
             </span>
             <div>
@@ -181,7 +181,7 @@ export function GuideCard({ slug }: { slug: string }) {
         Methods compared, {isDesktopLanding(tool) ? "desktop steps" : "step-by-step"},
         and fixes for common errors.
       </p>
-      <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-primary">
+      <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-widest text-primary">
         Read guide
         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
       </span>

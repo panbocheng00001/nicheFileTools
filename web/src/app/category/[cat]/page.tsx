@@ -67,7 +67,7 @@ export default async function CategoryPage({ params }: Params) {
     <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
       {/*bread crumbs*/}
       <nav aria-label="Breadcrumb" className="mb-8">
-        <ol className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-2 font-mono text-sm uppercase tracking-widest text-muted-foreground">
           <li>
             <Link href="/" className="transition-colors hover:text-primary">
               Home
@@ -116,7 +116,7 @@ export default async function CategoryPage({ params }: Params) {
                     `Convert ${t.sourceFormat} to ${t.targetFormat} free.`}
                 </p>
                 <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
-                  <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-primary">
+                  <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-primary">
                     Class {t.className}
                   </span>
                   <span className="mono-label">

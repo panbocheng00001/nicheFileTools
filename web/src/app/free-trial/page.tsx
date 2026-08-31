@@ -80,7 +80,7 @@ export default function FreeTrialPage() {
         </p>
 
         <h2>The algorithm in 30 seconds</h2>
-        <pre className="overflow-x-auto rounded-lg border border-border bg-muted/30 p-4 font-mono text-xs leading-relaxed text-foreground"><code>{`// payload = "nft1:{slug}:{utcHourBucket}"
+        <pre className="overflow-x-auto rounded-lg border border-border bg-muted/30 p-4 font-mono text-sm leading-relaxed text-foreground"><code>{`// payload = "nft1:{slug}:{utcHourBucket}"
 // digest  = SHA-256(payload)
 // value   = big-endian uint40 from digest[0..5]
 // code    = base32(value), MSB first, "XXXX-XXXX"
@@ -105,7 +105,7 @@ export default function FreeTrialPage() {
                 <span className="font-medium text-foreground transition-colors group-hover:text-primary">
                   {t.name}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   {t.sourceFormat} → {t.targetFormat}
                 </span>
               </Link>
@@ -118,7 +118,7 @@ export default function FreeTrialPage() {
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
           <div>
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-foreground">
+            <div className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
               1 code
             </div>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -129,7 +129,7 @@ export default function FreeTrialPage() {
         <div className="flex items-start gap-3">
           <Code2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
           <div>
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-foreground">
+            <div className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
               1 tool
             </div>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -140,7 +140,7 @@ export default function FreeTrialPage() {
         <div className="flex items-start gap-3">
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
           <div>
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-foreground">
+            <div className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
               1 hour
             </div>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -174,7 +174,7 @@ export default function FreeTrialPage() {
         >
           Found a bug? Open an issue
         </a>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           Hosted at{" "}
           <a href={SITE} className="text-primary hover:opacity-80">
             {SITE.replace("https://", "")}

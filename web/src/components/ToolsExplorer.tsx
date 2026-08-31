@@ -130,8 +130,8 @@ export function ToolsExplorer({ tools, categories }: Props) {
               <X className="h-4 w-4" />
             </button>
           ) : (
-            <kbd className="hidden shrink-0 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-1 font-mono text-[11px] font-semibold text-muted-foreground sm:inline-flex">
-              <span className="text-xs">⌘</span>K
+            <kbd className="hidden shrink-0 items-center gap-0.5 rounded border border-border/60 bg-muted/50 px-1.5 py-1 font-mono text-xs font-semibold text-muted-foreground sm:inline-flex">
+              <span className="text-[13px]">⌘</span>K
             </kbd>
           )}
           {!isSearching && (
@@ -205,7 +205,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
               )}
             >
               All
-              <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/70">{total}</span>
+              <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground/70">{total}</span>
             </button>
             {grouped.map(({ cat, items }) => (
               <button
@@ -220,7 +220,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
                 )}
               >
                 {cat.label}
-                <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/70">{items.length}</span>
+                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground/70">{items.length}</span>
               </button>
             ))}
           </div>
@@ -267,7 +267,7 @@ export function ToolsExplorer({ tools, categories }: Props) {
                     <span className="mono-label col-span-6 sm:col-span-3">{t.sourceExt} → {t.targetExt}</span>
                     <span className="mono-label col-span-4 hidden sm:col-span-2 sm:block">{t.categoryLabel}</span>
                     <span className="col-span-2 justify-self-end">
-                      <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-primary">{t.className}</span>
+                      <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-primary">{t.className}</span>
                     </span>
                   </Link>
                   <Link

@@ -97,7 +97,7 @@ export default async function ConvertGuidePage({ params }: Params) {
         <article className="xl:col-span-8">
           {/*bread crumbs*/}
           <nav aria-label="Breadcrumb" className="mb-8">
-            <ol className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            <ol className="flex flex-wrap items-center gap-2 font-mono text-sm uppercase tracking-widest text-muted-foreground">
               <li>
                 <Link href="/" className="transition-colors hover:text-primary">
                   Home
@@ -150,7 +150,7 @@ export default async function ConvertGuidePage({ params }: Params) {
             <div className="-mx-2 overflow-x-auto px-2">
               <table className="w-full min-w-[560px] border-collapse text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border/60 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                  <tr className="border-b border-border/60 font-mono text-sm uppercase tracking-widest text-muted-foreground">
                     <th className="py-3 pr-4">Method</th>
                     <th className="px-3 py-3">Best for</th>
                     <th className="px-3 py-3">Price</th>

@@ -167,7 +167,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
             : " · not supported on the web — use the free desktop app"}
         </p>
         {needsSiblings && (
-          <p className="mt-3 max-w-md text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
             Uploading a bare <span className="font-semibold text-foreground">.opf</span>?
             Select it together with every file it references (hold Ctrl/Cmd to pick several) —
             an OPF is only a manifest and has no content by itself. Zipping them first also works.
