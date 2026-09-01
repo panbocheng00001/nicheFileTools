@@ -18,6 +18,7 @@ import {
 import { TOOLS, type ToolContent } from "@/lib/tools-data";
 import { CATEGORIES } from "@/lib/site";
 import { getGuide } from "@/lib/convert-content";
+import { ZoomableImage, type LightboxImage } from "@/components/Lightbox";
 
 export const metadata: Metadata = {
   title: "Help Center — nichefiletools",
@@ -65,6 +66,28 @@ const jsonLd = {
     },
   ],
 };
+
+/** Interface-tour screenshots: opened as one lightbox group so they can be paged through. */
+const TOUR_SHOTS: LightboxImage[] = [
+  {
+    src: "/help/file-converter-tools-grid.png",
+    alt: "Tool grid showing converters grouped by category with A/B/C class badges and a guide icon on each card",
+    caption:
+      "Tool grid: every card shows the format pair, its class badge, and a guide icon in the top-right corner.",
+  },
+  {
+    src: "/help/exr-to-png-converter-interface.png",
+    alt: "In-browser converter with file selector, supported formats, and a Convert button",
+    caption:
+      "Converter page: drag or select a file, then hit Convert. The unlock code panel appears only for desktop-capable formats.",
+  },
+  {
+    src: "/help/exr-to-png-conversion-guide.png",
+    alt: "The EXR to PNG conversion guide with methods table and step-by-step instructions",
+    caption:
+      "Conversion guide: what the format is, methods compared, known limits, and click-by-click instructions.",
+  },
+];
 
 const TOC = [
   { id: "how-it-works", label: "How it works" },
@@ -178,7 +201,7 @@ export default function HelpPage() {
                 </ol>
 
                 <BrowserFrame
-                  src="/help/converter.png"
+                  src="/help/exr-to-png-converter-interface.png"
                   alt="The EXR to PNG converter showing the drag-and-drop area and the desktop unlock code panel"
                   caption="The converter: drop a file, convert locally, copy the unlock code if you need the desktop app."
                 />
@@ -234,22 +257,20 @@ export default function HelpPage() {
               lead="The tool grid groups every converter by category; each guide explains the format, compares methods, and lists the exact limits."
             >
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <BrowserFrame
-                  src="/help/tools-grid.png"
-                  alt="Tool grid showing converters grouped by category with A/B/C class badges and a guide icon on each card"
-                  caption="Tool grid: every card shows the format and a guide icon."
-                />
-                <BrowserFrame
-                  src="/help/converter.png"
-                  alt="In-browser converter with file selector, supported formats, and a Convert button"
-                  caption="Converter page: drag or select a file, then hit Convert."
-                />
-                <BrowserFrame
-                  src="/help/guide.png"
-                  alt="The EXR to PNG conversion guide with methods table and step-by-step instructions"
-                  caption="Conversion guide: background, methods compared, limits, and instructions."
-                />
+                {TOUR_SHOTS.map((shot) => (
+                  <BrowserFrame
+                    key={shot.src}
+                    src={shot.src}
+                    alt={shot.alt}
+                    caption={shot.caption ?? ""}
+                    group={TOUR_SHOTS}
+                  />
+                ))}
               </div>
+              <p className="mt-4 font-mono text-sm text-muted-foreground/70">
+                Tip: click any screenshot to open it full size — then scroll to
+                zoom, drag to pan, or use the arrow keys to move between shots.
+              </p>
             </Section>
 
             {/* ---------- WEB VS DESKTOP ---------- */}
@@ -427,7 +448,14 @@ export default function HelpPage() {
                   Calibre, FreeCAD, or FontForge. Install it, restart the desktop
                   app, and retry. If you installed Python but not FontForge, the
                   font tools will still ask for FontForge: its Python module
-                  ships with the FontForge installer, not with pip on Windows.
+                  ships with the FontForge installer, not with pip on Windows.{" "}
+                  <Link
+                    href="/help/engines"
+                    className="text-primary underline underline-offset-4 hover:opacity-80"
+                  >
+                    Illustrated install steps
+                  </Link>{" "}
+                  for every engine.
                 </Accordion>
                 <Accordion title="Where is my unlock code?">
                   Each tool displays a free hourly code on its web page. Copy it
@@ -626,10 +654,14 @@ function BrowserFrame({
   src,
   alt,
   caption,
+  group,
+  eager = false,
 }: {
   src: string;
   alt: string;
   caption: string;
+  group?: LightboxImage[];
+  eager?: boolean;
 }) {
   return (
     <figure className="group overflow-hidden rounded-xl border border-border bg-muted/40 shadow-sm">
@@ -642,11 +674,10 @@ function BrowserFrame({
         </span>
       </div>
       <div className="overflow-hidden bg-background">
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          className="w-full transition-transform duration-500 group-hover:scale-[1.015]"
+        <ZoomableImage
+          image={{ src, alt, caption }}
+          group={group}
+          eager={eager}
         />
       </div>
       <figcaption className="border-t border-border bg-muted/40 px-4 py-2.5 text-sm leading-relaxed text-muted-foreground">

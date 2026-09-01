@@ -49,20 +49,21 @@ def make_glb() -> bytes:
 
 
 def make_eot(sfnt: bytes) -> bytes:
-    """最小 EOT：固定 78 字节头（MagicNumber@40）+ FamilyNameSize(2)@76 + UTF16 名称 + 字体数据"""
+    """最小 EOT（按规范）：MagicNumber 0x504C @ offset 34；Charset/Italic 各 1 字节；
+    固定前缀 80 字节后扫描 sfnt 签名，故 sfnt 须落在 offset ≥80 处。"""
     name = "TestFont".encode("utf-16-le")
-    total = 78 + len(name) + len(sfnt)
-    h = struct.pack("<IIII", total, len(sfnt), 0x00010001, 0)      # EOTSize/FontDataSize/Version/Flags
-    h += b"\x00" * 10                                               # PANOSE @16
-    h += struct.pack("<I", 0)                                       # Charset @26
-    h += struct.pack("<I", 0)                                       # Italic @30
-    h += struct.pack("<I", 400)                                     # Weight @34
-    h += struct.pack("<H", 0) + struct.pack("<H", 0x504C)           # fsType @38 + MagicNumber @40
-    h += b"\x00" * 16 + b"\x00" * 8 + b"\x00" * 4 + b"\x00" * 4     # UnicodeRange/CodePage/Checksum/Reserved @42-73
-    h += b"\x00\x00"                                                # Padding1 @74
-    h += struct.pack("<H", len(name))                               # FamilyNameSize @76
-    assert len(h) == 78, len(h)
-    return h + name + sfnt
+    total = 86 + len(sfnt)
+    h = struct.pack("<IIII", total, len(sfnt), 0x00010001, 0)      # EOTSize/FontDataSize/Version/Flags @0-15
+    h += b"\x00" * 10                                               # FontPANOSE @16-25
+    h += struct.pack("<BB", 0, 0)                                   # Charset @26, Italic @27
+    h += struct.pack("<I", 400)                                     # Weight @28-31
+    h += struct.pack("<HH", 0, 0x504C)                              # fsType @32-33, MagicNumber @34-35
+    h += b"\x00" * 16                                               # UnicodeRange @36-51
+    h += b"\x00" * 8                                                # CodePageRange @52-59
+    h += struct.pack("<II", 0, 0)                                   # ChecksumAdjustment @60-63, Reserved @64-67
+    h += struct.pack("<H", len(name))                               # FamilyNameSize @68-69
+    h += name                                                       # FamilyName @70-85
+    return h + sfnt                                                 # sfnt @86, scanned from offset 80
 
 
 def make_opf_zip() -> bytes:
@@ -94,7 +95,9 @@ def make_opf_zip() -> bytes:
 
 def sav_var(name: str, vtype: int, has_label=0) -> bytes:
     nm = name.encode().ljust(8, b" ")
-    return struct.pack("<iiii", 2, vtype, has_label, 0) + b"\x00" * 16 + bytes([len(name)]) + nm
+    # SAV variable record: rec_type(4) type(4) has_label(4) n_missing(4)
+    # print_format(4) write_format(4) name(8, fixed-width space-padded, NO length prefix)
+    return struct.pack("<iiii", 2, vtype, has_label, 0) + struct.pack("<ii", 0, 0) + nm
 
 
 def make_sav(compressed: int, zlib_wrap=False) -> bytes:
@@ -226,7 +229,7 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/tools/opf-to-epub", wait_until="networkidle")
     page.locator('input[type="file"]').set_input_files(str(badzip))
     page.get_by_role("button", name="Convert").click()
-    page.wait_for_selector("text=missing from the upload", timeout=10000)
+    page.wait_for_selector("text=were not uploaded", timeout=10000)
     check("[opf-epub] 缺失资源报错并列举", True)
 
     # ---------- 5) SAV → CSV（3 种压缩变体，期望 CSV 相同） ----------

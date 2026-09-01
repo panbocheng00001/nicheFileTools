@@ -209,3 +209,30 @@ The monospaced font carries the data/labels/breadcrumbs, and the glass mimic car
 .mono-label {
   @apply font-mono text-xs uppercase tracking-widest text-muted-foreground;
 }
+
+/*Help center image lightbox: overlay + image entrance animation*/
+@keyframes nft-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes nft-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.nft-fade-in {
+  animation: nft-fade-in 160ms ease-out both;
+}
+.nft-fade-in .nft-lightbox-img {
+  transform-origin: center;
+  animation: nft-zoom-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}

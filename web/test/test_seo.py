@@ -83,7 +83,11 @@ with sync_playwright() as p:
     # 8) free-trial
     page.goto(BASE + "/free-trial", wait_until="networkidle")
     page.wait_for_timeout(800)
-    check("[free-trial] 说明页无兑换表单", page.locator("input").count() == 0)
+    # 断言无兑换类输入框（text/password/submit）；全站头部工具搜索框为 type="search"，不在禁止范围
+    redeem_inputs = page.locator(
+        'input[type="text"], input[type="password"], input[type="submit"], button[type="submit"]'
+    ).count()
+    check("[free-trial] 说明页无兑换表单", redeem_inputs == 0, redeem_inputs)
     page.goto(BASE + "/free-trial?token=FAKE123", wait_until="networkidle")
     can = page.locator('link[rel="canonical"]').get_attribute("href")
     check("[free-trial] 带参 canonical 归一", can == f"{SITE}/free-trial", can)

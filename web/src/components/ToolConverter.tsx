@@ -6,6 +6,7 @@ import { Upload, RotateCcw, AlertTriangle } from "lucide-react";
 import type { ToolContent } from "@/lib/tools-data";
 import { getConverter } from "@/lib/converters/registry";
 import { DesktopRequiredError } from "@/lib/converters/interfaces";
+import { runConversion } from "@/lib/converters/worker-client";
 import { cn } from "@/lib/utils";
 
 interface Result {
@@ -78,13 +79,16 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
     setFile(f);
   }
 
-  async function runConversion() {
+  async function startConversion() {
     if (!file || !converter) return;
     setConverting(true);
     setError(null);
     setDesktopMessage(null);
     try {
-      const res = await converter.convert({
+      // Heavy DOM-free converters execute inside a dedicated Web Worker
+      // (SEO spec appendix B #15 — INP protection); FFmpeg-based tools stay
+      // here because their WASM core already runs in @ffmpeg's own worker.
+      const res = await runConversion(tool.slug, converter, {
         inputFile: file,
         outputFormat: tool.targetExt,
         params,
@@ -257,7 +261,7 @@ export default function ToolConverter({ tool }: { tool: ToolContent }) {
           <button
             type="button"
             disabled={converting}
-            onClick={runConversion}
+            onClick={startConversion}
             className="shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_18px_rgba(74,222,128,0.3)] disabled:opacity-60"
           >
             {converting ? "Converting…" : "Convert"}

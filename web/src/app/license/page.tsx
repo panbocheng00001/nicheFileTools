@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DocPage } from "@/components/DocPage";
 
 export const metadata: Metadata = {
-  title: "Unlock Codes & Activation",
+  title: "License: Unlock Codes & Activation",
   description:
     "How the nichefiletools desktop unlock works: copy the hourly code, paste to activate, fully offline. No account, no device binding. Fixes for expired codes.",
   alternates: { canonical: "/license" },

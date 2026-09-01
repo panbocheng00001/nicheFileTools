@@ -1,14 +1,43 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, MonitorSmartphone, ArrowRight, Wrench } from "lucide-react";
-import { CONVERT_GUIDES, getGuide } from "@/lib/convert-content";
+import fs from "node:fs";
+import path from "node:path";
+import { BookOpen, MonitorSmartphone, ArrowRight, Wrench, ExternalLink } from "lucide-react";
+import {
+  CONVERT_GUIDES,
+  getGuide,
+  type GuideScreenshot,
+} from "@/lib/convert-content";
 import { getTool, hasWebConverter } from "@/lib/tools-data";
-import { SITE } from "@/lib/site";
+import { SITE, REPO_URL } from "@/lib/site";
 import { Share } from "@/components/Share";
 import { DesktopCodeCard } from "@/components/DesktopCodeCard";
 
 type Params = { params: Promise<{ slug: string }> };
+
+/**
+ * Spec §三.2/§四: screenshots render only when the file actually exists in
+ * public/convert/[slug]/. WorkBuddy captures land there — spec v2.2 §三.2
+ * relaxed: localhost captures ARE shipped (the in-browser converter UI
+ * renders identically on a local production build and on the live domain,
+ * and no localhost text appears in any captured frame), so the page lights
+ * up progressively as the pipeline produces images.
+ */
+function existingShots(
+  slug: string,
+  shots: GuideScreenshot[] | undefined,
+): GuideScreenshot[] {
+  if (!shots?.length) return [];
+  const dir = path.join(process.cwd(), "public", "convert", slug);
+  return shots.filter((s) => fs.existsSync(path.join(dir, s.file)));
+}
+
+function updatedLabel(updated: string | undefined): string {
+  if (!updated) return "Aug 2026";
+  const d = new Date(`${updated}T00:00:00Z`);
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+}
 
 export function generateStaticParams() {
   return CONVERT_GUIDES.map((g) => ({ slug: g.slug }));
@@ -34,9 +63,13 @@ export default async function ConvertGuidePage({ params }: Params) {
   if (!guide || !tool) notFound();
   // Claim-consistency (SEO spec v1.3 §1.2): degraded tools have no web page CTA.
   const hasWebTool = hasWebConverter(tool);
+  const shots = existingShots(guide.slug, guide.screenshots);
+  const stepShots = (n: number) => shots.filter((s) => s.step === n);
+  const sectionShots = shots.filter((s) => !s.step);
 
-  //Schema: HowTo (real steps) + Article (author=Organization, not fictional real people) + BreadcrumbList
-  const jsonLd = [
+  //Schema: HowTo (real steps) + Article (author=Organization, not fictional real people)
+  //+ FAQPage (page-level, matches visible FAQ section) + BreadcrumbList
+  const jsonLd: Record<string, unknown>[] = [
     {
       "@context": "https://schema.org",
       "@type": "HowTo",
@@ -57,7 +90,9 @@ export default async function ConvertGuidePage({ params }: Params) {
       "@type": "Article",
       headline: `How to Convert ${tool.sourceFormat} to ${tool.targetFormat}: Complete Guide`,
       description: guide.metaDescription,
-      dateModified: "2026-08-26",
+      // §八.4: dateModified follows the guide's `updated` field, not a
+      // hardcoded constant — refreshes must surface here + in sitemap lastmod.
+      dateModified: guide.updated ?? "2026-08-26",
       author: {
         "@type": "Organization",
         name: "nichefiletools",
@@ -69,7 +104,30 @@ export default async function ConvertGuidePage({ params }: Params) {
         url: SITE,
       },
       mainEntityOfPage: `${SITE}/convert/${guide.slug}`,
+      // ImageObject: only key shots that actually exist on disk (spec: 重点图，
+      // 非全量截图)
+      ...(shots.length > 0 && {
+        image: shots.slice(0, 2).map((s) => ({
+          "@type": "ImageObject",
+          contentUrl: `${SITE}/convert/${guide.slug}/${s.file}`,
+          name: s.alt,
+          caption: s.alt,
+        })),
+      }),
     },
+    ...(guide.faqs?.length
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: guide.faqs.map((f) => ({
+              "@type": "Question",
+              name: f.question,
+              acceptedAnswer: { "@type": "Answer", text: f.answer },
+            })),
+          },
+        ]
+      : []),
     {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -121,7 +179,7 @@ export default async function ConvertGuidePage({ params }: Params) {
 
           <header className="mb-10">
             <p className="mono-label">
-              Complete guide · Updated Aug 2026 · {tool.sourceExt} → {tool.targetExt}
+              Complete guide · Updated {updatedLabel(guide.updated)} · {tool.sourceExt} → {tool.targetExt}
             </p>
             <h1 className="mt-3 text-balance text-4xl font-extrabold tracking-tighter text-foreground sm:text-5xl">
               How to Convert {tool.sourceFormat} to{" "}
@@ -138,8 +196,11 @@ export default async function ConvertGuidePage({ params }: Params) {
           />
 
           <div className="seo-prose">
-            {/*Opening conclusion (AI Overview grab bit)*/}
-            <p>
+            {/*Self-contained AI-citable answer (spec §2.11/§9.5: 40-60
+                words, quotable out of context for AI Overview / Copilot /
+                ChatGPT) — visually distinct block so crawlers & users can
+                isolate it as the page's TL;DR.*/}
+            <p className="border-l-2 border-primary/60 pl-4 text-base leading-relaxed text-foreground">
               <strong>Quick answer:</strong> {guide.quickAnswer}
             </p>
 
@@ -204,9 +265,21 @@ export default async function ConvertGuidePage({ params }: Params) {
                 `Step-by-Step: ${tool.sourceFormat} to ${tool.targetFormat} on Desktop`}
             </h2>
             <ol>
-              {guide.desktopSteps.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
+              {guide.desktopSteps.map((s, i) => {
+                const stepImgs = stepShots(i + 1);
+                return (
+                  <li key={s} className="space-y-2">
+                    <span>{s}</span>
+                    {stepImgs.length > 0 && (
+                      <div className="mt-2 space-y-3">
+                        {stepImgs.map((sh) => (
+                          <GuideShot key={sh.file} slug={guide.slug} shot={sh} />
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ol>
             {guide.desktopNote && <p>{guide.desktopNote}</p>}
             <p>
@@ -227,6 +300,32 @@ export default async function ConvertGuidePage({ params }: Params) {
               </div>
             ))}
 
+            {/*Page-level FAQ (visible content matches FAQPage schema; spec §3.2)*/}
+            {guide.faqs?.length ? (
+              <>
+                <h2>Frequently Asked Questions</h2>
+                {guide.faqs.map((f) => (
+                  <div key={f.question}>
+                    <h3>{f.question}</h3>
+                    <p>{f.answer}</p>
+                  </div>
+                ))}
+              </>
+            ) : null}
+
+            {/*Page-level overview / result shots (spec §四: 截图周边上下文
+                与图片主题一致强化相关性). These are screenshots without a
+                step number — results, batch overviews, side-by-side
+                comparisons. They render only when the file exists on disk,
+                same fs-guard as step shots.*/}
+            {sectionShots.length > 0 && (
+              <div className="space-y-3">
+                {sectionShots.map((sh) => (
+                  <GuideShot key={sh.file} slug={guide.slug} shot={sh} />
+                ))}
+              </div>
+            )}
+
             {/*in conclusion*/}
             <h2>Conclusion</h2>
             <p>{guide.conclusion}</p>
@@ -241,6 +340,40 @@ export default async function ConvertGuidePage({ params }: Params) {
               <Link href="/download">download the desktop app</Link> for
               unlimited sizes and batch jobs.
             </p>
+
+            {/*References — entity SEO: real REPO_URL anchor link (spec v2.2,
+                feeds Organization.sameAs citation density)*/}
+            <h2>References</h2>
+            <ul>
+              <li>
+                <a
+                  href={REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  nichefiletools on GitHub
+                  <ExternalLink className="ml-1 inline h-3.5 w-3.5" />
+                </a>{" "}
+                — open-source converter implementations, engine bindings, and
+                the hourly unlock-code algorithm.
+              </li>
+            </ul>
+
+            {/*Compliance footer trio (spec §3 通用要求 3): updated date +
+                reviewer + screenshots provenance. The screenshots line only
+                renders when shots actually exist on this page.*/}
+            <footer className="mt-10 border-t border-border pt-5 text-sm leading-relaxed text-muted-foreground">
+              <p>
+                Last updated {updatedLabel(guide.updated)} · Reviewed by the
+                nichefiletools engineering team.
+              </p>
+              {shots.length > 0 && (
+                <p>
+                  Screenshots from actual software operation on
+                  nichefiletools.com and the nichefiletools desktop app.
+                </p>
+              )}
+            </footer>
           </div>
         </article>
 
@@ -335,5 +468,34 @@ export default async function ConvertGuidePage({ params }: Params) {
         />
       ))}
     </main>
+  );
+}
+
+/**
+ * Annotated step screenshot (spec §四): lossless WebP, ~1200px wide, lazy
+ * loaded so Core Web Vitals stay unaffected. Rendered only when the file
+ * exists (see existingShots).
+ */
+function GuideShot({
+  slug,
+  shot,
+}: {
+  slug: string;
+  shot: GuideScreenshot;
+}) {
+  return (
+    <figure className="my-4">
+      <img
+        src={`/convert/${slug}/${shot.file}`}
+        alt={shot.alt}
+        title={shot.alt}
+        loading="lazy"
+        width={1200}
+        className="w-full rounded-xl border border-border"
+      />
+      <figcaption className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+        {shot.alt}
+      </figcaption>
+    </figure>
   );
 }

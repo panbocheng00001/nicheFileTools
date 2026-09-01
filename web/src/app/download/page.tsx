@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check, Download, Cpu, Layers, HardDrive } from "lucide-react";
+import { ArrowRight, Check, Download, Cpu, Layers, HardDrive } from "lucide-react";
 import { REPO_NAME, REPO_OWNER, REPO_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -193,7 +193,44 @@ export default function DownloadPage() {
           <li>4 GB RAM (8 GB for multi-GB disc images)</li>
           <li>~50 MB free disk space for the app</li>
           <li>No internet connection required after install</li>
+          <li className="sm:col-span-2">
+            Optional free engines power seven tools (FFmpeg, Blender, Calibre,
+            FreeCAD, Python) —{" "}
+            <a
+              href="/help/engines"
+              className="font-medium text-primary underline underline-offset-4 transition-opacity hover:opacity-80"
+            >
+              read the illustrated install guide
+            </a>
+          </li>
         </ul>
+      </section>
+
+      {/*Third-party engine install guide — entry next to the download CTA*/}
+      <section className="glass-panel mt-6 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+          <h2 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
+            Need FFmpeg, Blender, Calibre or FreeCAD?
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Seven desktop tools borrow power from free open-source engines.
+            Install them in one command — the step-by-step{" "}
+            <a
+              href="/help/engines"
+              className="font-medium text-primary underline underline-offset-4 transition-opacity hover:opacity-80"
+            >
+              engine install guide
+            </a>{" "}
+            covers Windows and macOS, with screenshots, verification commands
+            and troubleshooting.
+          </p>
+        </div>
+        <a
+          href="/help/engines"
+          className="mono-label inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background/60 px-4 py-2.5 text-foreground backdrop-blur transition-colors hover:border-primary/50 hover:text-primary"
+        >
+          View the guide <ArrowRight className="h-3.5 w-3.5" />
+        </a>
       </section>
 
       {/*Security & Privacy — §2.3 Security & Privacy (Trust Oriented)*/}

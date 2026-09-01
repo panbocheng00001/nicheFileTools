@@ -190,7 +190,7 @@ export const TOOLS: ToolContent[] = [
     targetExt: ".png",
     title: "PVR to PNG Converter – Free Online",
     metaDescription:
-      "Decode uncompressed PVR v3 (RGBA8888/RGB888/L8) to PNG free online. PVRTC/ETC/ASTC need re-export or desktop. No upload.",
+      "Decode uncompressed PVR v3 (RGBA8888/RGB888/L8) to PNG free online, up to 100MB. PVRTC/ETC/ASTC need re-export or desktop. No upload.",
     h1: "PVR to PNG Converter",
     webMaxFilePc: 100 * MB,
     webMaxFileMobile: 30 * MB,
@@ -325,7 +325,7 @@ export const TOOLS: ToolContent[] = [
       {
         question: "Can I include animations in the exported GLB?",
         answer:
-          "Yes. If the BLEND file contains Action NLA strips (object transform animations: position/rotation/scale), this tool exports them as glTF animations. Full support for shape keys and skeletal animation depends on the WASM parser's coverage; the desktop app via Blender's Python API guarantees complete animation export.",
+          "Yes. If the BLEND file contains Action NLA strips (object transform animations: position/rotation/scale), this tool exports them as glTF animations. Shape keys and armature rigs pass through as well — the export runs on Blender's own Python API, the same engine as File → Export → glTF 2.0.",
       },
       {
         question: "Why is there no browser converter for BLEND?",
@@ -496,7 +496,7 @@ export const TOOLS: ToolContent[] = [
     targetExt: ".ttf",
     title: "EOT to TTF Converter – Free Online",
     metaDescription:
-      "Convert legacy Microsoft EOT web fonts back to TTF/OTF free online. Instant browser-based extraction. No upload. Auto-detects TrueType vs OpenType.",
+      "Convert legacy Microsoft EOT web fonts back to TTF/OTF free online, up to 10MB. Browser-based, no upload. Auto-detects TrueType vs OpenType.",
     h1: "EOT to TTF Converter",
     webMaxFilePc: 10 * MB,
     webMaxFileMobile: 5 * MB,
@@ -781,7 +781,7 @@ export const TOOLS: ToolContent[] = [
     extraSourceExts: [".gsmcodec"],
     title: "GSM to WAV Converter – Free Online",
     metaDescription:
-      "Decode GSM 06.10 compressed audio to WAV (PCM) free online. Browser-based, no upload. Converts voicemail, telephony recordings instantly.",
+      "Decode GSM 06.10 compressed audio to WAV (PCM) free online, up to 500MB. Browser-based, no upload. Converts voicemail, telephony recordings instantly.",
     h1: "GSM to WAV Converter",
     webMaxFilePc: 500 * MB,
     webMaxFileMobile: 100 * MB,

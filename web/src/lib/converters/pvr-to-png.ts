@@ -6,6 +6,7 @@ import {
   defaultValidate,
   DesktopRequiredError,
 } from "./interfaces";
+import UPNG from "upng-js";
 
 // PVR (PowerVR Texture) v3 decoder.
 //(Technical specification §4.3.1 names pvr-texture-decoder-wasm; here we ship a self-contained
@@ -107,23 +108,26 @@ export class PvrToPngConverter implements IConverter {
   }
 }
 
-async function rgbaToPngBlob(
+/**
+ * PNG encode via upng-js (pure JS) instead of a 2D canvas. The canvas path
+ * tied this converter to the DOM, which blocks running it inside a Web
+ * Worker (SEO spec appendix B #15: heavy conversion kernels must not block
+ * the main thread / INP). forbidPlte=true keeps truecolor+alpha output —
+ * without it UPNG silently downgrades <=256-colour images to an indexed
+ * palette.
+ */
+function rgbaToPngBlob(
   rgba: Uint8ClampedArray,
   w: number,
   h: number,
-): Promise<Blob> {
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D context unavailable");
-  const img = ctx.createImageData(w, h);
-  img.data.set(rgba);
-  ctx.putImageData(img, 0, 0);
-  return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error("PNG encoding failed"))),
-      "image/png",
-    );
-  });
+): Blob {
+  const png = UPNG.encode(
+    [rgba as unknown as Uint8Array],
+    w,
+    h,
+    0,
+    undefined,
+    true,
+  ) as unknown as Uint8Array;
+  return new Blob([png as unknown as BlobPart], { type: "image/png" });
 }

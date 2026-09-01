@@ -14,6 +14,14 @@ export interface ConvertMethod {
   notes: string;
 }
 
+/** §3.2 实操截图：一张图挂在某一 tutorial step 上（step 省略表示全篇通用） */
+export interface GuideScreenshot {
+  /** 文件名，位于 /public/guides/ 下 */
+  file: string;
+  alt: string;
+  step?: number;
+}
+
 export interface ConvertGuide {
   slug: string;
   title: string; //≤60 characters (including brand template suffix)
@@ -35,6 +43,8 @@ export interface ConvertGuide {
   faqs?: { question: string; answer: string }[];
   /** §7.1 最后更新日期（页脚标注 + Article dateModified） */
   updated?: string;
+  /** §三.2 实操截图清单（5-8 张/篇，按步骤挂载） */
+  screenshots?: GuideScreenshot[];
   conclusion: string;
 }
 
@@ -56,7 +66,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         bestFor: "Single books, batches, and large libraries",
         price: "Free (hourly unlock code)",
         limit: "No file-size limit",
-        notes: "Native processing on your machine — the book is never uploaded. Rebuilds the KFX fragment structure into a standard EPUB package with chapter order and table of contents intact.",
+        notes: "Rebuilds the fragmented KFX structure into a standard EPUB package — chapter order and table of contents intact — while your library stays on your own disk the entire time.",
       },
       {
         name: "Calibre + KFX Input plugin",
@@ -67,8 +77,8 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     desktopSteps: [
-      "Download and launch the free nichefiletools desktop app.",
-      "Pick KFX to EPUB from the tool list in the sidebar.",
+      "Install the free nichefiletools desktop app on Windows or macOS and launch it — KFX decoding rides on a free Calibre engine, and the app tells you if that's missing.",
+      "Open KFX to EPUB from the sidebar tool list.",
       "Select your .kfx file and choose where to save the .epub output.",
       "Click Convert — the app reports progress and writes the EPUB next to your chosen path.",
     ],
@@ -90,6 +100,26 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "For one DRM-free book, copy the free hourly code from the KFX to EPUB tool page, paste it in the desktop app, and convert. For a whole shelf, batch mode saves an evening of dragging files — and Calibre users get the same result with the KFX Input plugin.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Why does the desktop app ask for an hourly unlock code?",
+        answer:
+          "It's a free throttle against abuse, not a paywall: every tool page publishes a fresh code each hour, you paste it once, and the tool stays unlocked for that hour. Convert as many files as you like — codes are always free and there's no account or payment.",
+      },
+      {
+        question: "I bought a KFX book on Amazon — can I convert it to EPUB?",
+        answer:
+          "Only if it's DRM-free. Amazon applies DRM to most purchased KFX titles, and no legitimate tool — ours included — can remove it. Personal documents you uploaded, manuscripts you exported, or public-domain books are DRM-free and convert cleanly.",
+      },
+    ],
+    screenshots: [
+      { file: "kfx-to-epub-hourly-unlock-code.webp", alt: "The free hourly unlock code published on the KFX to EPUB tool page" },
+      { file: "kfx-to-epub-desktop-app-install.webp", alt: "Installing the free nichefiletools desktop app on Windows", step: 1 },
+      { file: "kfx-to-epub-tool-sidebar.webp", alt: "Selecting KFX to EPUB from the desktop app sidebar tool list", step: 2 },
+      { file: "kfx-to-epub-file-pick.webp", alt: "Picking a DRM-free .kfx file for conversion", step: 3 },
+      { file: "kfx-to-epub-convert-progress.webp", alt: "Conversion progress as the fragmented KFX structure rebuilds into an EPUB package", step: 4 },
+    ],
   },
   {
     slug: "prt-to-stl",
@@ -122,13 +152,13 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         bestFor: "Understanding the limit",
         price: "—",
         limit: "PRT is PTC's closed native format",
-        notes: "No third-party geometry kernel — browser or desktop — parses PRT directly, and any site claiming to is overselling. The STEP export from Creo is lossless for geometry, and everything downstream works on the STEP file.",
+        notes: "No third-party geometry kernel — browser or desktop — parses PRT directly; sites that advertise direct PRT upload are quietly running a STEP bridge like this one. The STEP export from Creo is lossless for geometry, and everything downstream works on the STEP file.",
       },
     ],
     desktopSteps: [
       "In Creo, export your part: File → Save a Copy → STEP AP214 (.stp).",
-      "Download and launch the free nichefiletools desktop app.",
-      "Pick STEP to STL from the tool list in the sidebar.",
+      "Grab the free nichefiletools desktop app — its tessellation kernel (FreeCAD/OpenCASCADE) installs separately, and the app links you to it on first run.",
+      "In the app's sidebar, choose STEP to STL.",
       "Select the exported .stp file and choose the output .stl location.",
       "Click Convert — tessellation of complex parts can take 10–30 seconds; the app shows progress while it meshes.",
     ],
@@ -148,6 +178,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "Export STEP once from Creo, and the desktop app turns it into print-ready STL in seconds — production batches included. Creo users can also write STL directly at Save a Copy when a specific tolerance is needed.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Why STEP AP214 instead of AP203 or AP242?",
+        answer:
+          "AP214 is Creo's default export profile and carries everything STL needs. AP242 works identically; AP203 also tessellates fine but drops colors, which STL can't hold anyway. Any of the three converts.",
+      },
+      {
+        question: "Binary or ASCII STL for printing?",
+        answer:
+          "Binary — roughly 6× smaller with identical geometry, and every slicer reads it. ASCII only helps if you plan to hand-read the triangle list.",
+      },
+    ],
+    screenshots: [
+      { file: "prt-to-stl-creo-step-export.webp", alt: "Creo's Save a Copy dialog exporting a PRT part as STEP AP214", step: 1 },
+      { file: "prt-to-stl-desktop-app-freecad-check.webp", alt: "The nichefiletools desktop app checking for the FreeCAD engine on launch", step: 2 },
+      { file: "prt-to-stl-tool-selected.webp", alt: "STEP to STL selected in the desktop app sidebar for PRT to STL conversion", step: 3 },
+      { file: "prt-to-stl-stp-file-chosen.webp", alt: "The exported .stp CAD file loaded into the STEP to STL tool", step: 4 },
+      { file: "prt-to-stl-tessellation-progress.webp", alt: "Tessellation progress as the PRT-derived geometry meshes to STL", step: 5 },
+      { file: "prt-to-stl-stl-in-slicer.webp", alt: "The finished STL from the PRT part opened in a slicer for 3D printing" },
+    ],
   },
   {
     slug: "pvr-to-png",
@@ -204,7 +255,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "For inspecting one texture, the online decoder is instant. Modders and devs recovering a full asset set should use desktop batch mode — the hourly unlock code covers the whole queue.",
+      "Single texture? The browser decoder answers immediately. Recovering a full character set is a desktop batch job, and one hourly code unlocks the entire queue.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "How do I tell which PVR variant I have before uploading?",
+        answer:
+          "Upload it — rejection is instant and names the problem. Or check the pixel-format field at byte 12 of the PVR v3 header in a hex editor: low values are uncompressed layouts, while PVRTC/ETC/ASTC codes mean the file needs a re-export or PVRTexTool.",
+      },
+      {
+        question: "Will the mipmap chain survive?",
+        answer:
+          "Only the largest level exports — the full-resolution image, which is what inspection and asset recovery almost always need. The smaller mip levels are downscaled copies of it by definition.",
+      },
+    ],
+    screenshots: [
+      { file: "pvr-to-png-online-converter-upload.webp", alt: "Uploading a single PVR texture to the online PVR to PNG converter" },
+      { file: "pvr-to-png-desktop-app-launch.webp", alt: "Launching the nichefiletools desktop app for PVR to PNG batch conversion", step: 1 },
+      { file: "pvr-to-png-tool-selected.webp", alt: "PVR to PNG highlighted in the desktop converter list", step: 2 },
+      { file: "pvr-to-png-texture-folder-batch.webp", alt: "A folder of game PVR textures queued in the desktop batch mode", step: 3 },
+      { file: "pvr-to-png-png-output.webp", alt: "Decoded PNG textures named after their source PVR files", step: 4 },
+    ],
   },
   {
     slug: "raw-to-iso",
@@ -263,7 +334,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "RAW to ISO is inherently a desktop job, so keep the unlock flow simple: open the app, pick the tool, paste the current hourly code from its page, and convert — codes stay free and refresh every hour.",
+      "No browser will ever do this one — the desktop app is the whole workflow. Unlock it with the hour's code from the tool page and point the batch queue at your dump folder; the ISOs write themselves while you're elsewhere.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Is RAW to ISO lossless?",
+        answer:
+          "For user data, yes — the 2048-byte payload of every sector is copied exactly. The ~13% that disappears is sync, header, EDC, and ECC transport overhead that ISO 9660 never stores. Keep the original RAW if you need subchannel or copy-protection data.",
+      },
+      {
+        question: "Can I go the other way, ISO back to RAW?",
+        answer:
+          "Not with this tool — reconstructing sync and error-correction bytes is synthesis, a different job than extraction. Burning software writes those fields itself when you burn an ISO to a physical disc.",
+      },
+    ],
+    screenshots: [
+      { file: "raw-to-iso-desktop-tool-open.webp", alt: "RAW to ISO tool open in the nichefiletools desktop app", step: 2 },
+      { file: "raw-to-iso-disc-image-select.webp", alt: "Selecting a .raw disc image for RAW to ISO conversion", step: 3 },
+      { file: "raw-to-iso-sector-progress.webp", alt: "Sector-by-sector RAW to ISO progress bar with real-time estimate", step: 4 },
+      { file: "raw-to-iso-iso-output-mounted.webp", alt: "The converted ISO mounted as a virtual drive" },
+      { file: "raw-to-iso-batch-archive-folder.webp", alt: "A folder of disc dumps queued in the desktop batch mode" },
+    ],
   },
   {
     slug: "blend-to-glb",
@@ -296,7 +387,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         bestFor: "Understanding the limit",
         price: "—",
         limit: "BLEND parsing needs Blender's runtime",
-        notes: "A .blend is a DNA-structured database that only Blender's own API reads reliably; the desktop app bundles that runtime. Any site advertising instant in-browser BLEND conversion is overselling what a tab can do.",
+        notes: "A .blend is a DNA-structured database that only Blender's own API reads reliably; the desktop app bundles that runtime. A browser tab claiming instant BLEND conversion is really just hoping you never open the file.",
       },
     ],
     desktopSteps: [
@@ -321,6 +412,26 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "Export from Blender when it's already open — it's the reference path. Use the desktop app for batch queues and headless conversion of big scenes; there is no honest browser shortcut for BLEND.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Why is there no online BLEND to GLB converter?",
+        answer:
+          "A .blend file is a DNA-structured database that only Blender's own runtime can parse reliably — meshes, modifiers, node trees, even undo history are stored as Blender-internal data-blocks. Any browser tool claiming instant BLEND conversion is hoping you never open the file; the desktop app bundles Blender's Python API to do it for real.",
+      },
+      {
+        question: "What's the difference between GLB and glTF?",
+        answer:
+          "glTF is the open 3D standard; GLB is its binary container — a single self-contained .glb file with geometry, animations, and PBR materials packed together, versus .gltf plus separate .bin and texture files. GLB is what three.js, Babylon.js, and AR runtimes load natively, which is why it's the web handoff format.",
+      },
+    ],
+    screenshots: [
+      { file: "blend-to-glb-desktop-app-launch.webp", alt: "Launching the free nichefiletools desktop app that bundles Blender's runtime", step: 1 },
+      { file: "blend-to-glb-tool-list.webp", alt: "Picking BLEND to GLB from the desktop app tool list", step: 2 },
+      { file: "blend-to-glb-file-select.webp", alt: "Selecting a .blend scene file and output .glb path", step: 3 },
+      { file: "blend-to-glb-converting-progress.webp", alt: "Per-stage progress while Blender's Python API evaluates and serializes the scene", step: 4 },
+      { file: "blend-to-glb-pbr-materials.webp", alt: "Principled BSDF materials mapped to the glTF PBR metallic-roughness model in the GLB output" },
+    ],
   },
 
   {
@@ -380,7 +491,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "Get the three parameters right once and RAW to WAV is a lossless, instant wrap. Use the online converter for one-off files, and Audacity or ffmpeg when you need to experiment or batch.",
+      "Name the three parameters once and the wrap is instant and lossless. When you're still guessing them, Audacity's audition loop beats everything; once you know them, ffmpeg owns anything scripted.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "My RAW file plays at half or double speed — which parameter is wrong?",
+        answer:
+          "Sample rate. Pitch shifts by the ratio of declared to true rate: a 22050 Hz stream declared as 44100 plays twice as fast. Telephony sources are typically 8000 or 16000 Hz; video gear, 48000 Hz.",
+      },
+      {
+        question: "Can the parameters be detected automatically?",
+        answer:
+          "Not reliably — a headerless file carries no metadata by definition. Audacity's Import RAW preview is the fastest manual method: speech cadence and onsets tell you when the guess is close.",
+      },
+    ],
+    screenshots: [
+      { file: "raw-to-wav-hex-editor-parameters.webp", alt: "Checking a RAW audio stream's byte layout in a hex editor", step: 2 },
+      { file: "raw-to-wav-audio-drop-zone.webp", alt: "Dropping a headerless RAW audio stream into the online converter", step: 3 },
+      { file: "raw-to-wav-parameter-options.webp", alt: "Sample rate, bit depth, and channels options in the RAW to WAV converter", step: 3 },
+      { file: "raw-to-wav-convert-button.webp", alt: "The Convert button writing the WAV header locally in the browser", step: 4 },
+      { file: "raw-to-wav-wav-playing.webp", alt: "The wrapped WAV playing in a standard media player", step: 5 },
+    ],
   },
 
   {
@@ -445,6 +576,26 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "For a quick, editable .gltf, the online converter is the whole job. Want the multi-file layout or optimization? Feed the output through gltf-pipeline in one command.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Is the converted .gltf still valid glTF 2.0?",
+        answer:
+          "Yes — same spec, same data, different container. Validators, engines, and viewers treat it identically; the only difference is buffers[0].uri pointing at embedded base64 instead of a sibling .bin file.",
+      },
+      {
+        question: "Can I convert back, .gltf to GLB?",
+        answer:
+          "Yes, losslessly in both directions — run Microsoft's gltf-pipeline with -i model.gltf -o model.glb on the output, or re-import into Blender and export GLB.",
+      },
+    ],
+    screenshots: [
+      { file: "glb-to-gltf-drop-zone.webp", alt: "A .glb model file dropped into the online GLB to GLTF converter", step: 2 },
+      { file: "glb-to-gltf-converting-browser.webp", alt: "GLB header and chunks being parsed locally in the browser", step: 3 },
+      { file: "glb-to-gltf-json-editor.webp", alt: "The converted .gltf JSON opened in a text editor showing the scene graph", step: 4 },
+      { file: "glb-to-gltf-base64-buffer.webp", alt: "The embedded base64 data-URI buffer inside the converted .gltf", step: 4 },
+      { file: "glb-to-gltf-viewer-verify.webp", alt: "The .gltf loading in a glTF viewer, identical to the original GLB", step: 5 },
+    ],
   },
 
   {
@@ -505,6 +656,26 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "For any uncompressed EOT — which is nearly all of them — extraction is instant and exact. Recover the TTF online, then subset and compress to WOFF2 if the goal is a modern @font-face.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "My recovered TTF is missing accented characters — why?",
+        answer:
+          "The EOT was subset to just the glyphs the old page rendered, so those characters were never in the file. Subset EOTs are common in legacy IE web fonts; for the full character set you need the original retail font from your licensed source, not the web-delivered EOT.",
+      },
+      {
+        question: "How does EOT relate to WOFF and WOFF2?",
+        answer:
+          "EOT (1997) was Microsoft's IE-only web font wrapper; WOFF (2010) and WOFF2 (2018) are the cross-browser successors. Inside nearly every EOT is an ordinary sfnt font, so the recovery path is EOT to raw TTF/OTF, then optionally compress to WOFF2 for a modern @font-face stack.",
+      },
+    ],
+    screenshots: [
+      { file: "eot-to-ttf-upload.webp", alt: "Dropping a legacy .eot web font into the online converter's drop zone", step: 2 },
+      { file: "eot-to-ttf-extraction.webp", alt: "The tool validating the EOT header and locating the embedded sfnt signature", step: 3 },
+      { file: "eot-to-ttf-output-ttf-otf.webp", alt: "Recovered font output with extension auto-chosen from the sfnt version", step: 4 },
+      { file: "eot-to-ttf-fontsource-recovery.webp", alt: "Pulling .eot URLs from an old @font-face cascade for batch recovery" },
+      { file: "eot-to-ttf-glyph-subset.webp", alt: "Comparing a subset EOT's glyph coverage against the full retail character set", step: 5 },
+    ],
   },
 
   {
@@ -569,6 +740,26 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "Zip, drop, download — that's the online path for a well-formed source. When the content itself needs surgery, do the work in Sigil and let it write the EPUB.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Do I really have to ZIP the folder first?",
+        answer:
+          "Yes — browsers can't hand a directory to a page. Any OS-level compress works; the tool unpacks it, verifies every manifest href, and repackages under OCF rules, so your ZIP's own compression settings don't matter.",
+      },
+      {
+        question: "Is the output EPUB 2 or EPUB 3?",
+        answer:
+          "EPUB 3 — the packager writes the OCF container plus a nav document generated from the spine when your OPF lacks one. Every current reader supports EPUB 3.",
+      },
+    ],
+    screenshots: [
+      { file: "opf-to-epub-source-folder.webp", alt: "An EPUB source folder: content.opf, XHTML chapters, CSS, and images", step: 1 },
+      { file: "opf-to-epub-zip-folder.webp", alt: "Zipping the OPF source folder while preserving relative paths", step: 2 },
+      { file: "opf-to-epub-upload-zip.webp", alt: "The ZIP dropped into the online OPF to EPUB packager", step: 3 },
+      { file: "opf-to-epub-manifest-check.webp", alt: "Manifest href verification against the archive during OPUB packaging", step: 4 },
+      { file: "opf-to-epub-epub-reader.webp", alt: "The finished EPUB open in a reader with correct chapter order", step: 5 },
+    ],
   },
 
   {
@@ -628,7 +819,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "For a faithful data export, the online converter handles every compression variant with zero setup. If you need value labels in the output, do one Automatic Recode in SPSS first — that's the only step CSV can't do for you.",
+      "Every compression variant, zero setup: the browser converter exports the data faithfully. The one thing it can't do is write value labels into cells — run SPSS's Automatic Recode first if the output needs words, not codes.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Why do value labels disappear in the CSV?",
+        answer:
+          "CSV stores values, not the SPSS dictionary. '1' survives; 'Male' lives only in the dictionary's value-label record. Run Automatic Recode in SPSS before export if the output needs the words.",
+      },
+      {
+        question: "Is .zsav handled differently from .sav?",
+        answer:
+          "Only in decompression — once the zlib layer peels off, both decode through the same dictionary and data-matrix parser, and both write identical CSV.",
+      },
+    ],
+    screenshots: [
+      { file: "sav-to-csv-spss-export.webp", alt: "A .sav data file exported from SPSS Statistics", step: 1 },
+      { file: "sav-to-csv-upload.webp", alt: "The SAV file dropped into the online SAV to CSV converter", step: 2 },
+      { file: "sav-to-csv-dictionary-parse.webp", alt: "The SPSS variable dictionary parsed in the browser during SAV to CSV conversion", step: 3 },
+      { file: "sav-to-csv-csv-excel.webp", alt: "The exported CSV opening in Excel with correct UTF-8 characters", step: 4 },
+      { file: "sav-to-csv-verify-header.webp", alt: "Spot-checking the CSV header row against SPSS variable names", step: 5 },
+    ],
   },
 
   // PFM to TTF — A class
@@ -638,7 +849,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     metaDescription:
       "Convert PFM+PFB Type 1 fonts to TTF free: online tool, desktop app, or FontForge. Needs the companion .pfb. Steps, limits, fixes.",
     quickAnswer:
-      "Yes — but only with both files. A PFM stores metrics (widths/kerning); the glyph outlines live in the companion .pfb. Upload .pfm and .pfb together to the free online tool (≤10 MB) or use the desktop app for batches; FontForge is the pro fallback for tricky fonts.",
+      "Yes — but only with both files. A PFM stores metrics (widths/kerning); the glyph outlines live in the companion .pfb. Upload .pfm and .pfb together to the free online tool (≤10 MB) or use the desktop app for batches; FontForge is the power-user fallback for tricky fonts.",
     formatDeep:
       "PFM and PFB are the two halves of an Adobe Type 1 (PostScript) font: the PFM ('printer font metrics') holds widths, kerning pairs, and character-set info for Windows, while the PFB ('printer font binary') holds the glyph outlines as cubic Bézier curves. TTF stores outlines as quadratic B-splines in an sfnt table structure with Unicode cmap tables. The conversion re-parameterizes every curve — cubic-to-quadratic approximation within a fraction of an em — and rebuilds metrics from the PFM. Adobe declared Type 1 end-of-life in 2023, which is exactly why these migrations are suddenly urgent.",
     batchLarge:
@@ -667,8 +878,8 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     desktopSteps: [
-      "Download and launch the free nichefiletools desktop app.",
-      "Pick PFM to TTF from the tool list.",
+      "Launch the free nichefiletools desktop app — Type 1 conversion calls FontForge's bundled Python, and the app checks for it on first use.",
+      "Pick PFM to TTF from the converter list.",
       "Select the .pfm and its companion .pfb (same folder, same prefix).",
       "Click Convert — curves are approximated and the TTF is packaged.",
       "Install the .ttf or reference it in your design tool.",
@@ -690,7 +901,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "With both files in hand, PFM to TTF is a quick, lossless-shape conversion. Use the online tool for one-off fonts and the desktop app or FontForge when you need batches or custom hinting.",
+      "With both files in hand the pair-upload finishes in seconds and keeps the outlines faithful; save the desktop batch queue and FontForge for whole Type 1 families and hand-tuned hinting.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Does it matter which file goes in which drop zone?",
+        answer:
+          "Yes — .pfm goes in the metrics zone, .pfb in the outlines zone (both are labeled). The tool needs the pair: neither file alone contains a complete font.",
+      },
+      {
+        question: "What about .pfa files instead of .pfb?",
+        answer:
+          "PFA is the ASCII form of the same Type 1 outline data. The desktop app accepts either companion; the web tool's outline zone expects the binary .pfb, so convert a .pfa with t1binary or FontForge first.",
+      },
+    ],
+    screenshots: [
+      { file: "pfm-to-ttf-pfm-pfb-pair.webp", alt: "A Type 1 font pair: Arial.pfm metrics and Arial.pfb outlines in one folder", step: 3 },
+      { file: "pfm-to-ttf-two-dropzones.webp", alt: "The PFM and PFB drop zones in the online PFM to TTF converter", step: 3 },
+      { file: "pfm-to-ttf-converting.webp", alt: "Cubic to quadratic curve conversion running in the browser during PFM to TTF conversion", step: 4 },
+      { file: "pfm-to-ttf-ttf-installed.webp", alt: "The generated TTF installed in the Windows font viewer", step: 5 },
+      { file: "pfm-to-ttf-desktop-batch-fonts.webp", alt: "A Type 1 font family batch-converting to TTF in the desktop app" },
+    ],
   },
 
   // EXR to PNG — A class
@@ -711,7 +942,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         bestFor: "Single images, instant preview",
         price: "Free",
         limit: "200 MB (PC) / 50 MB (mobile)",
-        notes: "Runs in your browser — the EXR is never uploaded. Auto-detects PIZ/ZIP/PXR24/B44 compression and tone-maps the first RGBA layer.",
+        notes: "Decodes scanline EXR with ZIP, RLE, or no compression right in your browser; PIZ/PXR24/B44 and tiled files are flagged for re-export or the desktop app, and frames never leave your machine.",
       },
       {
         name: "nichefiletools desktop app",
@@ -729,8 +960,8 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     desktopSteps: [
-      "Download and launch the free nichefiletools desktop app.",
-      "Pick EXR to PNG from the tool list.",
+      "Launch the free nichefiletools desktop app — the EXR decoder ships inside it, no engines to add.",
+      "Choose EXR to PNG from the converter list.",
       "Select the .exr and choose 8-bit PNG, 16-bit PNG, or TIFF.",
       "Set tone mapping (Reinhard/ACES) and exposure if needed.",
       "Click Convert and save the output.",
@@ -752,7 +983,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "EXR to PNG is really HDR→LDR tone mapping. The online tool is perfect for quick previews; reach for the desktop app or a compositor when you need bit depth or layer control.",
+      "EXR to PNG is really HDR→LDR tone mapping — pick the curve in the browser for a quick look, and move to the desktop app or your compositor the moment bit depth or layer choice matters.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Which EXR files work in the browser tool?",
+        answer:
+          "Scanline images with ZIP, ZIPS, RLE, or no compression — the defaults of Blender, V-Ray, Arnold, and Redshift. Tiled, multi-part, PIZ, PXR24, and B44 files are rejected with a pointer to re-export options or the desktop app.",
+      },
+      {
+        question: "Reinhard or ACES — which tone mapping should I pick?",
+        answer:
+          "Start with Reinhard for a neutral, documentary look; switch to ACES when highlights clip or you want a filmic contrast curve. Both read the same data, and re-converting with the other curve costs nothing.",
+      },
+    ],
+    screenshots: [
+      { file: "exr-to-png-exr-render.webp", alt: "An OpenEXR render frame selected for EXR to PNG conversion", step: 3 },
+      { file: "exr-to-png-tone-map-options.webp", alt: "Reinhard/ACES tone mapping and exposure options in the EXR to PNG converter", step: 4 },
+      { file: "exr-to-png-converting.webp", alt: "EXR decode and tone mapping running locally in the browser", step: 5 },
+      { file: "exr-to-png-png-compare.webp", alt: "EXR source and tone-mapped PNG compared side by side" },
+      { file: "exr-to-png-exposure-adjust.webp", alt: "Re-converting an EXR with higher exposure to recover highlight detail" },
+    ],
   },
 
   // GSM to WAV — A class
@@ -773,7 +1024,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         bestFor: "Single recordings, instant",
         price: "Free",
         limit: "500 MB (PC) / 100 MB (mobile)",
-        notes: "Runs in your browser — the .gsm is never uploaded. Output is standard 16-bit PCM mono @ 8000 Hz.",
+        notes: "Decoding happens locally, so a voicemail archive never transits any server. Output is standard 16-bit PCM mono @ 8000 Hz.",
       },
       {
         name: "nichefiletools desktop app",
@@ -791,8 +1042,8 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     desktopSteps: [
-      "Download and launch the free nichefiletools desktop app.",
-      "Pick GSM to WAV from the tool list.",
+      "Launch the free nichefiletools desktop app; GSM decoding needs the free FFmpeg engine, which the app detects automatically.",
+      "Select GSM to WAV in the sidebar.",
       "Select the .gsm (or a folder of them).",
       "Click Convert — frames decode to 16-bit PCM WAV.",
       "Optionally export to FLAC for lossless storage.",
@@ -814,7 +1065,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "GSM to WAV is a clean, lossless decode. The online tool handles one-off recordings; the desktop app or ffmpeg suits batches and FLAC archival.",
+      "GSM to WAV is a clean, lossless decode: one recording is a browser job, a whole mailbox is desktop batch territory, and FLAC makes the archive no larger than it needs to be.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Is GSM 06.10 the same codec as on my phone?",
+        answer:
+          "It's the 2G Full-Rate speech codec. Modern phones use AMR or AMR-WB instead; GSM 06.10 files mostly come from voicemail systems, call recorders, and legacy telephony hardware.",
+      },
+      {
+        question: "Why is the output 8000 Hz mono?",
+        answer:
+          "Because that's what GSM 06.10 carries — 160 samples per 20 ms frame at 8 kHz, single channel. Upsampling at decode would add no information, so the WAV matches the codec's true format.",
+      },
+    ],
+    screenshots: [
+      { file: "gsm-to-wav-voicemail-files.webp", alt: "Voicemail .gsm exports from a call recording system", step: 3 },
+      { file: "gsm-to-wav-upload.webp", alt: "A GSM recording dropped into the online GSM to WAV converter", step: 3 },
+      { file: "gsm-to-wav-decode-progress.webp", alt: "Frame-by-frame GSM decode writing 16-bit PCM WAV", step: 4 },
+      { file: "gsm-to-wav-waveform.webp", alt: "The decoded WAV waveform opened in an audio editor", step: 5 },
+      { file: "gsm-to-wav-desktop-batch-flac.webp", alt: "A voicemail archive batch-decoding to WAV and FLAC in the desktop app" },
+    ],
   },
 
   // MTS to MP4 — B class
@@ -824,7 +1095,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     metaDescription:
       "Convert AVCHD MTS/M2TS to MP4 free: online FFmpeg tool (PC), desktop app, or HandBrake. Remux vs transcode, fixes.",
     quickAnswer:
-      "Yes, on a PC. AVCHD MTS wraps H.264 in MPEG-TS; the free online tool remuxes it to MP4 (copy video, AAC audio) in your browser — no upload. Mobile browsers can't handle the 31 MB FFmpeg WASM, so they're guided to the desktop app. For 4K or batches use the desktop app.",
+      "Yes, on a PC. AVCHD MTS wraps H.264 in MPEG-TS; the free online tool remuxes it to MP4 (copy video, AAC audio) in your browser — no upload. Mobile browsers technically load the tool, but the 31 MB FFmpeg WASM makes phones impractical — they're pointed at the desktop app. For 4K or batches use the desktop app.",
     formatDeep:
       "MTS/M2TS is AVCHD — the MPEG transport stream wrapper (H.264 video, AC-3 or PCM audio) used by HD camcorders from 2008 to the mid-2010s. MP4 is the ISO base media file format every player, editor, and platform actually wants. The streams inside are largely compatible, which is why most conversions are remuxes — the H.264 payload is copied bit-for-bit into the new container, with only the AC3 audio re-encoded to AAC where MP4 compatibility demands it. That distinction matters: remux is lossless and fast; transcode is neither, and is only needed for problem footage.",
     batchLarge:
@@ -876,7 +1147,27 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "MTS to MP4 is usually just a remux — fast and lossless. Use the online tool for quick PC clips and the desktop app for 4K, batches, or transcode control.",
+      "MTS to MP4 is usually just a remux, and the browser tool does that losslessly in seconds; 4K footage, whole SD cards, and forced transcodes are hardware-accelerated desktop work.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "Remux or transcode — how do I know which one happened?",
+        answer:
+          "The tool remuxes by default and tells you when it falls back to a transcode (incompatible audio, stream errors). Remux finishes in seconds; transcode runs minutes — the duration itself is a good tell.",
+      },
+      {
+        question: "Why does my AVCHD folder also contain .cpi and .mpl files?",
+        answer:
+          "Those are AVCHD's clip-index and playlist metadata, not video. The footage is the .mts/.m2ts streams — converters only need those; archive or discard the rest.",
+      },
+    ],
+    screenshots: [
+      { file: "mts-to-mp4-camcorder-clips.webp", alt: "AVCHD MTS clips copied from a camcorder SD card", step: 3 },
+      { file: "mts-to-mp4-upload-browser.webp", alt: "An MTS clip loaded into the online MTS to MP4 converter", step: 3 },
+      { file: "mts-to-mp4-remux-progress.webp", alt: "FFmpeg WASM remuxing MTS to MP4 in the browser with progress", step: 5 },
+      { file: "mts-to-mp4-mp4-plays.webp", alt: "The remuxed MP4 playing in a standard video player", step: 5 },
+      { file: "mts-to-mp4-desktop-batch.webp", alt: "A whole SD card folder batch-converting MTS to MP4 in the desktop app" },
+    ],
   },
 
   // WAD File Extractor — C class (desktop only)
@@ -904,10 +1195,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
         bestFor: "Understanding the limit",
         price: "—",
         limit: "Browser memory/CPU caps",
-        notes: "WADs span MB to 10 GB+; decompression (zlib/bzip2/lzma) in WASM is slow and can OOM a tab. Native streaming I/O is the honest solution.",
+        notes: "WADs span MB to 10 GB+; decompression (zlib/bzip2/lzma) in WASM is slow and can OOM a tab. The only realistic route is native streaming I/O.",
       },
       {
-        name: "Quake tools (pro)",
+        name: "Quake tools (advanced)",
         bestFor: "Quake-only tinkering",
         price: "Free",
         limit: "Manual",
@@ -916,7 +1207,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     stepsTitle: "Extract on Desktop",
     desktopSteps: [
-      "Download and install the free nichefiletools desktop app.",
+      "Install the free nichefiletools desktop app — WAD extraction is built in, no engines to add.",
       "Open WAD File Extractor and drag in your .wad.",
       "Preview the file list — names, sizes, compression state.",
       "Check the entries you want (or select all).",
@@ -940,6 +1231,26 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     conclusion:
       "WAD extraction belongs on the desktop. The free app detects the variant, lets you preview and pick entries, and verifies checksums — the safe way to open game archives.",
+    updated: "2026-09-01",
+    faqs: [
+      {
+        question: "What's the difference between IWAD and PWAD?",
+        answer:
+          "IWAD is the full commercial game data (doom.wad); PWAD is a mod that overrides or adds lumps on top of an IWAD. Extraction works identically for both — the header magic just labels intent.",
+      },
+      {
+        question: "Can it extract DOOM's WADs from the Steam release?",
+        answer:
+          "Yes — Steam's DOOM Classic ships doom.wad / doom1.wad under base/. The archive extracts like any other; what you do with id's copyrighted assets afterward is a licensing question, not a technical one.",
+      },
+    ],
+    screenshots: [
+      { file: "wad-extractor-desktop-tool.webp", alt: "The WAD File Extractor open in the nichefiletools desktop app", step: 2 },
+      { file: "wad-extractor-lump-directory.webp", alt: "The WAD lump directory preview showing names, sizes, and compression state", step: 3 },
+      { file: "wad-extractor-selective-check.webp", alt: "Selecting only the sprite lumps for selective WAD extraction", step: 4 },
+      { file: "wad-extractor-extract-progress.webp", alt: "WAD extraction progress with CRC32 verification per lump", step: 5 },
+      { file: "wad-extractor-extracted-textures.webp", alt: "Extracted DOOM textures ready for modding" },
+    ],
   },
 ];
 
