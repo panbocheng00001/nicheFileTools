@@ -627,15 +627,16 @@ export default function EngineGuidePage() {
                 </div>
                 <ZoomableImage
                   image={{
-                    src: "/help/exr-to-png-converter-interface.png",
-                    alt: "The nichefiletools desktop converter: drop zone on the left, unlock-code panel and status messages on the right",
+                    src: "/help/engine-missing-banner.png",
+                    alt: "The nichefiletools desktop app with the BLEND to GLB tool open and a missing-engine banner listing Blender with Install and Re-check after installing buttons",
                     caption:
-                      "The converter screen with an engine banner visible in place of the drop zone.",
+                      "The converter screen with the engine banner above the drop zone and Convert disabled.",
                   }}
                 />
                 <figcaption className="border-t border-border bg-muted/40 px-4 py-2.5 text-sm leading-relaxed text-muted-foreground">
                   The converter screen. When an engine is missing, its banner
-                  replaces the drop zone until you install it — then hit{" "}
+                  appears above the drop zone and Convert stays disabled until
+                  you install it — then hit{" "}
                   <RefreshCw className="inline h-3.5 w-3.5 text-primary" />{" "}
                   Re-check and you&apos;re converting.
                 </figcaption>

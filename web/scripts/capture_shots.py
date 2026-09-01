@@ -81,8 +81,11 @@ RECIPES: dict[tuple[str, str], tuple[str, dict]] = {
     # exr
     ("exr-to-png", "exr-to-png-exr-render.webp"): ("loaded", {}),
     ("exr-to-png", "exr-to-png-tone-map-options.webp"): ("loaded", {"params": {"toneMap": "aces"}}),
-    ("exr-to-png", "exr-to-png-converting.webp"): ("converting", {}),
-    ("exr-to-png", "exr-to-png-png-compare.webp"): ("result", {}),
+    # Desk.exr is PIZ-compressed — the in-browser decoder rejects it. The
+    # "result" state uses the ZIP sample; the "converting" state needs a big
+    # file (uncompressed 1920x1280) so decode is still running at +400ms.
+    ("exr-to-png", "exr-to-png-converting.webp"): ("converting", {"fixture": "render-3k-none.exr"}),
+    ("exr-to-png", "exr-to-png-png-compare.webp"): ("result", {"fixture": "hp-zip-320x240.exr"}),
     ("exr-to-png", "exr-to-png-exposure-adjust.webp"): ("loaded", {"params": {"exposure": "3"}}),
     # gsm / mts (FFmpeg WASM load makes the converting state holdable)
     ("gsm-to-wav", "gsm-to-wav-upload.webp"): ("empty", {}),
@@ -161,7 +164,10 @@ def capture(pw, base: str, out_dir: Path):
             else:
                 section = page.locator(CONVERTER_SEL).first
                 if recipe != "empty":
-                    fx = FIXTURE[slug]
+                    if opts.get("fixture"):
+                        fx = FIXTURES / slug / opts["fixture"]
+                    else:
+                        fx = FIXTURE[slug]
                     if not fx.exists():
                         raise FileNotFoundError(f"fixture missing: {fx}")
                     page.set_input_files(f'{CONVERTER_SEL} input[type="file"]', str(fx))
@@ -193,12 +199,17 @@ def capture(pw, base: str, out_dir: Path):
 
     browser.close()
 
-    pending = sorted(listed - set(RECIPES))
+    pending = sorted(
+        s for s in (listed - set(RECIPES))
+        if not (PUBLIC_CONVERT / s[0] / s[1]).exists()
+    )
     print("\n===== SUMMARY =====")
     print(f"captured: {len(done)}   failed: {len(failed)}   pending-desktop: {len(pending)}")
     for slug, fname in failed:
         print(f"  FAILED  {slug}/{fname}")
     print("PENDING desktop/3rd-party scenes (need WorkBuddy desktop session):")
+    print("(already on disk under web/public/convert/ are skipped — see")
+    print(" capture_desktop_shots.py for the desktop-UI capture pipeline)")
     for slug, fname in pending:
         print(f"  {slug}/{fname}")
 

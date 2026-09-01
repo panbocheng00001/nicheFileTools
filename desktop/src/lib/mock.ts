@@ -31,6 +31,19 @@ const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 /// without a native file dialog.
 const SAMPLE_DIR = "C:\\preview-samples";
 
+/// Preview capture hooks (browser preview only — never used inside Tauri).
+/// Query params let a headless-browser capture pipeline drive UI states the
+/// shims cannot reach on their own:
+///   ?engineOk=1   every engine reports as installed, so the converting/result
+///                 UI can be exercised without the sidecar binaries
+///   ?files=a,b,c  pickFiles() returns those base names (the first filter's
+///                 extension is appended when missing) so screenshots show
+///                 realistic filenames instead of sample/sample-2
+function previewParam(name: string): string | null {
+  if (typeof location === "undefined") return null;
+  return new URLSearchParams(location.search).get(name);
+}
+
 const HOUR_MS = 3_600_000;
 
 /// Errors thrown here mimic the Rust `AppErrorPayload` shape (`{code, message}`)
@@ -128,6 +141,10 @@ export function mockListTools(): ToolMeta[] {
 /// A browser cannot probe the host for sidecar binaries, so every non-built-in
 /// engine is reported missing — same state the desktop shows before installing.
 export function mockEngineStatus(slug: string): EngineStatus {
+  // Capture hook: force the "all engines installed" state in the browser.
+  if (previewParam("engineOk") === "1") {
+    return { slug, available: true, missing: [], guide: null };
+  }
   const tool = MOCK_TOOLS.find((t) => t.slug === slug);
   if (!tool) return { slug, available: false, missing: [], guide: null };
   const missing = tool.engines
@@ -145,7 +162,17 @@ export function mockPickOutput(defaultPath: string): string {
 }
 
 export function mockPickInputFiles(filters: { extensions: string[] }[]): string[] {
-  const ext = filters?.[0]?.extensions?.[0];
+  // Capture hook: named files from ?files=a,b,c (ext appended when missing).
+  const named = previewParam("files");
+  if (named) {
+    const ext = (filters?.[0]?.extensions[0] ?? "bin").toLowerCase();
+    return named
+      .split(",")
+      .map((n) => n.trim())
+      .filter(Boolean)
+      .map((n) => (n.toLowerCase().endsWith(`.${ext}`) ? n : `${n}.${ext}`));
+  }
+  const ext = filters?.[0]?.extensions[0];
   const name = ext ? `sample.${ext}` : "sample.bin";
   return [`${SAMPLE_DIR}\\${name}`, `${SAMPLE_DIR}\\${name.replace(/^sample/, "sample-2")}`];
 }

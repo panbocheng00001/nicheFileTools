@@ -12,6 +12,7 @@ import {
 import { getTool, hasWebConverter } from "@/lib/tools-data";
 import { SITE, REPO_URL } from "@/lib/site";
 import { Share } from "@/components/Share";
+import { ZoomableImage, type LightboxImage } from "@/components/Lightbox";
 import { DesktopCodeCard } from "@/components/DesktopCodeCard";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -66,6 +67,13 @@ export default async function ConvertGuidePage({ params }: Params) {
   const shots = existingShots(guide.slug, guide.screenshots);
   const stepShots = (n: number) => shots.filter((s) => s.step === n);
   const sectionShots = shots.filter((s) => !s.step);
+  // All shots on the page form one lightbox group so the viewer's arrow keys
+  // can page through the whole walkthrough without closing it.
+  const shotGroup: LightboxImage[] = shots.map((s) => ({
+    src: `/convert/${guide.slug}/${s.file}`,
+    alt: s.alt,
+    caption: s.alt,
+  }));
 
   //Schema: HowTo (real steps) + Article (author=Organization, not fictional real people)
   //+ FAQPage (page-level, matches visible FAQ section) + BreadcrumbList
@@ -273,7 +281,12 @@ export default async function ConvertGuidePage({ params }: Params) {
                     {stepImgs.length > 0 && (
                       <div className="mt-2 space-y-3">
                         {stepImgs.map((sh) => (
-                          <GuideShot key={sh.file} slug={guide.slug} shot={sh} />
+                          <GuideShot
+                            key={sh.file}
+                            slug={guide.slug}
+                            shot={sh}
+                            group={shotGroup}
+                          />
                         ))}
                       </div>
                     )}
@@ -321,7 +334,12 @@ export default async function ConvertGuidePage({ params }: Params) {
             {sectionShots.length > 0 && (
               <div className="space-y-3">
                 {sectionShots.map((sh) => (
-                  <GuideShot key={sh.file} slug={guide.slug} shot={sh} />
+                  <GuideShot
+                    key={sh.file}
+                    slug={guide.slug}
+                    shot={sh}
+                    group={shotGroup}
+                  />
                 ))}
               </div>
             )}
@@ -474,23 +492,24 @@ export default async function ConvertGuidePage({ params }: Params) {
 /**
  * Annotated step screenshot (spec §四): lossless WebP, ~1200px wide, lazy
  * loaded so Core Web Vitals stay unaffected. Rendered only when the file
- * exists (see existingShots).
+ * exists (see existingShots). Click opens the full-screen zoom viewer
+ * (same Lightbox as the help page) with the page's shots as one group.
  */
 function GuideShot({
   slug,
   shot,
+  group,
 }: {
   slug: string;
   shot: GuideScreenshot;
+  group: LightboxImage[];
 }) {
+  const src = `/convert/${slug}/${shot.file}`;
   return (
     <figure className="my-4">
-      <img
-        src={`/convert/${slug}/${shot.file}`}
-        alt={shot.alt}
-        title={shot.alt}
-        loading="lazy"
-        width={1200}
+      <ZoomableImage
+        image={{ src, alt: shot.alt, caption: shot.alt }}
+        group={group}
         className="w-full rounded-xl border border-border"
       />
       <figcaption className="mt-1.5 text-sm leading-relaxed text-muted-foreground">

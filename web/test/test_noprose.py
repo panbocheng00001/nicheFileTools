@@ -40,7 +40,9 @@ with sync_playwright() as p:
         deco = h.evaluate("e => getComputedStyle(e.closest('a')).textDecorationLine")
         check(f"[support:{theme}] 卡片链接无下划线", "underline" not in deco, deco)
 
-        page.goto(BASE + "/convert/kfx-to-epub", wait_until="networkidle")
+        # pvr-to-png 有浏览器内转换器（kfx-to-epub 是 desktop-only，
+        # 其指南页按设计不渲染 "Open the tool" CTA）
+        page.goto(BASE + "/convert/pvr-to-png", wait_until="networkidle")
         page.wait_for_timeout(400)
         btn = page.locator("a.no-prose.bg-primary").first
         color = btn.evaluate("e => getComputedStyle(e).color")

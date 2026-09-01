@@ -192,12 +192,12 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     screenshots: [
-      { file: "prt-to-stl-creo-step-export.webp", alt: "Creo's Save a Copy dialog exporting a PRT part as STEP AP214", step: 1 },
+      { file: "prt-to-stl-creo-step-export.webp", alt: "A Creo part exported as STEP AP214 and opened in FreeCAD's OpenCASCADE kernel", step: 1 },
       { file: "prt-to-stl-desktop-app-freecad-check.webp", alt: "The nichefiletools desktop app checking for the FreeCAD engine on launch", step: 2 },
       { file: "prt-to-stl-tool-selected.webp", alt: "STEP to STL selected in the desktop app sidebar for PRT to STL conversion", step: 3 },
       { file: "prt-to-stl-stp-file-chosen.webp", alt: "The exported .stp CAD file loaded into the STEP to STL tool", step: 4 },
       { file: "prt-to-stl-tessellation-progress.webp", alt: "Tessellation progress as the PRT-derived geometry meshes to STL", step: 5 },
-      { file: "prt-to-stl-stl-in-slicer.webp", alt: "The finished STL from the PRT part opened in a slicer for 3D printing" },
+      { file: "prt-to-stl-stl-in-slicer.webp", alt: "The finished STL from the PRT part verified in Blender before 3D printing" },
     ],
   },
   {
@@ -430,7 +430,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       { file: "blend-to-glb-tool-list.webp", alt: "Picking BLEND to GLB from the desktop app tool list", step: 2 },
       { file: "blend-to-glb-file-select.webp", alt: "Selecting a .blend scene file and output .glb path", step: 3 },
       { file: "blend-to-glb-converting-progress.webp", alt: "Per-stage progress while Blender's Python API evaluates and serializes the scene", step: 4 },
-      { file: "blend-to-glb-pbr-materials.webp", alt: "Principled BSDF materials mapped to the glTF PBR metallic-roughness model in the GLB output" },
+      { file: "blend-to-glb-pbr-materials.webp", alt: "The scene's Principled BSDF materials in Blender's shading workspace — what the GLB export maps to glTF PBR" },
     ],
   },
 
@@ -837,7 +837,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       { file: "sav-to-csv-spss-export.webp", alt: "A .sav data file exported from SPSS Statistics", step: 1 },
       { file: "sav-to-csv-upload.webp", alt: "The SAV file dropped into the online SAV to CSV converter", step: 2 },
       { file: "sav-to-csv-dictionary-parse.webp", alt: "The SPSS variable dictionary parsed in the browser during SAV to CSV conversion", step: 3 },
-      { file: "sav-to-csv-csv-excel.webp", alt: "The exported CSV opening in Excel with correct UTF-8 characters", step: 4 },
+      { file: "sav-to-csv-csv-excel.webp", alt: "The exported CSV with its UTF-8 header row open in a text editor, ready for Excel", step: 4 },
       { file: "sav-to-csv-verify-header.webp", alt: "Spot-checking the CSV header row against SPSS variable names", step: 5 },
     ],
   },
@@ -916,10 +916,10 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     screenshots: [
-      { file: "pfm-to-ttf-pfm-pfb-pair.webp", alt: "A Type 1 font pair: Arial.pfm metrics and Arial.pfb outlines in one folder", step: 3 },
+      { file: "pfm-to-ttf-pfm-pfb-pair.webp", alt: "A Type 1 font pair: Garamond.pfm metrics and Garamond.pfb outlines in one folder", step: 3 },
       { file: "pfm-to-ttf-two-dropzones.webp", alt: "The PFM and PFB drop zones in the online PFM to TTF converter", step: 3 },
       { file: "pfm-to-ttf-converting.webp", alt: "Cubic to quadratic curve conversion running in the browser during PFM to TTF conversion", step: 4 },
-      { file: "pfm-to-ttf-ttf-installed.webp", alt: "The generated TTF installed in the Windows font viewer", step: 5 },
+      { file: "pfm-to-ttf-ttf-installed.webp", alt: "The generated TTF opened in FontForge with its glyph coverage intact", step: 5 },
       { file: "pfm-to-ttf-desktop-batch-fonts.webp", alt: "A Type 1 font family batch-converting to TTF in the desktop app" },
     ],
   },
@@ -1001,7 +1001,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       { file: "exr-to-png-exr-render.webp", alt: "An OpenEXR render frame selected for EXR to PNG conversion", step: 3 },
       { file: "exr-to-png-tone-map-options.webp", alt: "Reinhard/ACES tone mapping and exposure options in the EXR to PNG converter", step: 4 },
       { file: "exr-to-png-converting.webp", alt: "EXR decode and tone mapping running locally in the browser", step: 5 },
-      { file: "exr-to-png-png-compare.webp", alt: "EXR source and tone-mapped PNG compared side by side" },
+      { file: "exr-to-png-png-compare.webp", alt: "EXR to PNG conversion finished — the tone-mapped PNG ready to download from the browser tool" },
       { file: "exr-to-png-exposure-adjust.webp", alt: "Re-converting an EXR with higher exposure to recover highlight detail" },
     ],
   },
@@ -1175,20 +1175,20 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     slug: "wad-extractor",
     title: "How to Extract WAD Files — Desktop Guide 2026",
     metaDescription:
-      "Extract DOOM/Quake/BA2 WAD archives — desktop app only, no online tool. Selective extraction, type detection, fixes.",
+      "Extract DOOM/Quake/BA2 WAD archives — desktop app only, no online tool. Magic-byte type detection, zlib handling, fixes.",
     quickAnswer:
-      "WAD extraction is desktop-only — a browser cannot safely memory-map or stream-decompress GB-scale game archives. The free nichefiletools desktop app detects DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2 by magic bytes, previews the lump directory, and extracts selected entries with CRC32 checksum verification — no online tool can do this reliably.",
+      "WAD extraction is desktop-only — a browser cannot safely memory-map or stream-decompress GB-scale game archives. The free nichefiletools desktop app detects DOOM IWAD/PWAD, Quake WAD2/WAD3, and Gamebryo BA2 by magic bytes and unpacks every lump in one pass, inflating zlib-compressed Quake entries on the fly — no online tool can do this reliably.",
     formatDeep:
-      "WAD — 'Where's All the Data' — is the lump-archive format id Software introduced with DOOM in 1993: a small header, a directory of lump entries (name, size, offset), then raw data. The family diverged over time: DOOM IWAD/PWAD for retail content and mods, Quake's WAD2/WAD3 for textures, and (via Bethesda) BA2 archives for the modern Gamebryo era. Because the container is just an index plus bytes, extraction is precise and verifiable — CRC32 checks confirm each lump against its stored checksum. Modding and game-preservation communities still live in these archives.",
+      "WAD — 'Where's All the Data' — is the lump-archive format id Software introduced with DOOM in 1993: a small header, a directory of lump entries (name, size, offset), then raw data. The family diverged over time: DOOM IWAD/PWAD for retail content and mods, Quake's WAD2/WAD3 for textures (with optional zlib compression per lump), and (via Bethesda) BA2 archives for the modern Gamebryo era. Because the container is just an index plus bytes, extraction is precise: every lump lands on disk exactly as it was stored. Modding and game-preservation communities still live in these archives.",
     batchLarge:
-      "Game archives run from a few MB (shareware WADs) past 10 GB (modern BA2s), so streaming native I/O matters: the desktop app reads the directory first, lets you extract only the lumps you need, and verifies checksums on write. Selective extraction is the batch story — pulling 200 lumps out of a 4 GB archive beats unpacking all of it.",
+      "Game archives run from a few MB (shareware WADs) past 10 GB (modern BA2s), so streaming native I/O matters: the desktop app reads the directory first, then streams each lump straight to disk — nothing is buffered twice, and zlib-compressed Quake entries are inflated as they are written. Whole-archive extraction is the batch story: a folder of WADs unpacks unattended, and you cherry-pick the lumps you need from the output folder afterwards.",
     methods: [
       {
         name: "nichefiletools desktop app",
         bestFor: "Everything — the only supported path",
         price: "Free download",
         limit: "No file-size limit",
-        notes: "Auto-detects WAD type by magic bytes, previews the directory, supports selective extraction and CRC32/MD5 verification.",
+        notes: "Auto-detects WAD type by magic bytes and extracts every lump in one pass — Quake WAD2/WAD3 zlib lumps are decompressed automatically.",
       },
       {
         name: "Why no online converter",
@@ -1209,12 +1209,12 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     desktopSteps: [
       "Install the free nichefiletools desktop app — WAD extraction is built in, no engines to add.",
       "Open WAD File Extractor and drag in your .wad.",
-      "Preview the file list — names, sizes, compression state.",
-      "Check the entries you want (or select all).",
-      "Pick an output folder and click Extract; watch the progress bar.",
+      "The lump directory at the end of the file is parsed — every entry's name, size, and offset read from the archive index.",
+      "Pick an output folder and click Extract; each lump streams out under its original name, with progress shown per lump.",
+      "Cherry-pick what your project needs from the output folder — sprites, textures, or a single map.",
     ],
     desktopNote:
-      "Selective extraction saves time and disk when you only need MAP01 or the SPRITE set, not the whole archive.",
+      "Full extraction keeps it simple: pull everything out once, then copy just the lumps your project needs from the output folder.",
     troubleshooting: [
       {
         problem: "The tool reports 'Unknown WAD format'",
@@ -1230,7 +1230,7 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
       },
     ],
     conclusion:
-      "WAD extraction belongs on the desktop. The free app detects the variant, lets you preview and pick entries, and verifies checksums — the safe way to open game archives.",
+      "WAD extraction belongs on the desktop. The free app detects the variant, inflates zlib lumps on the fly, and writes every entry out under its original name — the safe way to open game archives.",
     updated: "2026-09-01",
     faqs: [
       {
@@ -1246,9 +1246,9 @@ export const CONVERT_GUIDES: ConvertGuide[] = [
     ],
     screenshots: [
       { file: "wad-extractor-desktop-tool.webp", alt: "The WAD File Extractor open in the nichefiletools desktop app", step: 2 },
-      { file: "wad-extractor-lump-directory.webp", alt: "The WAD lump directory preview showing names, sizes, and compression state", step: 3 },
-      { file: "wad-extractor-selective-check.webp", alt: "Selecting only the sprite lumps for selective WAD extraction", step: 4 },
-      { file: "wad-extractor-extract-progress.webp", alt: "WAD extraction progress with CRC32 verification per lump", step: 5 },
+      { file: "wad-extractor-lump-directory.webp", alt: "The WAD lump directory — lump names and offsets in plain sight at the end of the archive", step: 3 },
+      { file: "wad-extractor-extract-progress.webp", alt: "Extraction progress as each lump streams out of the archive", step: 4 },
+      { file: "wad-extractor-sprite-selection.webp", alt: "Selecting the extracted DOOM sprite lumps to copy into a mod", step: 5 },
       { file: "wad-extractor-extracted-textures.webp", alt: "Extracted DOOM textures ready for modding" },
     ],
   },
